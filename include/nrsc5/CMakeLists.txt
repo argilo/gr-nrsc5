@@ -22,5 +22,5 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/nrsc5
+    l1_fm_encoder.h DESTINATION include/nrsc5
 )
