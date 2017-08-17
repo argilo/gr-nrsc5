@@ -2,7 +2,7 @@
 <block>
   <name>Layer 1 FM encoder</name>
   <key>nrsc5_l1_fm_encoder</key>
-  <category>[nrsc5]</category>
+  <category>[NRSC-5]</category>
   <import>import nrsc5</import>
   <make>nrsc5.l1_fm_encoder()</make>
   <sink>
