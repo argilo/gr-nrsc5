@@ -1,17 +1,17 @@
 /* -*- c++ -*- */
-/* 
- * Copyright 2017 <+YOU OR YOUR COMPANY+>.
- * 
+/*
+ * Copyright 2017 Clayton Smith.
+ *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3, or (at your option)
  * any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this software; see the file COPYING.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street,
@@ -40,8 +40,8 @@ namespace gr {
      */
     l1_fm_encoder_impl::l1_fm_encoder_impl()
       : gr::block("l1_fm_encoder",
-              gr::io_signature::make(<+MIN_IN+>, <+MAX_IN+>, sizeof(<+ITYPE+>)),
-              gr::io_signature::make(<+MIN_OUT+>, <+MAX_OUT+>, sizeof(<+OTYPE+>)))
+              gr::io_signature::make(2, 2, sizeof(unsigned char)),
+              gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {}
 
     /*
@@ -63,8 +63,8 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const <+ITYPE+> *in = (const <+ITYPE+> *) input_items[0];
-      <+OTYPE+> *out = (<+OTYPE+> *) output_items[0];
+      const unsigned char *in = (const unsigned char *) input_items[0];
+      unsigned char *out = (unsigned char *) output_items[0];
 
       // Do <+signal processing+>
       // Tell runtime system how many input items we consumed on
@@ -77,4 +77,3 @@ namespace gr {
 
   } /* namespace nrsc5 */
 } /* namespace gr */
-
