@@ -42,7 +42,9 @@ namespace gr {
       : gr::block("l1_fm_encoder",
               gr::io_signature::make(2, 2, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
-    {}
+    {
+      set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
+    }
 
     /*
      * Our virtual destructor.
@@ -54,7 +56,9 @@ namespace gr {
     void
     l1_fm_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-      /* <+forecast+> e.g. ninput_items_required[0] = noutput_items */
+      int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
+      ninput_items_required[0] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
+      ninput_items_required[1] = frames * P1_BITS;
     }
 
     int
@@ -63,15 +67,25 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const unsigned char *in = (const unsigned char *) input_items[0];
+      const unsigned char *pids = (const unsigned char *) input_items[0];
+      const unsigned char *p1 = (const unsigned char *) input_items[1];
       unsigned char *out = (unsigned char *) output_items[0];
+      int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
 
-      // Do <+signal processing+>
-      // Tell runtime system how many input items we consumed on
-      // each input stream.
-      consume_each (noutput_items);
+      int pids_off = 0;
+      int p1_off = 0;
+      for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE)
+      {
+        for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
+          for (int j = 0; j < PIDS_BITS; j++) {
+          }
+          pids_off += PIDS_BITS;
+        }
+        p1_off += P1_BITS;
+      }
 
-      // Tell runtime system how many output items we produced.
+      consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
+      consume(1, frames * P1_BITS);
       return noutput_items;
     }
 
