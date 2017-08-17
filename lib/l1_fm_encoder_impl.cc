@@ -74,19 +74,28 @@ namespace gr {
 
       int pids_off = 0;
       int p1_off = 0;
-      for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE)
-      {
+      for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
-          for (int j = 0; j < PIDS_BITS; j++) {
-          }
+          reverse_bytes(pids + pids_off, pids_buf, PIDS_BITS);
           pids_off += PIDS_BITS;
         }
+        reverse_bytes(p1 + p1_off, p1_buf, P1_BITS);
         p1_off += P1_BITS;
       }
 
       consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
       consume(1, frames * P1_BITS);
       return noutput_items;
+    }
+
+    void
+    l1_fm_encoder_impl::reverse_bytes(const unsigned char *in, unsigned char *out, int len)
+    {
+      for (int off = 0; off < len; off += 8) {
+        for (int i = 0; i < 8; i++) {
+          out[off + i] = in[off + 7 - i];
+        }
+      }
     }
 
   } /* namespace nrsc5 */

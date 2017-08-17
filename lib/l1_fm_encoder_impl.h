@@ -29,7 +29,10 @@ namespace gr {
     class l1_fm_encoder_impl : public l1_fm_encoder
     {
      private:
-      // Nothing to declare in this block.
+      unsigned char pids_buf[PIDS_BITS * 5 / 2];
+      unsigned char p1_buf[P1_BITS * 5 / 2];
+
+      void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
 
      public:
       l1_fm_encoder_impl();
