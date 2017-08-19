@@ -29,10 +29,17 @@ namespace gr {
     class l1_fm_encoder_impl : public l1_fm_encoder
     {
      private:
-      unsigned char pids_buf[PIDS_BITS * 5 / 2];
-      unsigned char p1_buf[P1_BITS * 5 / 2];
+      unsigned char pids_s[PIDS_BITS];
+      unsigned char p1_s[P1_BITS];
+      unsigned char pids_g[PIDS_BITS * 5 / 2];
+      unsigned char p1_g[P1_BITS * 5 / 2];
+      unsigned char parity[128];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
+      void scramble(unsigned char *buf, int len);
+      void conv_enc(const unsigned char *in, unsigned char *out, int len,
+                    const unsigned char *poly, int poly_l1, int poly_l2);
+      void conv_2_5(const unsigned char *in, unsigned char *out, int len);
 
      public:
       l1_fm_encoder_impl();
