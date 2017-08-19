@@ -53,6 +53,19 @@ namespace gr {
           tmp &= (tmp - 1);
         }
       }
+
+      for (int scid = 0; scid < 4; scid++) {
+        for (int bc = 0; bc < BLOCKS_PER_FRAME; bc++) {
+          primary_sc_data_seq(primary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, 0, bc, 1);
+        }
+        unsigned char last_symbol = 0;
+        for (int i = 0; i < SYMBOLS_PER_FRAME; i++) {
+          if (primary_sc_symbols[scid][i]) {
+            last_symbol ^= 3;
+          }
+          primary_sc_symbols[scid][i] = last_symbol;
+        }
+      }
     }
 
     /*
@@ -83,6 +96,7 @@ namespace gr {
 
       int pids_off = 0;
       int p1_off = 0;
+      int out_off = 0;
       for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
           reverse_bytes(pids + pids_off, pids_s, PIDS_BITS);
@@ -95,6 +109,32 @@ namespace gr {
         conv_2_5(p1_s, p1_g, P1_BITS);
         interleaver_i_ii();
         p1_off += P1_BITS;
+
+        for (int symbol = 0; symbol < SYMBOLS_PER_FRAME; symbol++) {
+          for (int i = 0; i < FFT_SIZE; i++) {
+            out[out_off + i] = 4;
+          }
+
+          for (int chan = 0; chan < 61; chan++) {
+            out[out_off + REF_SC_CHAN[chan]] = primary_sc_symbols[REF_SC_ID[chan]][symbol];
+            if (chan == 10) chan = 49;
+          }
+
+          int part = 0;
+          for (int chan = 0; chan < 60; chan++) {
+            for (int j = 0; j < 18; j++) {
+              unsigned char ii = int_mat_i_ii[symbol][(part * 36) + (j * 2)];
+              unsigned char qq = int_mat_i_ii[symbol][(part * 36) + (j * 2) + 1];
+              unsigned char symbol = (ii << 1) | qq;
+              int carrier = REF_SC_CHAN[chan] + j + 1;
+              out[out_off + carrier] = symbol;
+            }
+            part++;
+            if (chan == 9) chan = 49;
+          }
+
+          out_off += FFT_SIZE;
+        }
       }
 
       consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
@@ -182,6 +222,51 @@ namespace gr {
         int col = ((ki * 11) + (ki / (32*9))) % C;
         int_mat_i_ii[(block * 32) + row][(partition * C) + col] = pids_g[i];
       }
+    }
+
+    /* 1011sG.pdf table 11-1 */
+    void
+    l1_fm_encoder_impl::primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi)
+    {
+      out[0] = 0;
+      out[1] = 1;
+      out[2] = 1;
+      out[3] = 0;
+      out[4] = 0;
+      out[5] = 1;
+      out[6] = 0;
+
+      out[7] = 0;
+      out[8] = out[7]; // parity
+
+      out[9] = 1;
+
+      out[10] = (scid & 0x2) >> 1;
+      out[11] = (scid & 0x1);
+      out[12] = sci;
+      out[13] = out[10] ^ out[11] ^ out[12]; // parity
+
+      out[14] = 0;
+
+      out[15] = 0;
+      out[16] = (bc & 0x8) >> 3;
+      out[17] = (bc & 0x4) >> 2;
+      out[18] = (bc & 0x2) >> 1;
+      out[19] = (bc & 0x1);
+      out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
+
+      out[21] = 1;
+      out[22] = 1;
+
+      out[23] = 1;
+      out[24] = 0;
+      out[25] = (psmi & 0x20) >> 5;
+      out[26] = (psmi & 0x10) >> 4;
+      out[27] = (psmi & 0x08) >> 3;
+      out[28] = (psmi & 0x04) >> 2;
+      out[29] = (psmi & 0x02) >> 1;
+      out[30] = (psmi & 0x01);
+      out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
     }
 
   } /* namespace nrsc5 */

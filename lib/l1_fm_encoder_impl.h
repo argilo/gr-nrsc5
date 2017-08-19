@@ -25,7 +25,17 @@
 
 namespace gr {
   namespace nrsc5 {
-    unsigned char V[20] = { 10,2,18,6,14,8,16,0,12,4,11,3,19,7,15,9,17,1,13,5 };
+    unsigned char V[] = { 10, 2, 18, 6, 14, 8, 16, 0, 12, 4, 11, 3, 19, 7, 15, 9, 17, 1, 13, 5 };
+    int REF_SC_CHAN[] = {
+      478, 497, 516, 535, 554, 573, 592, 611, 630, 649, 668, 687, 706, 725, 744,
+      745, 758, 777, 796, 815, 834, 853, 872, 891, 910, 929, 948, 967, 986, 1005, 1024, 1043, 1062, 1081, 1100, 1119, 1138, 1157, 1176, 1195, 1214, 1233, 1252, 1271, 1290, 1303,
+      1304, 1323, 1342, 1361, 1380, 1399, 1418, 1437, 1456, 1475, 1494, 1513, 1532, 1551, 1570
+    };
+    int REF_SC_ID[] = {
+      2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0,
+      3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 3, 2, 1, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3,
+      0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2
+    };
 
     class l1_fm_encoder_impl : public l1_fm_encoder
     {
@@ -36,6 +46,7 @@ namespace gr {
       unsigned char p1_g[P1_BITS * 5 / 2];
       unsigned char int_mat_i_ii[SYMBOLS_PER_FRAME][20 * 36];
       unsigned char parity[128];
+      unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
@@ -43,6 +54,7 @@ namespace gr {
                     const unsigned char *poly, int poly_l1, int poly_l2);
       void conv_2_5(const unsigned char *in, unsigned char *out, int len);
       void interleaver_i_ii();
+      void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
 
      public:
       l1_fm_encoder_impl();
