@@ -27,6 +27,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 list(APPEND nrsc5_sources
     l1_fm_encoder_impl.cc
+    pids_encoder_impl.cc
 )
 
 set(nrsc5_sources "${nrsc5_sources}" PARENT_SCOPE)

@@ -18,5 +18,6 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    nrsc5_l1_fm_encoder.xml DESTINATION share/gnuradio/grc/blocks
+    nrsc5_l1_fm_encoder.xml
+    nrsc5_pids_encoder.xml DESTINATION share/gnuradio/grc/blocks
 )

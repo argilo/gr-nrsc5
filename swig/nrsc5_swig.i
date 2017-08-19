@@ -9,8 +9,11 @@
 
 %{
 #include "nrsc5/l1_fm_encoder.h"
+#include "nrsc5/pids_encoder.h"
 %}
 
 
 %include "nrsc5/l1_fm_encoder.h"
 GR_SWIG_BLOCK_MAGIC2(nrsc5, l1_fm_encoder);
+%include "nrsc5/pids_encoder.h"
+GR_SWIG_BLOCK_MAGIC2(nrsc5, pids_encoder);

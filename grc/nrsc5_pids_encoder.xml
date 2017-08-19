@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<block>
+  <name>PIDS encoder</name>
+  <key>nrsc5_pids_encoder</key>
+  <category>[NRSC-5]</category>
+  <import>import nrsc5</import>
+  <make>nrsc5.pids_encoder()</make>
+  <!--param>
+    <name>...</name>
+    <key>...</key>
+    <type>...</type>
+  </param-->
+  <source>
+    <name>out</name>
+    <type>byte</type>
+  </source>
+</block>
