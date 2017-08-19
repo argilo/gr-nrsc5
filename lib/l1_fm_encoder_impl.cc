@@ -87,12 +87,13 @@ namespace gr {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
           reverse_bytes(pids + pids_off, pids_s, PIDS_BITS);
           scramble(pids_s, PIDS_BITS);
-          conv_2_5(pids_s, pids_g, PIDS_BITS);
+          conv_2_5(pids_s, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
           pids_off += PIDS_BITS;
         }
         reverse_bytes(p1 + p1_off, p1_s, P1_BITS);
         scramble(p1_s, P1_BITS);
         conv_2_5(p1_s, p1_g, P1_BITS);
+        interleaver_i_ii();
         p1_off += P1_BITS;
       }
 
@@ -145,6 +146,42 @@ namespace gr {
     {
       unsigned char poly[3] = { 0133, 0171, 0165 };
       conv_enc(in, out, len, poly, 3, 2);
+    }
+
+    /* 1011sG.pdf sections 10.2.3 & 10.2.4 */
+    void
+    l1_fm_encoder_impl::interleaver_i_ii()
+    {
+      int J = 20; // number of partitions
+      int B = 16; // blocks
+      int C = 36; // columns per partition
+      int M = 1;  // factor: 1, 2 or 4
+
+      int b = 200;
+      int N1 = 365440;
+      int N2 = 3200;
+
+      for (int i = 0; i < N1; i++) {
+        int partition = V[((i + (2 * (M / 4))) / M) % J];
+        int block;
+        if (M == 1)
+          block = ((i / J) + (partition * 7)) % B;
+        else
+          block = (i + (i / (J * B))) % B;
+        int ki = i / (J * B);
+        int row = (ki * 11) % 32;
+        int col = ((ki * 11) + (ki / (32*9))) % C;
+        int_mat_i_ii[(block * 32) + row][(partition * C) + col] = p1_g[i];
+      }
+
+      for (int i = 0; i < N2; i++) {
+        int partition = V[i % J];
+        int block = i / b;
+        int ki = ((i / J) % (b / J)) + (N1 / (J * B));
+        int row = (ki * 11) % 32;
+        int col = ((ki * 11) + (ki / (32*9))) % C;
+        int_mat_i_ii[(block * 32) + row][(partition * C) + col] = pids_g[i];
+      }
     }
 
   } /* namespace nrsc5 */

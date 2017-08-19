@@ -25,14 +25,16 @@
 
 namespace gr {
   namespace nrsc5 {
+    unsigned char V[20] = { 10,2,18,6,14,8,16,0,12,4,11,3,19,7,15,9,17,1,13,5 };
 
     class l1_fm_encoder_impl : public l1_fm_encoder
     {
      private:
       unsigned char pids_s[PIDS_BITS];
       unsigned char p1_s[P1_BITS];
-      unsigned char pids_g[PIDS_BITS * 5 / 2];
+      unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
+      unsigned char int_mat_i_ii[SYMBOLS_PER_FRAME][20 * 36];
       unsigned char parity[128];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
@@ -40,6 +42,7 @@ namespace gr {
       void conv_enc(const unsigned char *in, unsigned char *out, int len,
                     const unsigned char *poly, int poly_l1, int poly_l2);
       void conv_2_5(const unsigned char *in, unsigned char *out, int len);
+      void interleaver_i_ii();
 
      public:
       l1_fm_encoder_impl();
