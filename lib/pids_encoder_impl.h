@@ -30,7 +30,7 @@ namespace gr {
     {
      private:
       int alfn;
-      
+
       void calc_crc12(unsigned char *pids);
 
      public:
