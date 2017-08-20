@@ -38,7 +38,7 @@ if(NOT nrsc5_sources)
 endif(NOT nrsc5_sources)
 
 add_library(gnuradio-nrsc5 SHARED ${nrsc5_sources})
-target_link_libraries(gnuradio-nrsc5 ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES})
+target_link_libraries(gnuradio-nrsc5 ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES} gnuradio-fec)
 set_target_properties(gnuradio-nrsc5 PROPERTIES DEFINE_SYMBOL "gnuradio_nrsc5_EXPORTS")
 
 if(APPLE)
@@ -82,4 +82,3 @@ GR_ADD_TEST(test_nrsc5 test-nrsc5)
 ########################################################################
 message(STATUS "Using install prefix: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "Building for version: ${VERSION} / ${LIBVER}")
-

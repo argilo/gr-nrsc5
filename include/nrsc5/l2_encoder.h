@@ -25,6 +25,8 @@
 #include <nrsc5/api.h>
 #include <gnuradio/block.h>
 
+#define P1_FRAME_LEN 146176
+
 namespace gr {
   namespace nrsc5 {
 

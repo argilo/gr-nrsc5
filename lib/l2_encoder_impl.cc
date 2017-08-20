@@ -25,6 +25,10 @@
 #include <gnuradio/io_signature.h>
 #include "l2_encoder_impl.h"
 
+extern "C" {
+#include <gnuradio/fec/rs.h>
+}
+
 namespace gr {
   namespace nrsc5 {
 
@@ -42,19 +46,23 @@ namespace gr {
       : gr::block("l2_encoder",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
-    {}
+    {
+      set_output_multiple(P1_FRAME_LEN);
+      rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
+    }
 
     /*
      * Our virtual destructor.
      */
     l2_encoder_impl::~l2_encoder_impl()
     {
+      free_rs_char(rs_enc);
     }
 
     void
     l2_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-      /* <+forecast+> e.g. ninput_items_required[0] = noutput_items */
+      ninput_items_required[0] = noutput_items / 8;
     }
 
     int
@@ -66,12 +74,7 @@ namespace gr {
       const unsigned char *in = (const unsigned char *) input_items[0];
       unsigned char *out = (unsigned char *) output_items[0];
 
-      // Do <+signal processing+>
-      // Tell runtime system how many input items we consumed on
-      // each input stream.
-      consume_each (noutput_items);
-
-      // Tell runtime system how many output items we produced.
+      consume(0, noutput_items / 8);
       return noutput_items;
     }
 

@@ -29,7 +29,8 @@ namespace gr {
     class l2_encoder_impl : public l2_encoder
     {
      private:
-      // Nothing to declare in this block.
+      unsigned char rs_buf[255];
+      void *rs_enc;
 
      public:
       l2_encoder_impl();
