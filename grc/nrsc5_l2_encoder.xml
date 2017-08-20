@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<block>
+  <name>Layer 2 encoder</name>
+  <key>nrsc5_l2_encoder</key>
+  <category>[NRSC-5]</category>
+  <import>import nrsc5</import>
+  <make>nrsc5.l2_encoder()</make>
+  <!--param>
+    <name>...</name>
+    <key>...</key>
+    <type>...</type>
+  </param-->
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>byte</type>
+  </source>
+</block>
