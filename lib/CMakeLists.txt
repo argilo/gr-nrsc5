@@ -39,7 +39,7 @@ if(NOT nrsc5_sources)
 endif(NOT nrsc5_sources)
 
 add_library(gnuradio-nrsc5 SHARED ${nrsc5_sources})
-target_link_libraries(gnuradio-nrsc5 ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES} gnuradio-fec)
+target_link_libraries(gnuradio-nrsc5 ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES} gnuradio-fec fdk-aac)
 set_target_properties(gnuradio-nrsc5 PROPERTIES DEFINE_SYMBOL "gnuradio_nrsc5_EXPORTS")
 
 if(APPLE)

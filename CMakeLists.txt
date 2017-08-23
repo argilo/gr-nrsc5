@@ -193,6 +193,29 @@ add_custom_target(uninstall
 )
 
 ########################################################################
+# Build patched fdk-aac
+########################################################################
+include (ExternalProject)
+
+set (FDK_AAC_PREFIX "${CMAKE_BINARY_DIR}/fdk-aac-prefix")
+ExternalProject_Add (
+    fdk_aac_external
+    GIT_REPOSITORY "https://github.com/argilo/fdk-aac.git"
+    GIT_TAG 83459706619d441927e9699206d678c207600c4e
+    PREFIX ${FDK_AAC_PREFIX}
+
+    BINARY_DIR ${FDK_AAC_PREFIX}/src/fdk_aac_external
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND ./autogen.sh && ./configure --prefix=${FDK_AAC_PREFIX} --disable-shared --enable-static CXXFLAGS=-fPIC
+    BUILD_COMMAND make
+)
+
+add_library (fdk-aac STATIC IMPORTED)
+set_property (TARGET fdk-aac PROPERTY IMPORTED_LOCATION "${FDK_AAC_PREFIX}/lib/libfdk-aac.a")
+add_dependencies (fdk-aac fdk_aac_external)
+include_directories ("${FDK_AAC_PREFIX}/include")
+
+########################################################################
 # Add subdirectories
 ########################################################################
 add_subdirectory(include/nrsc5)

@@ -42,19 +42,78 @@ namespace gr {
       : gr::block("hdc_encoder",
               gr::io_signature::make(1, 2, sizeof(short)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
-    {}
+    {
+      this->channels = channels;
+      bytes_per_frame = bitrate * 2048 / 44100 / 8;
+      set_relative_rate((double) bytes_per_frame / 2048);
+
+      int vbr = 0;
+      int afterburner = 1;
+      CHANNEL_MODE mode;
+      AACENC_InfoStruct info = { 0 };
+      switch (channels) {
+      case 1: mode = MODE_1; break;
+      case 2: mode = MODE_2; break;
+      default:
+        throw std::runtime_error("hdc_encoder: channels must be 1 or 2");
+      }
+      if (aacEncOpen(&handle, 0, channels) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to open decoder");
+      }
+      if (aacEncoder_SetParam(handle, AACENC_AOT, AOT_HDC) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the AOT");
+      }
+      if (aacEncoder_SetParam(handle, AACENC_SAMPLERATE, HDC_SAMPLE_RATE) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the sample rate");
+      }
+      if (aacEncoder_SetParam(handle, AACENC_CHANNELMODE, mode) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the channel mode");
+      }
+      if (aacEncoder_SetParam(handle, AACENC_CHANNELORDER, 1) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the channel order");
+      }
+      if (vbr) {
+        if (aacEncoder_SetParam(handle, AACENC_BITRATEMODE, vbr) != AACENC_OK) {
+          throw std::runtime_error("hdc_encoder: Unable to set the VBR bitrate mode");
+        }
+      } else {
+        if (aacEncoder_SetParam(handle, AACENC_BITRATE, bitrate) != AACENC_OK) {
+          throw std::runtime_error("hdc_encoder: Unable to set the bitrate");
+        }
+      }
+      if (aacEncoder_SetParam(handle, AACENC_TRANSMUX, 2) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the ADTS transmux");
+      }
+      if (aacEncoder_SetParam(handle, AACENC_AFTERBURNER, afterburner) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to set the afterburner mode");
+      }
+      if (aacEncEncode(handle, NULL, NULL, NULL, NULL) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to initialize the encoder");
+      }
+      if (aacEncInfo(handle, &info) != AACENC_OK) {
+        throw std::runtime_error("hdc_encoder: Unable to get the encoder info");
+      }
+
+      frame_length = info.frameLength;
+      max_out_buf_bytes = info.maxOutBufBytes;
+      convert_buf = (int16_t*) malloc(channels * sizeof(short) * frame_length);
+    }
 
     /*
      * Our virtual destructor.
      */
     hdc_encoder_impl::~hdc_encoder_impl()
     {
+      aacEncClose(&handle);
+      free(convert_buf);
     }
 
     void
     hdc_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-      /* <+forecast+> e.g. ninput_items_required[0] = noutput_items */
+      for (int channel = 0; channel < channels; channel++) {
+        ninput_items_required[channel] = ((noutput_items / bytes_per_frame) + 1) * 2048;
+      }
     }
 
     int
@@ -63,16 +122,59 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const short *in = (const short *) input_items[0];
+      const short **in = (const short **) &input_items[0];
       unsigned char *out = (unsigned char *) output_items[0];
 
-      // Do <+signal processing+>
-      // Tell runtime system how many input items we consumed on
-      // each input stream.
-      consume_each (noutput_items);
+      int in_off = 0;
+      int out_off = 0;
 
-      // Tell runtime system how many output items we produced.
-      return noutput_items;
+      while (in_off < ninput_items[0] && (out_off + max_out_buf_bytes) < noutput_items) {
+        AACENC_BufDesc in_buf = { 0 }, out_buf = { 0 };
+        AACENC_InArgs in_args = { 0 };
+        AACENC_OutArgs out_args = { 0 };
+        int in_identifier = IN_AUDIO_DATA;
+        int in_size, in_elem_size;
+        int out_identifier = OUT_BITSTREAM_DATA;
+        int out_size, out_elem_size;
+        void *in_ptr, *out_ptr;
+        AACENC_ERROR err;
+
+        int convert_off = 0;
+        for (int i = 0; i < frame_length; i++) {
+          for (int channel = 0; channel < channels; channel++) {
+            convert_buf[convert_off++] = in[channel][in_off];
+          }
+          in_off++;
+        }
+
+        in_ptr = convert_buf;
+        in_size = channels * sizeof(short) * frame_length;
+        in_elem_size = sizeof(short);
+
+        in_args.numInSamples = channels * frame_length;
+        in_buf.numBufs = 1;
+        in_buf.bufs = &in_ptr;
+        in_buf.bufferIdentifiers = &in_identifier;
+        in_buf.bufSizes = &in_size;
+        in_buf.bufElSizes = &in_elem_size;
+
+        out_ptr = out + out_off;
+        out_size = noutput_items - out_off;
+        out_elem_size = 1;
+        out_buf.numBufs = 1;
+        out_buf.bufs = &out_ptr;
+        out_buf.bufferIdentifiers = &out_identifier;
+        out_buf.bufSizes = &out_size;
+        out_buf.bufElSizes = &out_elem_size;
+
+        if ((err = aacEncEncode(handle, &in_buf, &out_buf, &in_args, &out_args)) != AACENC_OK) {
+          throw std::runtime_error("hdc_encoder: Encoding failed");
+        }
+        out_off += out_args.numOutBytes;
+      }
+
+      consume_each (in_off);
+      return out_off;
     }
 
   } /* namespace nrsc5 */

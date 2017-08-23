@@ -23,13 +23,22 @@
 
 #include <nrsc5/hdc_encoder.h>
 
+extern "C" {
+#include "fdk-aac/aacenc_lib.h"
+}
+
 namespace gr {
   namespace nrsc5 {
 
     class hdc_encoder_impl : public hdc_encoder
     {
      private:
-      // Nothing to declare in this block.
+      int channels;
+      int bytes_per_frame;
+      HANDLE_AACENCODER handle;
+      int frame_length;
+      int max_out_buf_bytes;
+      short* convert_buf;
 
      public:
       hdc_encoder_impl(int channels, int bitrate);
