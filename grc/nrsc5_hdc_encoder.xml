@@ -21,7 +21,7 @@
   <check>0 &lt; $bitrate</check>
   <sink>
     <name>in</name>
-    <type>short</type>
+    <type>float</type>
     <nports>$channels</nports>
   </sink>
   <source>

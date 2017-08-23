@@ -40,7 +40,7 @@ namespace gr {
      */
     hdc_encoder_impl::hdc_encoder_impl(int channels, int bitrate)
       : gr::block("hdc_encoder",
-              gr::io_signature::make(1, 2, sizeof(short)),
+              gr::io_signature::make(1, 2, sizeof(float)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->channels = channels;
@@ -125,7 +125,7 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const short **in = (const short **) &input_items[0];
+      const float **in = (const float **) &input_items[0];
       unsigned char *out = (unsigned char *) output_items[0];
 
       int in_off = 0;
@@ -157,7 +157,7 @@ namespace gr {
         int convert_off = 0;
         for (int i = 0; i < frame_length; i++) {
           for (int channel = 0; channel < channels; channel++) {
-            convert_buf[convert_off++] = in[channel][in_off];
+            convert_buf[convert_off++] = (short) (in[channel][in_off] * 32768);
           }
           in_off++;
         }
