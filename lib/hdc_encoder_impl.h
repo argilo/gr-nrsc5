@@ -38,7 +38,9 @@ namespace gr {
       HANDLE_AACENCODER handle;
       int frame_length;
       int max_out_buf_bytes;
-      short* convert_buf;
+      short *convert_buf;
+      unsigned char *outbuf;
+      int outbuf_used;
 
      public:
       hdc_encoder_impl(int channels, int bitrate);

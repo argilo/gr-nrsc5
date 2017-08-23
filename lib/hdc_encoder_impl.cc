@@ -96,7 +96,9 @@ namespace gr {
 
       frame_length = info.frameLength;
       max_out_buf_bytes = info.maxOutBufBytes;
-      convert_buf = (int16_t*) malloc(channels * sizeof(short) * frame_length);
+      convert_buf = (short *) malloc(channels * sizeof(short) * frame_length);
+      outbuf = (unsigned char *) malloc(max_out_buf_bytes);
+      outbuf_used = 0;
     }
 
     /*
@@ -106,6 +108,7 @@ namespace gr {
     {
       aacEncClose(&handle);
       free(convert_buf);
+      free(outbuf);
     }
 
     void
@@ -128,7 +131,19 @@ namespace gr {
       int in_off = 0;
       int out_off = 0;
 
-      while (in_off < ninput_items[0] && (out_off + max_out_buf_bytes) < noutput_items) {
+      while (1) {
+        if (out_off + outbuf_used > noutput_items) {
+          break;
+        }
+
+        memcpy(out + out_off, outbuf, outbuf_used);
+        out_off += outbuf_used;
+        outbuf_used = 0;
+
+        for (int channel = 0; channel < channels; channel++) {
+          if (in_off + frame_length >= ninput_items[channel]) break;
+        }
+
         AACENC_BufDesc in_buf = { 0 }, out_buf = { 0 };
         AACENC_InArgs in_args = { 0 };
         AACENC_OutArgs out_args = { 0 };
@@ -158,8 +173,8 @@ namespace gr {
         in_buf.bufSizes = &in_size;
         in_buf.bufElSizes = &in_elem_size;
 
-        out_ptr = out + out_off;
-        out_size = noutput_items - out_off;
+        out_ptr = outbuf;
+        out_size = max_out_buf_bytes;
         out_elem_size = 1;
         out_buf.numBufs = 1;
         out_buf.bufs = &out_ptr;
@@ -170,7 +185,7 @@ namespace gr {
         if ((err = aacEncEncode(handle, &in_buf, &out_buf, &in_args, &out_args)) != AACENC_OK) {
           throw std::runtime_error("hdc_encoder: Encoding failed");
         }
-        out_off += out_args.numOutBytes;
+        outbuf_used = out_args.numOutBytes;
       }
 
       consume_each (in_off);
