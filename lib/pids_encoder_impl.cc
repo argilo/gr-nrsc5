@@ -29,21 +29,22 @@ namespace gr {
   namespace nrsc5 {
 
     pids_encoder::sptr
-    pids_encoder::make()
+    pids_encoder::make(const std::string& short_name)
     {
       return gnuradio::get_initial_sptr
-        (new pids_encoder_impl());
+        (new pids_encoder_impl(short_name));
     }
 
     /*
      * The private constructor
      */
-    pids_encoder_impl::pids_encoder_impl()
+    pids_encoder_impl::pids_encoder_impl(const std::string& short_name)
       : gr::sync_block("pids_encoder",
               gr::io_signature::make(0, 0, 0),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       set_output_multiple(PIDS_BITS * BLOCKS_PER_FRAME);
+      this->short_name = short_name;
       alfn = 800000000;
     }
 
@@ -61,15 +62,22 @@ namespace gr {
     {
       unsigned char *out = (unsigned char *) output_items[0];
 
-      int off = 0;
-      while (off < noutput_items) {
+      bit = out;
+      while (bit < out + noutput_items) {
         for (int block = 0; block < BLOCKS_PER_FRAME; block++) {
-          for (int i = 0; i < 68; i++) {
-            out[off + i] = 0;
+          unsigned char *start = bit;
+
+          write_bit(PIDS_FORMATTED);
+          write_bit(NO_EXTENSION);
+          write_station_name_short();
+
+          while (bit < start + 64) {
+            write_bit(0);
           }
-          out[off + 5] = 1;
-          calc_crc12(out + off);
-          off += PIDS_BITS;
+          write_bit(0); // Reserved
+          write_bit(TIME_NOT_LOCKED);
+          write_int((alfn >> (block*2)) & 0x3, 2);
+          write_int(crc12(start), 12);
         }
         alfn++;
       }
@@ -81,8 +89,9 @@ namespace gr {
     /* 1020sI.pdf section 4.10
      * Note: The specified CRC is incorrect. It's actually a 16-bit CRC
      * truncated to 12 bits, and g(x) = X^16 + X^11 + X^3 + X + 1 */
-    void
-    pids_encoder_impl::calc_crc12(unsigned char *pids) {
+    int
+    pids_encoder_impl::crc12(unsigned char *pids)
+    {
       unsigned short poly = 0xD010;
       unsigned short reg = 0x0000;
       int i, lowbit;
@@ -98,10 +107,51 @@ namespace gr {
         reg >>= 1;
         if (lowbit) reg ^= poly;
       }
-      reg ^= 0x955;
-      for (i = 0; i < 12; i++) {
-        pids[68+i] = (reg >> (11-i)) & 1;
+      return reg ^ 0x955;
+    }
+
+    void
+    pids_encoder_impl::write_bit(int b)
+    {
+      *(bit++) = b;
+    }
+
+    void
+    pids_encoder_impl::write_int(int n, int len)
+    {
+      for (int i = 0; i < len; i++) {
+        write_bit((n >> (len - i - 1)) & 1);
       }
+    }
+
+    void
+    pids_encoder_impl::write_char5(char c)
+    {
+      int n;
+      if (c >= 'A' && c <= 'Z') {
+        n = (c - 'A');
+      } else if (c >= 'a' && c <= 'z') {
+        n = (c - 'a');
+      } else {
+        switch (c) {
+          case '?': n = 27; break;
+          case '-': n = 28; break;
+          case '*': n = 29; break;
+          case '$': n = 30; break;
+          default: n = 26;
+        }
+      }
+      write_int(n, 5);
+    }
+
+    void
+    pids_encoder_impl::write_station_name_short()
+    {
+      write_int(STATION_NAME_SHORT, 4);
+      for (int i = 0; i < 4; i++) {
+        write_char5(short_name[i]);
+      }
+      write_int(EXTENSION_FM, 2);
     }
 
   } /* namespace nrsc5 */

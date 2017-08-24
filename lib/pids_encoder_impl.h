@@ -29,12 +29,18 @@ namespace gr {
     class pids_encoder_impl : public pids_encoder
     {
      private:
-      int alfn;
+      unsigned int alfn;
+      std::string short_name;
+      unsigned char *bit;
 
-      void calc_crc12(unsigned char *pids);
+      int crc12(unsigned char *pids);
+      void write_bit(int b);
+      void write_int(int n, int len);
+      void write_char5(char c);
+      void write_station_name_short();
 
      public:
-      pids_encoder_impl();
+      pids_encoder_impl(const std::string &short_name="ABCD");
       ~pids_encoder_impl();
 
       // Where all the action really happens

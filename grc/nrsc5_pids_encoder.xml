@@ -4,12 +4,14 @@
   <key>nrsc5_pids_encoder</key>
   <category>[NRSC-5]</category>
   <import>import nrsc5</import>
-  <make>nrsc5.pids_encoder()</make>
-  <!--param>
-    <name>...</name>
-    <key>...</key>
-    <type>...</type>
-  </param-->
+  <make>nrsc5.pids_encoder($short_name)</make>
+  <param>
+    <name>Station name</name>
+    <key>short_name</key>
+    <value>ABCD</value>
+    <type>string</type>
+  </param>
+  <check>len($short_name) == 4</check>
   <source>
     <name>out</name>
     <type>byte</type>
