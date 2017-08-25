@@ -201,7 +201,7 @@ set (FDK_AAC_PREFIX "${CMAKE_BINARY_DIR}/fdk-aac-prefix")
 ExternalProject_Add (
     fdk_aac_external
     GIT_REPOSITORY "https://github.com/argilo/fdk-aac.git"
-    GIT_TAG 83459706619d441927e9699206d678c207600c4e
+    GIT_TAG 3b63dab59416a629f3de82463eb3875319a086d5
     PREFIX ${FDK_AAC_PREFIX}
 
     BINARY_DIR ${FDK_AAC_PREFIX}/src/fdk_aac_external
