@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Hackrf
-# Generated: Fri Aug 25 20:23:13 2017
+# Generated: Sat Aug 26 11:10:17 2017
 ##################################################
 
 from gnuradio import analog
@@ -65,7 +65,7 @@ class hd_tx_hackrf(gr.top_block):
         self.osmosdr_sink_0.set_antenna('', 0)
         self.osmosdr_sink_0.set_bandwidth(1.5e6, 0)
 
-        self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder('Title', 'Artist')
+        self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_pids_encoder_0 = nrsc5.pids_encoder('ABCD')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder()
         self.nrsc5_l1_fm_encoder_0 = nrsc5.l1_fm_encoder()

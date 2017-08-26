@@ -29,20 +29,21 @@ namespace gr {
   namespace nrsc5 {
 
     psd_encoder::sptr
-    psd_encoder::make(const std::string& title, const std::string& artist)
+    psd_encoder::make(const int prog_num, const std::string& title, const std::string& artist)
     {
       return gnuradio::get_initial_sptr
-        (new psd_encoder_impl(title, artist));
+        (new psd_encoder_impl(prog_num, title, artist));
     }
 
     /*
      * The private constructor
      */
-    psd_encoder_impl::psd_encoder_impl(const std::string& title, const std::string& artist)
+    psd_encoder_impl::psd_encoder_impl(const int prog_num, const std::string& title, const std::string& artist)
       : gr::sync_block("psd_encoder",
               gr::io_signature::make(0, 0, 0),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
+      this->prog_num = prog_num;
       this->title = title;
       this->artist = artist;
       seq_num = 0;
@@ -65,7 +66,7 @@ namespace gr {
 
       for (int off = 0; off < noutput_items; off++) {
         if (packet_off == packet.length()) {
-          packet = encode_ppp(encode_psd_packet(0x21, 0x5100, seq_num++));
+          packet = encode_ppp(encode_psd_packet(BASIC_PACKET_FORMAT, PORT[prog_num], seq_num++));
           packet_off = 0;
         }
         out[off] = packet[packet_off++];

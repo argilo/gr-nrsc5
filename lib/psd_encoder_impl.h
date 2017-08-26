@@ -25,6 +25,7 @@
 
 namespace gr {
   namespace nrsc5 {
+    unsigned short PORT[] = { 0x5100, 0x5201, 0x5202, 0x5203, 0x5204, 0x5205, 0x5206, 0x5207 };
     unsigned short FCS_TABLE[] = {
       0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
       0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
@@ -63,6 +64,7 @@ namespace gr {
     class psd_encoder_impl : public psd_encoder
     {
      private:
+      int prog_num;
       std::string title;
       std::string artist;
       int seq_num;
@@ -76,7 +78,7 @@ namespace gr {
       int compute_fcs(std::string& packet);
 
      public:
-      psd_encoder_impl(const std::string& title, const std::string& artist);
+      psd_encoder_impl(const int prog_num, const std::string& title, const std::string& artist);
       ~psd_encoder_impl();
 
       // Where all the action really happens
