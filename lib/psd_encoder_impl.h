@@ -63,7 +63,17 @@ namespace gr {
     class psd_encoder_impl : public psd_encoder
     {
      private:
+      std::string title;
+      std::string artist;
       int seq_num;
+      std::string packet;
+      int packet_off;
+
+      std::string encode_psd_packet(int dtpf, int port, int seq);
+      std::string encode_id3();
+      std::string encode_frame(std::string& id, std::string& data);
+      std::string encode_ppp(std::string packet);
+      int compute_fcs(std::string& packet);
 
      public:
       psd_encoder_impl(const std::string& title, const std::string& artist);
