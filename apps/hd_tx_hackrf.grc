@@ -163,7 +163,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(896, 536)</value>
+      <value>(896, 568)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -222,7 +222,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(640, 536)</value>
+      <value>(640, 568)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -277,7 +277,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(424, 424)</value>
+      <value>(424, 456)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -328,7 +328,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(624, 328)</value>
+      <value>(624, 360)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -367,7 +367,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(952, 292)</value>
+      <value>(952, 324)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -426,7 +426,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(248, 420)</value>
+      <value>(248, 452)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -477,7 +477,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(104, 564)</value>
+      <value>(104, 596)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -524,7 +524,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(816, 312)</value>
+      <value>(816, 344)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -575,7 +575,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1104, 196)</value>
+      <value>(1104, 228)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -626,7 +626,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(696, 204)</value>
+      <value>(696, 236)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -677,7 +677,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(952, 380)</value>
+      <value>(952, 412)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -736,7 +736,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1104, 308)</value>
+      <value>(1104, 340)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -791,7 +791,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(360, 64)</value>
+      <value>(328, 24)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -842,7 +842,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(472, 196)</value>
+      <value>(472, 228)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -905,7 +905,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(880, 176)</value>
+      <value>(880, 208)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1007,7 +1007,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(264, 520)</value>
+      <value>(264, 552)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1074,7 +1074,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(544, 64)</value>
+      <value>(512, 24)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1212,6 +1212,53 @@
     <param>
       <key>short_name</key>
       <value>ABCD</value>
+    </param>
+  </block>
+  <block>
+    <key>nrsc5_psd_encoder</key>
+    <param>
+      <key>artist</key>
+      <value>Artist</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(512, 100)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>nrsc5_psd_encoder_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>title</key>
+      <value>Title</value>
     </param>
   </block>
   <block>
@@ -2134,7 +2181,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(536, 392)</value>
+      <value>(536, 424)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2257,7 +2304,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(448, 544)</value>
+      <value>(448, 576)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2316,7 +2363,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(432, 304)</value>
+      <value>(432, 336)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2375,7 +2422,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(240, 304)</value>
+      <value>(240, 336)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2531,6 +2578,12 @@
     <sink_block_id>nrsc5_l1_fm_encoder_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>nrsc5_psd_encoder_0</source_block_id>
+    <sink_block_id>nrsc5_l2_encoder_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>rational_resampler_xxx_0</source_block_id>

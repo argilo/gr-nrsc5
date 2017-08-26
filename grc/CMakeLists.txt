@@ -21,5 +21,6 @@ install(FILES
     nrsc5_l1_fm_encoder.xml
     nrsc5_pids_encoder.xml
     nrsc5_l2_encoder.xml
-    nrsc5_hdc_encoder.xml DESTINATION share/gnuradio/grc/blocks
+    nrsc5_hdc_encoder.xml
+    nrsc5_psd_encoder.xml DESTINATION share/gnuradio/grc/blocks
 )

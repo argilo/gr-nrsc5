@@ -25,5 +25,6 @@ install(FILES
     l1_fm_encoder.h
     pids_encoder.h
     l2_encoder.h
-    hdc_encoder.h DESTINATION include/nrsc5
+    hdc_encoder.h
+    psd_encoder.h DESTINATION include/nrsc5
 )

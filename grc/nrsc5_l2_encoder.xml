@@ -11,7 +11,11 @@
     <type>...</type>
   </param-->
   <sink>
-    <name>in</name>
+    <name>hdc</name>
+    <type>byte</type>
+  </sink>
+  <sink>
+    <name>psd</name>
     <type>byte</type>
   </sink>
   <source>

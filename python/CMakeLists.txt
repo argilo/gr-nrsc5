@@ -45,3 +45,4 @@ GR_ADD_TEST(qa_l1_fm_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa
 GR_ADD_TEST(qa_pids_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_pids_encoder.py)
 GR_ADD_TEST(qa_l2_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_l2_encoder.py)
 GR_ADD_TEST(qa_hdc_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_hdc_encoder.py)
+GR_ADD_TEST(qa_psd_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_psd_encoder.py)

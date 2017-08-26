@@ -44,7 +44,7 @@ namespace gr {
      */
     l2_encoder_impl::l2_encoder_impl()
       : gr::block("l2_encoder",
-              gr::io_signature::make(1, 1, sizeof(unsigned char)),
+              gr::io_signature::make(2, 2, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       set_output_multiple(P1_FRAME_LEN);
@@ -65,6 +65,7 @@ namespace gr {
     l2_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
       ninput_items_required[0] = noutput_items / 8;
+      ninput_items_required[1] = noutput_items / P1_FRAME_LEN * (128 - 3);
     }
 
     int
@@ -73,10 +74,12 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const unsigned char *in = (const unsigned char *) input_items[0];
+      const unsigned char *hdc = (const unsigned char *) input_items[0];
+      const unsigned char *psd = (const unsigned char *) input_items[1];
       unsigned char *out = (unsigned char *) output_items[0];
 
-      int in_off = 0;
+      int hdc_off = 0;
+      int psd_off = 0;
 
       for (int out_off = 0; out_off < noutput_items; out_off += P1_FRAME_LEN) {
         memset(out_buf, 0, (P1_FRAME_LEN - 24) / 8);
@@ -93,12 +96,12 @@ namespace gr {
 
         int end = la_loc;
         for (int i = 0; i < nop; i++) {
-          int length = ((in[in_off+3] & 0x03) << 11 | (in[in_off+4] << 3) | (in[in_off+5] >> 5)) - 7;
-          in_off += 7;
+          int length = ((hdc[hdc_off+3] & 0x03) << 11 | (hdc[hdc_off+4] << 3) | (hdc[hdc_off+5] >> 5)) - 7;
+          hdc_off += 7;
           unsigned char crc_reg = 0xff;
           for (int j = 0; j < length; j++) {
-            crc_reg = CRC8_TABLE[crc_reg ^ in[in_off]];
-            out_buf[++end] = in[in_off++];
+            crc_reg = CRC8_TABLE[crc_reg ^ hdc[hdc_off]];
+            out_buf[++end] = hdc[hdc_off++];
           }
           out_buf[++end] = crc_reg;
           out_buf[14+i*2] = (end & 0xff);
@@ -109,6 +112,9 @@ namespace gr {
         out_buf[14+nop*2] = 144;
         out_buf[14+nop*2+1] = 160;
         out_buf[14+nop*2+2] = 14;
+
+        memcpy(out_buf + (14+nop*2+3), psd + psd_off, 128 - 3);
+        psd_off += (128 - 3);
 
         // Reed-Solomon encoding
         for (int i = 95; i >= 8; i--) {
@@ -124,7 +130,8 @@ namespace gr {
         pdu_seq_no ^= 1;
       }
 
-      consume(0, in_off);
+      consume(0, hdc_off);
+      consume(1, psd_off);
       return noutput_items;
     }
 

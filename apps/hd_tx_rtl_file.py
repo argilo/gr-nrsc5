@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Rtl File
-# Generated: Thu Aug 24 18:15:55 2017
+# Generated: Fri Aug 25 20:35:57 2017
 ##################################################
 
 from gnuradio import blocks
@@ -34,6 +34,7 @@ class hd_tx_rtl_file(gr.top_block):
                 taps=None,
                 fractional_bw=None,
         )
+        self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder('Title', 'Artist')
         self.nrsc5_pids_encoder_0 = nrsc5.pids_encoder('ABCD')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder()
         self.nrsc5_l1_fm_encoder_0 = nrsc5.l1_fm_encoder()
@@ -80,6 +81,7 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.nrsc5_l1_fm_encoder_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_0, 1))
         self.connect((self.nrsc5_pids_encoder_0, 0), (self.nrsc5_l1_fm_encoder_0, 0))
+        self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_multiply_const_vxx_0, 0))
 
 

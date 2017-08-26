@@ -30,6 +30,7 @@ list(APPEND nrsc5_sources
     pids_encoder_impl.cc
     l2_encoder_impl.cc
     hdc_encoder_impl.cc
+    psd_encoder_impl.cc
 )
 
 set(nrsc5_sources "${nrsc5_sources}" PARENT_SCOPE)

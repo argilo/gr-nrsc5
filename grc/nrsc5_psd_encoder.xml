@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<block>
+  <name>PSD encoder</name>
+  <key>nrsc5_psd_encoder</key>
+  <category>[NRSC-5]</category>
+  <import>import nrsc5</import>
+  <make>nrsc5.psd_encoder($title, $artist)</make>
+  <param>
+    <name>Title</name>
+    <key>title</key>
+    <value>Title</value>
+    <type>string</type>
+  </param>
+  <param>
+    <name>Artist</name>
+    <key>artist</key>
+    <value>Artist</value>
+    <type>string</type>
+  </param>
+  <source>
+    <name>out</name>
+    <type>byte</type>
+  </source>
+</block>
