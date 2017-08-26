@@ -48,7 +48,7 @@ namespace gr {
        * class. nrsc5::l2_encoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make();
+      static sptr make(const int num_progs);
     };
 
   } // namespace nrsc5

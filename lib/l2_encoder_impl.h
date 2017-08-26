@@ -48,6 +48,7 @@ namespace gr {
     class l2_encoder_impl : public l2_encoder
     {
      private:
+      int num_progs;
       unsigned char rs_buf[255];
       void *rs_enc;
       int pdu_seq_no;
@@ -56,7 +57,7 @@ namespace gr {
       void header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci);
 
      public:
-      l2_encoder_impl();
+      l2_encoder_impl(const int num_progs);
       ~l2_encoder_impl();
 
       // Where all the action really happens

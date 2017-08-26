@@ -4,19 +4,23 @@
   <key>nrsc5_l2_encoder</key>
   <category>[NRSC-5]</category>
   <import>import nrsc5</import>
-  <make>nrsc5.l2_encoder()</make>
-  <!--param>
-    <name>...</name>
-    <key>...</key>
-    <type>...</type>
-  </param-->
+  <make>nrsc5.l2_encoder($num_progs)</make>
+  <param>
+    <name>Programs</name>
+    <key>num_progs</key>
+    <value>1</value>
+    <type>int</type>
+  </param>
+  <check>1 &lt;= $num_progs &lt;= 8</check>
   <sink>
     <name>hdc</name>
     <type>byte</type>
+    <nports>$num_progs</nports>
   </sink>
   <sink>
     <name>psd</name>
     <type>byte</type>
+    <nports>$num_progs</nports>
   </sink>
   <source>
     <name>out</name>

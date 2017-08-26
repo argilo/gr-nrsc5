@@ -1056,6 +1056,10 @@
       <key>minoutbuf</key>
       <value>0</value>
     </param>
+    <param>
+      <key>num_progs</key>
+      <value>1</value>
+    </param>
   </block>
   <block>
     <key>nrsc5_pids_encoder</key>
