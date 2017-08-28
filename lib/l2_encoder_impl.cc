@@ -33,25 +33,47 @@ namespace gr {
   namespace nrsc5 {
 
     l2_encoder::sptr
-    l2_encoder::make(const int num_progs)
+    l2_encoder::make(const int num_progs, const int first_prog, const int size)
     {
       return gnuradio::get_initial_sptr
-        (new l2_encoder_impl(num_progs));
+        (new l2_encoder_impl(num_progs, first_prog, size));
     }
 
     /*
      * The private constructor
      */
-    l2_encoder_impl::l2_encoder_impl(const int num_progs)
+    l2_encoder_impl::l2_encoder_impl(const int num_progs, const int first_prog, const int size)
       : gr::block("l2_encoder",
               gr::io_signature::make(2, 16, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->num_progs = num_progs;
-      set_output_multiple(P1_FRAME_LEN);
+      this->first_prog = first_prog;
+      this->size = size;
+      payload_bytes = (size - 24) / 8;
+      out_buf = (unsigned char *) malloc(payload_bytes);
+      set_output_multiple(size);
       rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
       memset(rs_buf, 0, 255);
       pdu_seq_no = 0;
+      memset(start_seq_no, 0, sizeof(start_seq_no));
+
+      switch(size) {
+      case 146176:
+        target_nop = 32;
+        lc_bits = 16;
+        psd_bytes = 128;
+        pdu_seq_len = 2;
+        codec_mode = 0;
+        break;
+      case 4608:
+        target_nop = 4;
+        lc_bits = 12;
+        psd_bytes = 16;
+        pdu_seq_len = 8;
+        codec_mode = 13;
+        break;
+      }
     }
 
     /*
@@ -59,6 +81,7 @@ namespace gr {
      */
     l2_encoder_impl::~l2_encoder_impl()
     {
+      free(out_buf);
       free_rs_char(rs_enc);
     }
 
@@ -67,7 +90,7 @@ namespace gr {
     {
       for (int p = 0; p < num_progs; p++) {
         ninput_items_required[p] = noutput_items / 8;
-        ninput_items_required[num_progs + p] = noutput_items / P1_FRAME_LEN * (128 - 3);
+        ninput_items_required[num_progs + p] = noutput_items / size * psd_bytes;
       }
     }
 
@@ -84,25 +107,26 @@ namespace gr {
       int hdc_off[8] = {0};
       int psd_off[8] = {0};
 
-      for (int out_off = 0; out_off < noutput_items; out_off += P1_FRAME_LEN) {
-        memset(out_buf, 0, (P1_FRAME_LEN - 24) / 8);
+      for (int out_off = 0; out_off < noutput_items; out_off += size) {
+        memset(out_buf, 0, payload_bytes);
 
         unsigned char *out_program = out_buf;
         for (int p = 0; p < num_progs; p++) {
-          int nop = 32;
-          int la_loc = 8 + 6 + nop*2 + 128 - 1;
+          int nop = target_nop;
+          int len_locators = ((lc_bits * nop) + 4) / 8;
+          int la_loc = 14 + len_locators + 3 + psd_bytes - 1;
 
-          // PDU control word
-          out_program[8] = pdu_seq_no ? 64 : 0;
-          out_program[9] = 4;
-          out_program[10] = 0;
-          out_program[11] = 1;
-          out_program[12] = pdu_seq_no ? 193 : 192;
-          out_program[13] = 205;
+          write_control_word(out_program + 8, codec_mode, /*stream_id*/ 0, pdu_seq_no, /*blend_control*/ 2,
+            /*per_stream_delay*/ 0, /*common_delay*/ 0, /*latency*/ 4, /*p_first*/ 0, /*p_last*/ 0,
+            start_seq_no[p], nop, /*hef*/ 1, la_loc);
 
           int end = la_loc;
           for (int i = 0; i < nop; i++) {
             int length = ((hdc[p][hdc_off[p]+3] & 0x03) << 11 | (hdc[p][hdc_off[p]+4] << 3) | (hdc[p][hdc_off[p]+5] >> 5)) - 7;
+            if (end + 1 + length >= payload_bytes) {
+              // TODO: Handle this more gracefully.
+              throw std::runtime_error("l2_encoder: too much audio data");
+            }
             hdc_off[p] += 7;
             unsigned char crc_reg = 0xff;
             for (int j = 0; j < length; j++) {
@@ -110,17 +134,13 @@ namespace gr {
               out_program[++end] = hdc[p][hdc_off[p]++];
             }
             out_program[++end] = crc_reg;
-            out_program[14+i*2] = (end & 0xff);
-            out_program[14+i*2+1] = (end >> 8);
+            write_locator(out_program + 14, i, end);
           }
 
-          // HEF
-          out_program[14+nop*2] = 144 | (p << 1);
-          out_program[14+nop*2+1] = 160;
-          out_program[14+nop*2+2] = 14;
+          write_hef(out_program + 14 + len_locators, first_prog + p, /*access*/ 0, /*program_type*/ 0);
 
-          memcpy(out_program + (14+nop*2+3), psd[p] + psd_off[p], 128 - 3);
-          psd_off[p] += (128 - 3);
+          memcpy(out_program + (14 + len_locators + 3), psd[p] + psd_off[p], psd_bytes);
+          psd_off[p] += psd_bytes;
 
           // Reed-Solomon encoding
           for (int i = 95; i >= 8; i--) {
@@ -132,11 +152,12 @@ namespace gr {
           }
 
           out_program += (end + 1);
+          start_seq_no[p] = (start_seq_no[p] + nop) % 64;
         }
 
         header_spread(out_buf, out + out_off, CW0);
 
-        pdu_seq_no ^= 1;
+        pdu_seq_no = (pdu_seq_no + 1) % pdu_seq_len;
       }
 
       for (int p = 0; p < num_progs; p++) {
@@ -146,16 +167,66 @@ namespace gr {
       return noutput_items;
     }
 
+    /* 1017sG.pdf figure 5-2 */
+    void
+    l2_encoder_impl::write_control_word(unsigned char *out, int codec_mode, int stream_id,
+      int pdu_seq_no, int blend_control, int per_stream_delay, int common_delay, int latency,
+      int p_first, int p_last, int start_seq_no, int nop, int hef, int la_loc)
+    {
+      out[0] = ((pdu_seq_no & 0x3) << 6) | (stream_id << 4) | codec_mode;
+      out[1] = (per_stream_delay << 3) | (blend_control << 1) | (pdu_seq_no >> 2);
+      out[2] = ((latency & 0x3) << 6) | common_delay;
+      out[3] = ((start_seq_no & 0x1f) << 3) | (p_last << 2) | (p_first << 1) | (latency >> 2);
+      out[4] = (hef << 7) | (nop << 1) | (start_seq_no >> 5);
+      out[5] = la_loc;
+    }
+
+    /* 1017sG.pdf section 5.2.1.6 */
+    void
+    l2_encoder_impl::write_hef(unsigned char *out, int program_number, int access, int program_type)
+    {
+      out[0] = 0x90 | (program_number << 1);
+      out[1] = 0xA0 | (access << 3) | (program_type >> 7);
+      out[2] = program_type & 0x7f;
+    }
+
+    void
+    l2_encoder_impl::write_locator(unsigned char *out, int i, int locator)
+    {
+      if (lc_bits == 16) {
+        out[i*2] = (locator & 0xff);
+        out[i*2 + 1] = (locator >> 8);
+      } else {
+        if (i % 2 == 0) {
+          out[i/2*3] = (locator & 0xff);
+          out[i/2*3 + 1] = (locator >> 8);
+        } else {
+          out[i/2*3 + 1] |= ((locator & 0xf) << 4);
+          out[i/2*3 + 2] = (locator >> 4);
+        }
+      }
+    }
+
     /* 1014sI.pdf figure 5-2 */
     void
     l2_encoder_impl::header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci)
     {
-      int n_start = P1_FRAME_LEN - 30000;
-      int n_offset = 1247;
+      int n_start, n_offset;
+
+      switch(size) {
+      case 146176:
+        n_start = size - 30000;
+        n_offset = 1247;
+        break;
+      case 4608:
+        n_start = 120;
+        n_offset = 183;
+        break;
+      }
 
       int out_off = 0;
       int pci_off = 0;
-      for (int i = 0; i < (P1_FRAME_LEN - 24) / 8; i++) {
+      for (int i = 0; i < payload_bytes; i++) {
         for (int j = 0; j < 8; j++) {
           if ((out_off >= n_start) && (pci_off < 24) && ((out_off - n_start) % (n_offset + 1) == 0)) {
             out[out_off++] = pci[pci_off++];

@@ -29,20 +29,24 @@ namespace gr {
   namespace nrsc5 {
 
     l1_fm_encoder::sptr
-    l1_fm_encoder::make()
+    l1_fm_encoder::make(const int psm)
     {
       return gnuradio::get_initial_sptr
-        (new l1_fm_encoder_impl());
+        (new l1_fm_encoder_impl(psm));
     }
 
     /*
      * The private constructor
      */
-    l1_fm_encoder_impl::l1_fm_encoder_impl()
+    l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm)
       : gr::block("l1_fm_encoder",
-              gr::io_signature::make(2, 2, sizeof(unsigned char)),
+              gr::io_signature::make(2, 5, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
+      this->psm = psm;
+      memset(internal, 0, sizeof(internal));
+      memset(pt, 0, sizeof(pt));
+      i_p3 = 0;
       set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
 
       for (int i = 0; i < 128; i++) {
@@ -56,7 +60,7 @@ namespace gr {
 
       for (int scid = 0; scid < 4; scid++) {
         for (int bc = 0; bc < BLOCKS_PER_FRAME; bc++) {
-          primary_sc_data_seq(primary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, 0, bc, 1);
+          primary_sc_data_seq(primary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, 0, bc, psm);
         }
         unsigned char last_symbol = 0;
         for (int i = 0; i < SYMBOLS_PER_FRAME; i++) {
@@ -81,6 +85,9 @@ namespace gr {
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
       ninput_items_required[0] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
       ninput_items_required[1] = frames * P1_BITS;
+      if (psm == 3) {
+        ninput_items_required[2] = frames * P3_BITS * (BLOCKS_PER_FRAME / 2);
+      }
     }
 
     int
@@ -91,11 +98,16 @@ namespace gr {
     {
       const unsigned char *pids = (const unsigned char *) input_items[0];
       const unsigned char *p1 = (const unsigned char *) input_items[1];
+      const unsigned char *p3 = NULL;
+      if (psm == 3) {
+        p3 = (const unsigned char *) input_items[2];
+      }
       unsigned char *out = (unsigned char *) output_items[0];
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
 
       int pids_off = 0;
       int p1_off = 0;
+      int p3_off = 0;
       int out_off = 0;
       for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
@@ -109,6 +121,15 @@ namespace gr {
         conv_2_5(p1_s, p1_g, P1_BITS);
         interleaver_i_ii();
         p1_off += P1_BITS;
+        if (psm == 3) {
+          for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
+            reverse_bytes(p3 + p3_off, p3_s, P3_BITS);
+            scramble(p3_s, P3_BITS);
+            conv_1_2(p3_s, p3_g + (P3_BITS * 2 * i), P3_BITS);
+            p3_off += P3_BITS;
+          }
+          interleaver_iv();
+        }
 
         for (int symbol = 0; symbol < SYMBOLS_PER_FRAME; symbol++) {
           for (int i = 0; i < FFT_SIZE; i++) {
@@ -117,20 +138,18 @@ namespace gr {
 
           for (int chan = 0; chan < 61; chan++) {
             out[out_off + REF_SC_CHAN[chan]] = primary_sc_symbols[REF_SC_ID[chan]][symbol];
-            if (chan == 10) chan = 49;
+            if (chan == partitions_per_band()) chan = 61 - partitions_per_band() - 2;
           }
 
-          int part = 0;
-          for (int chan = 0; chan < 60; chan++) {
-            for (int j = 0; j < 18; j++) {
-              unsigned char ii = int_mat_i_ii[symbol][(part * 36) + (j * 2)];
-              unsigned char qq = int_mat_i_ii[symbol][(part * 36) + (j * 2) + 1];
-              unsigned char symbol = (ii << 1) | qq;
-              int carrier = REF_SC_CHAN[chan] + j + 1;
-              out[out_off + carrier] = symbol;
-            }
-            part++;
-            if (chan == 9) chan = 49;
+          int p1_channels[] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+            50, 51, 52, 53, 54, 55, 56, 57, 58, 59
+          };
+          write_symbol(int_mat_i_ii[symbol], out + out_off, p1_channels, 20);
+
+          if (psm == 3) {
+            int p3_channels[] = { 10, 11, 48, 49 };
+            write_symbol(int_mat_iv[symbol], out + out_off, p3_channels, 4);
           }
 
           out_off += FFT_SIZE;
@@ -139,6 +158,9 @@ namespace gr {
 
       consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
       consume(1, frames * P1_BITS);
+      if (psm == 3) {
+        consume(2, frames * P3_BITS * (BLOCKS_PER_FRAME / 2));
+      }
       return noutput_items;
     }
 
@@ -188,6 +210,14 @@ namespace gr {
       conv_enc(in, out, len, poly, 3, 2);
     }
 
+    /* 1011sG.pdf section 9.3.4.3 */
+    void
+    l1_fm_encoder_impl::conv_1_2(const unsigned char *in, unsigned char *out, int len)
+    {
+      unsigned char poly[3] = { 0133, 0165 };
+      conv_enc(in, out, len, poly, 2, 2);
+    }
+
     /* 1011sG.pdf sections 10.2.3 & 10.2.4 */
     void
     l1_fm_encoder_impl::interleaver_i_ii()
@@ -202,7 +232,7 @@ namespace gr {
       int N2 = 3200;
 
       for (int i = 0; i < N1; i++) {
-        int partition = V[((i + (2 * (M / 4))) / M) % J];
+        int partition = V[((i + 2 * (M / 4)) / M) % J];
         int block;
         if (M == 1)
           block = ((i / J) + (partition * 7)) % B;
@@ -221,6 +251,47 @@ namespace gr {
         int row = (ki * 11) % 32;
         int col = ((ki * 11) + (ki / (32*9))) % C;
         int_mat_i_ii[(block * 32) + row][(partition * C) + col] = pids_g[i];
+      }
+    }
+
+    /* 1011sG.pdf sections 10.2.6 */
+    void
+    l1_fm_encoder_impl::interleaver_iv()
+    {
+      int J = 4;  // number of partitions
+      int B = 32; // blocks
+      int C = 36; // columns per partition
+      int M = 2;  // factor: 1, 2 or 4
+      int N = 147456;
+
+      int bk_bits = 32 * C;
+      int bk_adj = 32 * C - 1;
+
+      for (int i = 0; i < N / 2; i++) {
+        int partition = ((i + 2 * (M / 4)) / M) % J;
+        unsigned int pti = pt[partition]++;
+        int block = (pti + (partition * 7) - (bk_adj * (pti / bk_bits))) % B;
+        int row = ((11 * pti) % bk_bits) / C;
+        int column = (pti * 11) % C;
+        internal[(block * 32 + row) * 144 + partition * C + column] = p3_g[i];
+        int_mat_iv[i / (J * C)][i % (J * C)] = internal[i_p3++];
+      }
+      i_p3 = i_p3 % N;
+    }
+
+    void
+    l1_fm_encoder_impl::write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels)
+    {
+      int partition = 0;
+      for (int i = 0; i < num_channels; i++) {
+        for (int j = 0; j < 18; j++) {
+          unsigned char ii = matrix_row[(partition * 36) + (j * 2)];
+          unsigned char qq = matrix_row[(partition * 36) + (j * 2) + 1];
+          unsigned char symbol = (ii << 1) | qq;
+          int carrier = REF_SC_CHAN[channels[i]] + j + 1;
+          out_row[carrier] = symbol;
+        }
+        partition++;
       }
     }
 
@@ -267,6 +338,22 @@ namespace gr {
       out[29] = (psmi & 0x02) >> 1;
       out[30] = (psmi & 0x01);
       out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
+    }
+
+    int l1_fm_encoder_impl::partitions_per_band()
+    {
+      switch (psm) {
+      case 2:
+        return 11;
+      case 3:
+        return 12;
+      case 5:
+      case 6:
+      case 11:
+        return 14;
+      default:
+        return 10;
+      }
     }
 
   } /* namespace nrsc5 */

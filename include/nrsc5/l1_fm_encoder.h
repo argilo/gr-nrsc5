@@ -31,6 +31,7 @@
 #define FFT_SIZE 2048
 #define PIDS_BITS 80
 #define P1_BITS 146176
+#define P3_BITS 4608
 
 namespace gr {
   namespace nrsc5 {
@@ -53,7 +54,7 @@ namespace gr {
        * class. nrsc5::l1_fm_encoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make();
+      static sptr make(const int psm);
     };
 
   } // namespace nrsc5

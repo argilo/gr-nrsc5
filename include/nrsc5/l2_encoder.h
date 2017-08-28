@@ -25,8 +25,6 @@
 #include <nrsc5/api.h>
 #include <gnuradio/block.h>
 
-#define P1_FRAME_LEN 146176
-
 namespace gr {
   namespace nrsc5 {
 
@@ -48,7 +46,7 @@ namespace gr {
        * class. nrsc5::l2_encoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make(const int num_progs);
+      static sptr make(const int num_progs, const int first_prog, const int size);
     };
 
   } // namespace nrsc5

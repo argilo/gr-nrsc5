@@ -4,14 +4,51 @@
   <key>nrsc5_l1_fm_encoder</key>
   <category>[NRSC-5]</category>
   <import>import nrsc5</import>
-  <make>nrsc5.l1_fm_encoder()</make>
+  <make>nrsc5.l1_fm_encoder($psm)</make>
+  <param>
+    <name>Primary mode</name>
+    <key>psm</key>
+    <type>enum</type>
+    <hide>none</hide>
+    <option>
+      <name>MP1</name>
+      <key>1</key>
+      <opt>ports:1</opt>
+    </option>
+    <!--option>
+      <name>MP2</name>
+      <key>2</key>
+      <opt>ports:2</opt>
+    </option-->
+    <option>
+      <name>MP3</name>
+      <key>3</key>
+      <opt>ports:2</opt>
+    </option>
+    <!--option>
+      <name>MP11</name>
+      <key>11</key>
+      <opt>ports:3</opt>
+    </option-->
+    <!--option>
+      <name>MP5</name>
+      <key>5</key>
+      <opt>ports:3</opt>
+    </option-->
+    <!--option>
+      <name>MP6</name>
+      <key>6</key>
+      <opt>ports:2</opt>
+    </option-->
+  </param>
   <sink>
     <name>pids</name>
     <type>byte</type>
   </sink>
   <sink>
-    <name>p1</name>
+    <name>pdu</name>
     <type>byte</type>
+    <nports>$psm.ports</nports>
   </sink>
   <source>
     <name>out</name>

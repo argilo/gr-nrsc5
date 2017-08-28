@@ -49,15 +49,29 @@ namespace gr {
     {
      private:
       int num_progs;
+      int first_prog;
+      int size;
+      int payload_bytes;
       unsigned char rs_buf[255];
       void *rs_enc;
+      int target_nop;
+      int lc_bits;
+      int psd_bytes;
       int pdu_seq_no;
-      unsigned char out_buf[(P1_FRAME_LEN - 24) / 8];
+      int pdu_seq_len;
+      int codec_mode;
+      int start_seq_no[8];
+      unsigned char *out_buf;
 
+      void write_control_word(unsigned char *out, int codec_mode, int stream_id,
+        int pdu_seq_no, int blend_control, int per_stream_delay, int common_delay, int latency,
+        int p_first, int p_last, int start_seq_no, int nop, int hef, int la_loc);
+      void write_hef(unsigned char *out, int program_number, int access, int program_type);
+      void write_locator(unsigned char *out, int i, int locator);
       void header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci);
 
      public:
-      l2_encoder_impl(const int num_progs);
+      l2_encoder_impl(const int num_progs, const int first_prog, const int size);
       ~l2_encoder_impl();
 
       // Where all the action really happens

@@ -4,14 +4,35 @@
   <key>nrsc5_l2_encoder</key>
   <category>[NRSC-5]</category>
   <import>import nrsc5</import>
-  <make>nrsc5.l2_encoder($num_progs)</make>
+  <make>nrsc5.l2_encoder($num_progs, $first_prog, $size)</make>
   <param>
     <name>Programs</name>
     <key>num_progs</key>
     <value>1</value>
     <type>int</type>
   </param>
-  <check>1 &lt;= $num_progs &lt;= 8</check>
+  <param>
+    <name>First prog. no.</name>
+    <key>first_prog</key>
+    <value>0</value>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Frame size</name>
+    <key>size</key>
+    <value>146176</value>
+    <type>int</type>
+    <option>
+      <name>146176</name>
+      <key>146176</key>
+    </option>
+    <option>
+      <name>4608</name>
+      <key>4608</key>
+    </option>
+  </param>
+  <check>0 &lt;= $first_prog &lt;= 7</check>
+  <check>1 &lt;= $num_progs &lt;= 8 - $first_prog</check>
   <sink>
     <name>hdc</name>
     <type>byte</type>

@@ -40,24 +40,35 @@ namespace gr {
     class l1_fm_encoder_impl : public l1_fm_encoder
     {
      private:
+      int psm;
       unsigned char pids_s[PIDS_BITS];
       unsigned char p1_s[P1_BITS];
+      unsigned char p3_s[P3_BITS];
       unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
+      unsigned char p3_g[P3_BITS * 2 * (BLOCKS_PER_FRAME / 2)];
       unsigned char int_mat_i_ii[SYMBOLS_PER_FRAME][20 * 36];
+      unsigned char int_mat_iv[SYMBOLS_PER_FRAME][4 * 36];
+      int pt[4];
+      int i_p3;
       unsigned char parity[128];
       unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
+      unsigned char internal[SYMBOLS_PER_FRAME * 2 * 4 * 36];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
       void conv_enc(const unsigned char *in, unsigned char *out, int len,
                     const unsigned char *poly, int poly_l1, int poly_l2);
       void conv_2_5(const unsigned char *in, unsigned char *out, int len);
+      void conv_1_2(const unsigned char *in, unsigned char *out, int len);
       void interleaver_i_ii();
+      void interleaver_iv();
+      void write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels);
       void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
+      int partitions_per_band();
 
      public:
-      l1_fm_encoder_impl();
+      l1_fm_encoder_impl(const int psm);
       ~l1_fm_encoder_impl();
 
       // Where all the action really happens
