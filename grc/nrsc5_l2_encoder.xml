@@ -46,5 +46,6 @@
   <source>
     <name>out</name>
     <type>byte</type>
+    <vlen>$size</vlen>
   </source>
 </block>

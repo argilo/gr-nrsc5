@@ -13,42 +13,36 @@
     <option>
       <name>MP1</name>
       <key>1</key>
-      <opt>ports:1</opt>
+      <opt>port1_vlen:146176</opt>
+      <opt>port2_optional:1</opt>
+      <opt>port2_hide:all</opt>
+      <opt>port2_vlen:</opt>
     </option>
-    <!--option>
-      <name>MP2</name>
-      <key>2</key>
-      <opt>ports:2</opt>
-    </option-->
     <option>
       <name>MP3</name>
       <key>3</key>
-      <opt>ports:2</opt>
+      <opt>port1_vlen:146176</opt>
+      <opt>port2_optional:0</opt>
+      <opt>port2_hide:</opt>
+      <opt>port2_vlen:4608</opt>
     </option>
-    <!--option>
-      <name>MP11</name>
-      <key>11</key>
-      <opt>ports:3</opt>
-    </option-->
-    <!--option>
-      <name>MP5</name>
-      <key>5</key>
-      <opt>ports:3</opt>
-    </option-->
-    <!--option>
-      <name>MP6</name>
-      <key>6</key>
-      <opt>ports:2</opt>
-    </option-->
   </param>
   <sink>
     <name>pids</name>
     <type>byte</type>
+    <vlen>80</vlen>
   </sink>
   <sink>
-    <name>pdu</name>
+    <name>pdu0</name>
     <type>byte</type>
-    <nports>$psm.ports</nports>
+    <vlen>$psm.port1_vlen</vlen>
+  </sink>
+  <sink>
+    <name>pdu1</name>
+    <type>byte</type>
+    <vlen>$psm.port2_vlen</vlen>
+    <optional>$psm.port2_optional</optional>
+    <hide>$psm.port2_hide</hide>
   </sink>
   <source>
     <name>out</name>
