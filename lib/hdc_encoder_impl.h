@@ -40,7 +40,8 @@ namespace gr {
       int max_out_buf_bytes;
       short *convert_buf;
       unsigned char *outbuf;
-      int outbuf_used;
+      int outbuf_off;
+      int outbuf_len;
 
      public:
       hdc_encoder_impl(int channels, int bitrate);

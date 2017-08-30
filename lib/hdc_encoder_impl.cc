@@ -44,8 +44,8 @@ namespace gr {
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->channels = channels;
-      bytes_per_frame = bitrate * 2048 / 44100 / 8;
-      set_relative_rate((double) bytes_per_frame / 2048);
+      bytes_per_frame = bitrate * SAMPLES_PER_FRAME / HDC_SAMPLE_RATE / 8;
+      set_relative_rate((double) bytes_per_frame / SAMPLES_PER_FRAME);
 
       int vbr = 0;
       int afterburner = 1;
@@ -98,7 +98,8 @@ namespace gr {
       max_out_buf_bytes = info.maxOutBufBytes;
       convert_buf = (short *) malloc(channels * sizeof(short) * frame_length);
       outbuf = (unsigned char *) malloc(max_out_buf_bytes);
-      outbuf_used = 0;
+      outbuf_off = 0;
+      outbuf_len = 0;
     }
 
     /*
@@ -115,7 +116,11 @@ namespace gr {
     hdc_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
       for (int channel = 0; channel < channels; channel++) {
-        ninput_items_required[channel] = ((noutput_items / bytes_per_frame) + 1) * 2048;
+        if (noutput_items <= outbuf_len) {
+          ninput_items_required[channel] = 0;
+        } else {
+          ninput_items_required[channel] = (((noutput_items - outbuf_len) / bytes_per_frame) + 1) * SAMPLES_PER_FRAME;
+        }
       }
     }
 
@@ -131,17 +136,23 @@ namespace gr {
       int in_off = 0;
       int out_off = 0;
 
-      while (1) {
-        if (out_off + outbuf_used > noutput_items) {
+      while (out_off < noutput_items) {
+        if (out_off + outbuf_len >= noutput_items) {
+          int space = noutput_items - out_off;
+          memcpy(out + out_off, outbuf + outbuf_off, space);
+          out_off += space;
+          outbuf_off += space;
+          outbuf_len -= space;
           break;
         }
 
-        memcpy(out + out_off, outbuf, outbuf_used);
-        out_off += outbuf_used;
-        outbuf_used = 0;
+        memcpy(out + out_off, outbuf + outbuf_off, outbuf_len);
+        out_off += outbuf_len;
+        outbuf_off = 0;
+        outbuf_len = 0;
 
         for (int channel = 0; channel < channels; channel++) {
-          if (in_off + frame_length >= ninput_items[channel]) break;
+          if (in_off + frame_length > ninput_items[channel]) break;
         }
 
         AACENC_BufDesc in_buf = { 0 }, out_buf = { 0 };
@@ -185,7 +196,8 @@ namespace gr {
         if ((err = aacEncEncode(handle, &in_buf, &out_buf, &in_args, &out_args)) != AACENC_OK) {
           throw std::runtime_error("hdc_encoder: Encoding failed");
         }
-        outbuf_used = out_args.numOutBytes;
+        outbuf_off = 0;
+        outbuf_len = out_args.numOutBytes;
       }
 
       consume_each (in_off);
