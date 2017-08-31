@@ -44,8 +44,6 @@ namespace gr {
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->psm = psm;
-      memset(pt, 0, sizeof(pt));
-      i_p3 = 0;
       set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
 
       p3_bits = 0;
@@ -54,16 +52,22 @@ namespace gr {
         p3_bits = 2304;
         break;
       case 3:
+      case 11:
         p3_bits = 4608;
         break;
       }
 
-      if (p3_bits > 0) {
-        p3_s = (unsigned char *) malloc(p3_bits);
-        p3_g = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
-        int_mat_iv = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
-        internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
+      if (psm == 2 || psm == 3 || psm == 11) {
+        p3_p4_s = (unsigned char *) malloc(p3_bits);
+        p3_p4_g = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
+        px1_matrix = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
+        px1_internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
       }
+      if (psm == 11) {
+        px2_matrix = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
+        px2_internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
+      }
+      internal_half = 0;
 
       for (int i = 0; i < 128; i++) {
         int tmp = i;
@@ -93,11 +97,15 @@ namespace gr {
      */
     l1_fm_encoder_impl::~l1_fm_encoder_impl()
     {
-      if (p3_bits > 0) {
-        free(p3_s);
-        free(p3_g);
-        free(int_mat_iv);
-        free(internal);
+      if (psm == 2 || psm == 3 || psm == 11) {
+        free(p3_p4_s);
+        free(p3_p4_g);
+        free(px1_matrix);
+        free(px1_internal);
+      }
+      if (psm == 11) {
+        free(px2_matrix);
+        free(px2_internal);
       }
     }
 
@@ -107,8 +115,11 @@ namespace gr {
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
       ninput_items_required[0] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
       ninput_items_required[1] = frames * P1_BITS;
-      if (psm == 2 || psm == 3) {
+      if (psm == 2 || psm == 3 || psm == 11) {
         ninput_items_required[2] = frames * p3_bits * (BLOCKS_PER_FRAME / 2);
+      }
+      if (psm == 11) {
+        ninput_items_required[3] = frames * p3_bits * (BLOCKS_PER_FRAME / 2);
       }
     }
 
@@ -121,8 +132,12 @@ namespace gr {
       const unsigned char *pids = (const unsigned char *) input_items[0];
       const unsigned char *p1 = (const unsigned char *) input_items[1];
       const unsigned char *p3 = NULL;
-      if (psm == 2 || psm == 3) {
+      const unsigned char *p4 = NULL;
+      if (psm == 2 || psm == 3 || psm == 11) {
         p3 = (const unsigned char *) input_items[2];
+      }
+      if (psm == 11) {
+        p4 = (const unsigned char *) input_items[3];
       }
       unsigned char *out = (unsigned char *) output_items[0];
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
@@ -130,6 +145,7 @@ namespace gr {
       int pids_off = 0;
       int p1_off = 0;
       int p3_off = 0;
+      int p4_off = 0;
       int out_off = 0;
       for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
@@ -143,15 +159,25 @@ namespace gr {
         conv_2_5(p1_s, p1_g, P1_BITS);
         interleaver_i_ii();
         p1_off += P1_BITS;
-        if (psm == 2 || psm == 3) {
+        if (psm == 2 || psm == 3 || psm == 11) {
           for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
-            reverse_bytes(p3 + p3_off, p3_s, p3_bits);
-            scramble(p3_s, p3_bits);
-            conv_1_2(p3_s, p3_g + (p3_bits * 2 * i), p3_bits);
+            reverse_bytes(p3 + p3_off, p3_p4_s, p3_bits);
+            scramble(p3_p4_s, p3_bits);
+            conv_1_2(p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
             p3_off += p3_bits;
           }
-          interleaver_iv();
+          interleaver_iv(px1_matrix, px1_internal, internal_half);
         }
+        if (psm == 11) {
+          for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
+            reverse_bytes(p4 + p4_off, p3_p4_s, p3_bits);
+            scramble(p3_p4_s, p3_bits);
+            conv_1_2(p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
+            p4_off += p3_bits;
+          }
+          interleaver_iv(px2_matrix, px2_internal, internal_half);
+        }
+        internal_half ^= 1;
 
         for (int symbol = 0; symbol < SYMBOLS_PER_FRAME; symbol++) {
           for (int i = 0; i < FFT_SIZE; i++) {
@@ -171,12 +197,15 @@ namespace gr {
 
           if (psm == 2) {
             int p3_channels[] = { 10, 49 };
-            write_symbol(int_mat_iv + (symbol * p3_bits / 32), out + out_off, p3_channels, 2);
+            write_symbol(px1_matrix + (symbol * p3_bits / 32), out + out_off, p3_channels, 2);
           }
-
-          if (psm == 3) {
+          if (psm == 3 || psm == 11) {
             int p3_channels[] = { 10, 11, 48, 49 };
-            write_symbol(int_mat_iv + (symbol * p3_bits / 32), out + out_off, p3_channels, 4);
+            write_symbol(px1_matrix + (symbol * p3_bits / 32), out + out_off, p3_channels, 4);
+          }
+          if (psm == 11) {
+            int p4_channels[] = { 12, 13, 46, 47 };
+            write_symbol(px2_matrix + (symbol * p3_bits / 32), out + out_off, p4_channels, 4);
           }
 
           out_off += FFT_SIZE;
@@ -185,8 +214,11 @@ namespace gr {
 
       consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
       consume(1, frames * P1_BITS);
-      if (psm == 2 || psm == 3) {
+      if (psm == 2 || psm == 3 || psm == 11) {
         consume(2, frames * p3_bits * (BLOCKS_PER_FRAME / 2));
+      }
+      if (psm == 11) {
+        consume(3, frames * p3_bits * (BLOCKS_PER_FRAME / 2));
       }
       return noutput_items;
     }
@@ -283,7 +315,7 @@ namespace gr {
 
     /* 1011sG.pdf sections 10.2.6 */
     void
-    l1_fm_encoder_impl::interleaver_iv()
+    l1_fm_encoder_impl::interleaver_iv(unsigned char *matrix, unsigned char *internal, int half)
     {
       int J = psm == 2 ? 2 : 4;  // number of partitions
       int B = 32; // blocks
@@ -294,16 +326,21 @@ namespace gr {
       int bk_bits = 32 * C;
       int bk_adj = 32 * C - 1;
 
+      int internal_off = half * (N / 2);
+      int pt[4];
+      for (int i = 0; i < J; i++) {
+        pt[i] = internal_off / J;
+      }
+
       for (int i = 0; i < N / 2; i++) {
         int partition = ((i + 2 * (M / 4)) / M) % J;
         unsigned int pti = pt[partition]++;
         int block = (pti + (partition * 7) - (bk_adj * (pti / bk_bits))) % B;
         int row = ((11 * pti) % bk_bits) / C;
         int column = (pti * 11) % C;
-        internal[(block * 32 + row) * (J * C) + partition * C + column] = p3_g[i];
-        int_mat_iv[i] = internal[i_p3++];
+        internal[(block * 32 + row) * (J * C) + partition * C + column] = p3_p4_g[i];
+        matrix[i] = internal[internal_off++];
       }
-      i_p3 = i_p3 % N;
     }
 
     void

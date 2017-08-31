@@ -44,17 +44,18 @@ namespace gr {
       int p3_bits;
       unsigned char pids_s[PIDS_BITS];
       unsigned char p1_s[P1_BITS];
-      unsigned char *p3_s;
+      unsigned char *p3_p4_s;
       unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
-      unsigned char *p3_g;
+      unsigned char *p3_p4_g;
       unsigned char int_mat_i_ii[SYMBOLS_PER_FRAME][20 * 36];
-      unsigned char *int_mat_iv;
-      int pt[4];
-      int i_p3;
+      unsigned char *px1_matrix;
+      unsigned char *px2_matrix;
+      unsigned char *px1_internal;
+      unsigned char *px2_internal;
+      int internal_half;
       unsigned char parity[128];
       unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
-      unsigned char *internal;
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
@@ -63,7 +64,7 @@ namespace gr {
       void conv_2_5(const unsigned char *in, unsigned char *out, int len);
       void conv_1_2(const unsigned char *in, unsigned char *out, int len);
       void interleaver_i_ii();
-      void interleaver_iv();
+      void interleaver_iv(unsigned char *matrix, unsigned char *internal, int half);
       void write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels);
       void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
       int partitions_per_band();

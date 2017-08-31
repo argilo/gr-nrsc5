@@ -17,6 +17,9 @@
       <opt>port2_optional:1</opt>
       <opt>port2_hide:all</opt>
       <opt>port2_vlen:</opt>
+      <opt>port3_optional:1</opt>
+      <opt>port3_hide:all</opt>
+      <opt>port3_vlen:</opt>
     </option>
     <option>
       <name>MP2</name>
@@ -25,6 +28,9 @@
       <opt>port2_optional:0</opt>
       <opt>port2_hide:</opt>
       <opt>port2_vlen:2304</opt>
+      <opt>port3_optional:1</opt>
+      <opt>port3_hide:all</opt>
+      <opt>port3_vlen:</opt>
     </option>
     <option>
       <name>MP3</name>
@@ -33,6 +39,20 @@
       <opt>port2_optional:0</opt>
       <opt>port2_hide:</opt>
       <opt>port2_vlen:4608</opt>
+      <opt>port3_optional:1</opt>
+      <opt>port3_hide:all</opt>
+      <opt>port3_vlen:</opt>
+    </option>
+    <option>
+      <name>MP11</name>
+      <key>11</key>
+      <opt>port1_vlen:146176</opt>
+      <opt>port2_optional:0</opt>
+      <opt>port2_hide:</opt>
+      <opt>port2_vlen:4608</opt>
+      <opt>port3_optional:0</opt>
+      <opt>port3_hide:</opt>
+      <opt>port3_vlen:4608</opt>
     </option>
   </param>
   <sink>
@@ -51,6 +71,13 @@
     <vlen>$psm.port2_vlen</vlen>
     <optional>$psm.port2_optional</optional>
     <hide>$psm.port2_hide</hide>
+  </sink>
+  <sink>
+    <name>pdu2</name>
+    <type>byte</type>
+    <vlen>$psm.port3_vlen</vlen>
+    <optional>$psm.port3_optional</optional>
+    <hide>$psm.port3_hide</hide>
   </sink>
   <source>
     <name>out</name>
