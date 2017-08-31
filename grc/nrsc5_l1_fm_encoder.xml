@@ -19,6 +19,14 @@
       <opt>port2_vlen:</opt>
     </option>
     <option>
+      <name>MP2</name>
+      <key>2</key>
+      <opt>port1_vlen:146176</opt>
+      <opt>port2_optional:0</opt>
+      <opt>port2_hide:</opt>
+      <opt>port2_vlen:2304</opt>
+    </option>
+    <option>
       <name>MP3</name>
       <key>3</key>
       <opt>port1_vlen:146176</opt>

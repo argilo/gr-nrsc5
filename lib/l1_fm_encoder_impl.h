@@ -41,19 +41,20 @@ namespace gr {
     {
      private:
       int psm;
+      int p3_bits;
       unsigned char pids_s[PIDS_BITS];
       unsigned char p1_s[P1_BITS];
-      unsigned char p3_s[P3_BITS];
+      unsigned char *p3_s;
       unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
-      unsigned char p3_g[P3_BITS * 2 * (BLOCKS_PER_FRAME / 2)];
+      unsigned char *p3_g;
       unsigned char int_mat_i_ii[SYMBOLS_PER_FRAME][20 * 36];
-      unsigned char int_mat_iv[SYMBOLS_PER_FRAME][4 * 36];
+      unsigned char *int_mat_iv;
       int pt[4];
       int i_p3;
       unsigned char parity[128];
       unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
-      unsigned char internal[SYMBOLS_PER_FRAME * 2 * 4 * 36];
+      unsigned char *internal;
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);

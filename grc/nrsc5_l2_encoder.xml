@@ -30,6 +30,10 @@
       <name>4608</name>
       <key>4608</key>
     </option>
+    <option>
+      <name>2304</name>
+      <key>2304</key>
+    </option>
   </param>
   <check>0 &lt;= $first_prog &lt;= 7</check>
   <check>1 &lt;= $num_progs &lt;= 8 - $first_prog</check>

@@ -67,9 +67,10 @@ namespace gr {
         codec_mode = 0;
         break;
       case 4608:
+      case 2304:
         target_nop = 4;
         lc_bits = 12;
-        psd_bytes = 16;
+        psd_bytes = 8;
         pdu_seq_len = 8;
         codec_mode = 13;
         break;
@@ -213,15 +214,12 @@ namespace gr {
     {
       int n_start, n_offset;
 
-      switch(size) {
-      case 146176:
+      if (size >= 72000) {
         n_start = size - 30000;
         n_offset = 1247;
-        break;
-      case 4608:
+      } else {
         n_start = 120;
-        n_offset = 183;
-        break;
+        n_offset = ((size - 192) / 24) - 1;
       }
 
       int out_off = 0;

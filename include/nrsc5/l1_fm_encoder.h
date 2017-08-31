@@ -31,7 +31,6 @@
 #define FFT_SIZE 2048
 #define PIDS_BITS 80
 #define P1_BITS 146176
-#define P3_BITS 4608
 
 namespace gr {
   namespace nrsc5 {

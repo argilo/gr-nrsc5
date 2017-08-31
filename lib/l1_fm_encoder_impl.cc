@@ -44,10 +44,26 @@ namespace gr {
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->psm = psm;
-      memset(internal, 0, sizeof(internal));
       memset(pt, 0, sizeof(pt));
       i_p3 = 0;
       set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
+
+      p3_bits = 0;
+      switch(psm) {
+      case 2:
+        p3_bits = 2304;
+        break;
+      case 3:
+        p3_bits = 4608;
+        break;
+      }
+
+      if (p3_bits > 0) {
+        p3_s = (unsigned char *) malloc(p3_bits);
+        p3_g = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
+        int_mat_iv = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
+        internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
+      }
 
       for (int i = 0; i < 128; i++) {
         int tmp = i;
@@ -77,6 +93,12 @@ namespace gr {
      */
     l1_fm_encoder_impl::~l1_fm_encoder_impl()
     {
+      if (p3_bits > 0) {
+        free(p3_s);
+        free(p3_g);
+        free(int_mat_iv);
+        free(internal);
+      }
     }
 
     void
@@ -85,8 +107,8 @@ namespace gr {
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
       ninput_items_required[0] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
       ninput_items_required[1] = frames * P1_BITS;
-      if (psm == 3) {
-        ninput_items_required[2] = frames * P3_BITS * (BLOCKS_PER_FRAME / 2);
+      if (psm == 2 || psm == 3) {
+        ninput_items_required[2] = frames * p3_bits * (BLOCKS_PER_FRAME / 2);
       }
     }
 
@@ -99,7 +121,7 @@ namespace gr {
       const unsigned char *pids = (const unsigned char *) input_items[0];
       const unsigned char *p1 = (const unsigned char *) input_items[1];
       const unsigned char *p3 = NULL;
-      if (psm == 3) {
+      if (psm == 2 || psm == 3) {
         p3 = (const unsigned char *) input_items[2];
       }
       unsigned char *out = (unsigned char *) output_items[0];
@@ -121,12 +143,12 @@ namespace gr {
         conv_2_5(p1_s, p1_g, P1_BITS);
         interleaver_i_ii();
         p1_off += P1_BITS;
-        if (psm == 3) {
+        if (psm == 2 || psm == 3) {
           for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
-            reverse_bytes(p3 + p3_off, p3_s, P3_BITS);
-            scramble(p3_s, P3_BITS);
-            conv_1_2(p3_s, p3_g + (P3_BITS * 2 * i), P3_BITS);
-            p3_off += P3_BITS;
+            reverse_bytes(p3 + p3_off, p3_s, p3_bits);
+            scramble(p3_s, p3_bits);
+            conv_1_2(p3_s, p3_g + (p3_bits * 2 * i), p3_bits);
+            p3_off += p3_bits;
           }
           interleaver_iv();
         }
@@ -147,9 +169,14 @@ namespace gr {
           };
           write_symbol(int_mat_i_ii[symbol], out + out_off, p1_channels, 20);
 
+          if (psm == 2) {
+            int p3_channels[] = { 10, 49 };
+            write_symbol(int_mat_iv + (symbol * p3_bits / 32), out + out_off, p3_channels, 2);
+          }
+
           if (psm == 3) {
             int p3_channels[] = { 10, 11, 48, 49 };
-            write_symbol(int_mat_iv[symbol], out + out_off, p3_channels, 4);
+            write_symbol(int_mat_iv + (symbol * p3_bits / 32), out + out_off, p3_channels, 4);
           }
 
           out_off += FFT_SIZE;
@@ -158,8 +185,8 @@ namespace gr {
 
       consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
       consume(1, frames * P1_BITS);
-      if (psm == 3) {
-        consume(2, frames * P3_BITS * (BLOCKS_PER_FRAME / 2));
+      if (psm == 2 || psm == 3) {
+        consume(2, frames * p3_bits * (BLOCKS_PER_FRAME / 2));
       }
       return noutput_items;
     }
@@ -258,11 +285,11 @@ namespace gr {
     void
     l1_fm_encoder_impl::interleaver_iv()
     {
-      int J = 4;  // number of partitions
+      int J = psm == 2 ? 2 : 4;  // number of partitions
       int B = 32; // blocks
       int C = 36; // columns per partition
-      int M = 2;  // factor: 1, 2 or 4
-      int N = 147456;
+      int M = psm == 2 ? 4 : 2;  // factor: 1, 2 or 4
+      int N = psm == 2 ? 73728 : 147456;
 
       int bk_bits = 32 * C;
       int bk_adj = 32 * C - 1;
@@ -273,8 +300,8 @@ namespace gr {
         int block = (pti + (partition * 7) - (bk_adj * (pti / bk_bits))) % B;
         int row = ((11 * pti) % bk_bits) / C;
         int column = (pti * 11) % C;
-        internal[(block * 32 + row) * 144 + partition * C + column] = p3_g[i];
-        int_mat_iv[i / (J * C)][i % (J * C)] = internal[i_p3++];
+        internal[(block * 32 + row) * (J * C) + partition * C + column] = p3_g[i];
+        int_mat_iv[i] = internal[i_p3++];
       }
       i_p3 = i_p3 % N;
     }
