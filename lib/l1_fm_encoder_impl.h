@@ -68,10 +68,7 @@ namespace gr {
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
-      void conv_enc(const unsigned char *in, unsigned char *out, int len,
-                    const unsigned char *poly, int poly_l1, int poly_l2);
-      void conv_2_5(const unsigned char *in, unsigned char *out, int len);
-      void conv_1_2(const unsigned char *in, unsigned char *out, int len);
+      void conv_enc(int mode, const unsigned char *in, unsigned char *out, int len);
       void interleaver_i(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int N);
       void interleaver_ii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int b, int I0, int N);
       void interleaver_iv(unsigned char *matrix, unsigned char *internal, int half);

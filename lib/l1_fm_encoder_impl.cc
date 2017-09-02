@@ -191,24 +191,24 @@ namespace gr {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
           reverse_bytes(pids + pids_off, pids_s, PIDS_BITS);
           scramble(pids_s, PIDS_BITS);
-          conv_2_5(pids_s, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
+          conv_enc(CONV_2_5, pids_s, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
           pids_off += PIDS_BITS;
         }
 
         if (p1_mod == 1) {
           reverse_bytes(p1 + p1_off, p1_s, p1_bits);
           scramble(p1_s, p1_bits);
-          conv_2_5(p1_s, p1_g, p1_bits);
+          conv_enc(CONV_2_5, p1_s, p1_g, p1_bits);
           p1_off += p1_bits;
         } else {
           for (int i = 0; i < p1_mod; i++) {
             reverse_bytes(p1 + p1_off, p1_s + (p1_bits * i), p1_bits);
             scramble(p1_s + (p1_bits * i), p1_bits);
-            conv_2_5(p1_s + (p1_bits * i), p1_g + (p1_bits * 5 / 2 * i), p1_bits);
+            conv_enc(CONV_2_5, p1_s + (p1_bits * i), p1_g + (p1_bits * 5 / 2 * i), p1_bits);
 
             reverse_bytes(p1_prime + p1_prime_off, p1_prime_s + (p1_bits * i), p1_bits);
             scramble(p1_prime_s + (p1_bits * i), p1_bits);
-            conv_1_2(p1_prime_s + (p1_bits * i), p1_prime_g + (p1_bits * 2 * i), p1_bits);
+            conv_enc(CONV_1_2, p1_prime_s + (p1_bits * i), p1_prime_g + (p1_bits * 2 * i), p1_bits);
 
             if (psm == 5) {
               interleaver_i(p1_prime_g + (p1_bits * 2 * i), px2_matrix + (p1_bits * 2 * i), 4, 2, 36, 2, V_PX2_MP5, 9216);
@@ -222,7 +222,7 @@ namespace gr {
           }
           reverse_bytes(p2 + p2_off, p1_s + (p1_bits * p1_mod), p2_bits);
           scramble(p1_s + (p1_bits * p1_mod), p2_bits);
-          conv_2_5(p1_s + (p1_bits * p1_mod), p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
+          conv_enc(CONV_2_5, p1_s + (p1_bits * p1_mod), p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
           p2_off += p2_bits;
         }
         interleaver_i(p1_g, pm_matrix, 20, 16, 36, 1, V_PM, 365440);
@@ -232,7 +232,7 @@ namespace gr {
           for (int i = 0; i < p3_mod; i++) {
             reverse_bytes(p3 + p3_off, p3_p4_s, p3_bits);
             scramble(p3_p4_s, p3_bits);
-            conv_1_2(p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
+            conv_enc(CONV_1_2, p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
             p3_off += p3_bits;
           }
           interleaver_iv(px1_matrix, px1_internal, internal_half);
@@ -241,7 +241,7 @@ namespace gr {
           for (int i = 0; i < p4_mod; i++) {
             reverse_bytes(p4 + p4_off, p3_p4_s, p4_bits);
             scramble(p3_p4_s, p4_bits);
-            conv_1_2(p3_p4_s, p3_p4_g + (p4_bits * 2 * i), p4_bits);
+            conv_enc(CONV_1_2, p3_p4_s, p3_p4_g + (p4_bits * 2 * i), p4_bits);
             p4_off += p4_bits;
           }
           interleaver_iv(px2_matrix, px2_internal, internal_half);
@@ -319,34 +319,26 @@ namespace gr {
 
     /* 1011sG.pdf section 9.3 */
     void
-    l1_fm_encoder_impl::conv_enc(const unsigned char *in, unsigned char *out, int len,
-                                 const unsigned char *poly, int poly_l1, int poly_l2)
+    l1_fm_encoder_impl::conv_enc(int mode, const unsigned char *in, unsigned char *out, int len)
     {
+      unsigned char poly_2_5[] = { 3, 2, 0133, 0171, 0165 };
+      unsigned char poly_1_2[] = { 2, 2, 0133, 0165 };
+      unsigned char *poly;
+
+      switch (mode) {
+        case CONV_2_5: poly = poly_2_5; break;
+        case CONV_1_2: poly = poly_1_2; break;
+      }
+
       unsigned char reg = (in[len-6] << 1) | (in[len-5] << 2) | (in[len-4] << 3)
                         | (in[len-3] << 4) | (in[len-2] << 5) | (in[len-1] << 6);
       int out_off = 0;
       for (int in_off = 0; in_off < len; in_off++) {
         reg = (reg >> 1) | (in[in_off] << 6);
-        for (int i = 0; i < ((in_off & 1) ? poly_l2 : poly_l1); i++) {
-          out[out_off++] = parity[reg & poly[i]];
+        for (int i = 0; i < poly[in_off & 1]; i++) {
+          out[out_off++] = parity[reg & poly[i+2]];
         }
       }
-    }
-
-    /* 1011sG.pdf section 9.3.4.2 */
-    void
-    l1_fm_encoder_impl::conv_2_5(const unsigned char *in, unsigned char *out, int len)
-    {
-      unsigned char poly[3] = { 0133, 0171, 0165 };
-      conv_enc(in, out, len, poly, 3, 2);
-    }
-
-    /* 1011sG.pdf section 9.3.4.3 */
-    void
-    l1_fm_encoder_impl::conv_1_2(const unsigned char *in, unsigned char *out, int len)
-    {
-      unsigned char poly[3] = { 0133, 0165 };
-      conv_enc(in, out, len, poly, 2, 2);
     }
 
     /* 1011sG.pdf sections 10.2.3 */
