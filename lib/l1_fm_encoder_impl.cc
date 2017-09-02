@@ -397,16 +397,14 @@ namespace gr {
     void
     l1_fm_encoder_impl::write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels)
     {
-      int partition = 0;
       for (int i = 0; i < num_channels; i++) {
         for (int j = 0; j < 18; j++) {
-          unsigned char ii = matrix_row[(partition * 36) + (j * 2)];
-          unsigned char qq = matrix_row[(partition * 36) + (j * 2) + 1];
+          unsigned char ii = matrix_row[(i * 36) + (j * 2)];
+          unsigned char qq = matrix_row[(i * 36) + (j * 2) + 1];
           unsigned char symbol = (ii << 1) | qq;
-          int carrier = REF_SC_CHAN[channels[i]] + j + 1;
+          int carrier = REF_SC_CHAN[channels[i]] + 1 + j;
           out_row[carrier] = symbol;
         }
-        partition++;
       }
     }
 
