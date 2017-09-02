@@ -40,32 +40,66 @@ namespace gr {
      */
     l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm)
       : gr::block("l1_fm_encoder",
-              gr::io_signature::make(2, 5, sizeof(unsigned char)),
+              gr::io_signature::make(2, 4, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->psm = psm;
       set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
 
+      p1_bits = 0;
+      p2_bits = 0;
       p3_bits = 0;
+      p4_bits = 0;
+      p1_mod = 1;
+      p2_mod = 1;
+      p3_mod = 8;
+      p4_mod = 8;
       switch(psm) {
+      case 1:
+        p1_bits = 146176;
+        break;
       case 2:
+        p1_bits = 146176;
         p3_bits = 2304;
         break;
       case 3:
-      case 11:
+        p1_bits = 146176;
         p3_bits = 4608;
+        break;
+      case 11:
+        p1_bits = 146176;
+        p3_bits = 4608;
+        p4_bits = 4608;
+        break;
+      case 5:
+        p1_bits = 4608;
+        p1_mod = 8;
+        p2_bits = 109312;
+        p3_bits = 4608;
+        break;
+      case 6:
+        p1_bits = 9216;
+        p1_mod = 8;
+        p2_bits = 72448;
         break;
       }
 
-      if (psm == 2 || psm == 3 || psm == 11) {
-        p3_p4_s = (unsigned char *) malloc(p3_bits);
-        p3_p4_g = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
-        px1_matrix = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
-        px1_internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
+      if (p1_mod == 8) {
+        p1_prime_off = 0;
+        p1_prime = (unsigned char *) malloc(p1_bits * p1_mod * 3);
+        p1_prime_s = (unsigned char *) malloc(p1_bits * p1_mod);
+        p1_prime_g = (unsigned char *) malloc(p1_bits * 2 * p1_mod);
+        px2_matrix = (unsigned char *) malloc(p1_bits * 2 * p1_mod);
       }
-      if (psm == 11) {
-        px2_matrix = (unsigned char *) malloc(p3_bits * 2 * (BLOCKS_PER_FRAME / 2));
-        px2_internal = (unsigned char *) malloc(p3_bits * 2 * BLOCKS_PER_FRAME);
+      if (p3_bits) {
+        p3_p4_s = (unsigned char *) malloc(p3_bits);
+        p3_p4_g = (unsigned char *) malloc(p3_bits * 2 * p3_mod);
+        px1_matrix = (unsigned char *) malloc(p3_bits * 2 * p3_mod);
+        px1_internal = (unsigned char *) malloc(p3_bits * 2 * p3_mod * 2);
+      }
+      if (p4_bits) {
+        px2_matrix = (unsigned char *) malloc(p4_bits * 2 * p4_mod);
+        px2_internal = (unsigned char *) malloc(p4_bits * 2 * p4_mod * 2);
       }
       internal_half = 0;
 
@@ -97,13 +131,19 @@ namespace gr {
      */
     l1_fm_encoder_impl::~l1_fm_encoder_impl()
     {
-      if (psm == 2 || psm == 3 || psm == 11) {
+      if (p1_mod == 8) {
+        free(p1_prime);
+        free(p1_prime_s);
+        free(p1_prime_g);
+        free(px2_matrix);
+      }
+      if (p3_bits) {
         free(p3_p4_s);
         free(p3_p4_g);
         free(px1_matrix);
         free(px1_internal);
       }
-      if (psm == 11) {
+      if (p4_bits) {
         free(px2_matrix);
         free(px2_internal);
       }
@@ -113,14 +153,13 @@ namespace gr {
     l1_fm_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
-      ninput_items_required[0] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
-      ninput_items_required[1] = frames * P1_BITS;
-      if (psm == 2 || psm == 3 || psm == 11) {
-        ninput_items_required[2] = frames * p3_bits * (BLOCKS_PER_FRAME / 2);
-      }
-      if (psm == 11) {
-        ninput_items_required[3] = frames * p3_bits * (BLOCKS_PER_FRAME / 2);
-      }
+      int port = 0;
+
+      ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
+      ninput_items_required[port++] = frames * p1_bits * p1_mod;
+      if (p2_bits) ninput_items_required[port++] = frames * p2_bits * p2_mod;
+      if (p3_bits) ninput_items_required[port++] = frames * p3_bits * p3_mod;
+      if (p4_bits) ninput_items_required[port++] = frames * p4_bits * p4_mod;
     }
 
     int
@@ -129,21 +168,22 @@ namespace gr {
                        gr_vector_const_void_star &input_items,
                        gr_vector_void_star &output_items)
     {
-      const unsigned char *pids = (const unsigned char *) input_items[0];
-      const unsigned char *p1 = (const unsigned char *) input_items[1];
+      int port = 0;
+      const unsigned char *pids = (const unsigned char *) input_items[port++];
+      const unsigned char *p1 = (const unsigned char *) input_items[port++];
+      const unsigned char *p2 = NULL;
       const unsigned char *p3 = NULL;
       const unsigned char *p4 = NULL;
-      if (psm == 2 || psm == 3 || psm == 11) {
-        p3 = (const unsigned char *) input_items[2];
-      }
-      if (psm == 11) {
-        p4 = (const unsigned char *) input_items[3];
-      }
+      if (p2_bits) p2 = (const unsigned char*) input_items[port++];
+      if (p3_bits) p3 = (const unsigned char*) input_items[port++];
+      if (p4_bits) p4 = (const unsigned char*) input_items[port++];
+
       unsigned char *out = (unsigned char *) output_items[0];
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
 
       int pids_off = 0;
       int p1_off = 0;
+      int p2_off = 0;
       int p3_off = 0;
       int p4_off = 0;
       int out_off = 0;
@@ -154,13 +194,42 @@ namespace gr {
           conv_2_5(pids_s, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
           pids_off += PIDS_BITS;
         }
-        reverse_bytes(p1 + p1_off, p1_s, P1_BITS);
-        scramble(p1_s, P1_BITS);
-        conv_2_5(p1_s, p1_g, P1_BITS);
-        interleaver_i_ii();
-        p1_off += P1_BITS;
-        if (psm == 2 || psm == 3 || psm == 11) {
-          for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
+
+        if (p1_mod == 1) {
+          reverse_bytes(p1 + p1_off, p1_s, p1_bits);
+          scramble(p1_s, p1_bits);
+          conv_2_5(p1_s, p1_g, p1_bits);
+          p1_off += p1_bits;
+        } else {
+          for (int i = 0; i < p1_mod; i++) {
+            reverse_bytes(p1 + p1_off, p1_s + (p1_bits * i), p1_bits);
+            scramble(p1_s + (p1_bits * i), p1_bits);
+            conv_2_5(p1_s + (p1_bits * i), p1_g + (p1_bits * 5 / 2 * i), p1_bits);
+
+            reverse_bytes(p1_prime + p1_prime_off, p1_prime_s + (p1_bits * i), p1_bits);
+            scramble(p1_prime_s + (p1_bits * i), p1_bits);
+            conv_1_2(p1_prime_s + (p1_bits * i), p1_prime_g + (p1_bits * 2 * i), p1_bits);
+
+            if (psm == 5) {
+              interleaver_i(p1_prime_g + (p1_bits * 2 * i), px2_matrix + (p1_bits * 2 * i), 4, 2, 36, 2, V_PX2_MP5, 9216);
+            } else {
+              interleaver_i(p1_prime_g + (p1_bits * 2 * i), px2_matrix + (p1_bits * 2 * i), 8, 2, 36, 1, V_PX2_MP6, 18432);
+            }
+
+            memcpy(p1_prime + p1_prime_off, p1 + p1_off, p1_bits);
+            p1_off += p1_bits;
+            p1_prime_off = (p1_prime_off + p1_bits) % (p1_bits * p1_mod * 3);
+          }
+          reverse_bytes(p2 + p2_off, p1_s + (p1_bits * p1_mod), p2_bits);
+          scramble(p1_s + (p1_bits * p1_mod), p2_bits);
+          conv_2_5(p1_s + (p1_bits * p1_mod), p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
+          p2_off += p2_bits;
+        }
+        interleaver_i(p1_g, pm_matrix, 20, 16, 36, 1, V_PM, 365440);
+        interleaver_ii(pids_g, pm_matrix, 20, 16, 36, 1, V_PM, 200, 365440, 3200);
+
+        if (p3_bits) {
+          for (int i = 0; i < p3_mod; i++) {
             reverse_bytes(p3 + p3_off, p3_p4_s, p3_bits);
             scramble(p3_p4_s, p3_bits);
             conv_1_2(p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
@@ -168,12 +237,12 @@ namespace gr {
           }
           interleaver_iv(px1_matrix, px1_internal, internal_half);
         }
-        if (psm == 11) {
-          for (int i = 0; i < (BLOCKS_PER_FRAME / 2); i++) {
-            reverse_bytes(p4 + p4_off, p3_p4_s, p3_bits);
-            scramble(p3_p4_s, p3_bits);
-            conv_1_2(p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
-            p4_off += p3_bits;
+        if (p4_bits) {
+          for (int i = 0; i < p4_mod; i++) {
+            reverse_bytes(p4 + p4_off, p3_p4_s, p4_bits);
+            scramble(p3_p4_s, p4_bits);
+            conv_1_2(p3_p4_s, p3_p4_g + (p4_bits * 2 * i), p4_bits);
+            p4_off += p4_bits;
           }
           interleaver_iv(px2_matrix, px2_internal, internal_half);
         }
@@ -189,37 +258,40 @@ namespace gr {
             if (chan == partitions_per_band()) chan = 61 - partitions_per_band() - 2;
           }
 
-          int p1_channels[] = {
+          int pm_channels[] = {
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
             50, 51, 52, 53, 54, 55, 56, 57, 58, 59
           };
-          write_symbol(int_mat_i_ii[symbol], out + out_off, p1_channels, 20);
+          write_symbol(pm_matrix + (symbol * 20 * 36), out + out_off, pm_channels, 20);
 
           if (psm == 2) {
-            int p3_channels[] = { 10, 49 };
-            write_symbol(px1_matrix + (symbol * p3_bits / 32), out + out_off, p3_channels, 2);
+            int px1_channels[] = { 10, 49 };
+            write_symbol(px1_matrix + (symbol * 2 * 36), out + out_off, px1_channels, 2);
           }
-          if (psm == 3 || psm == 11) {
-            int p3_channels[] = { 10, 11, 48, 49 };
-            write_symbol(px1_matrix + (symbol * p3_bits / 32), out + out_off, p3_channels, 4);
+          if (psm == 3 || psm == 11 || psm == 5) {
+            int px1_channels[] = { 10, 11, 48, 49 };
+            write_symbol(px1_matrix + (symbol * 4 * 36), out + out_off, px1_channels, 4);
           }
-          if (psm == 11) {
-            int p4_channels[] = { 12, 13, 46, 47 };
-            write_symbol(px2_matrix + (symbol * p3_bits / 32), out + out_off, p4_channels, 4);
+          if (psm == 11 || psm == 5) {
+            int px2_channels[] = { 12, 13, 46, 47 };
+            write_symbol(px2_matrix + (symbol * 4 * 36), out + out_off, px2_channels, 4);
+          }
+          if (psm == 6) {
+            int px2_channels[] = { 10, 11, 12, 13, 46, 47, 48, 49 };
+            write_symbol(px2_matrix + (symbol * 8 * 36), out + out_off, px2_channels, 8);
           }
 
           out_off += FFT_SIZE;
         }
       }
 
-      consume(0, frames * PIDS_BITS * BLOCKS_PER_FRAME);
-      consume(1, frames * P1_BITS);
-      if (psm == 2 || psm == 3 || psm == 11) {
-        consume(2, frames * p3_bits * (BLOCKS_PER_FRAME / 2));
-      }
-      if (psm == 11) {
-        consume(3, frames * p3_bits * (BLOCKS_PER_FRAME / 2));
-      }
+      port = 0;
+      consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
+      consume(port++, frames * p1_bits * p1_mod);
+      if (p2_bits) consume(port++, frames * p2_bits * p2_mod);
+      if (p3_bits) consume(port++, frames * p3_bits * p3_mod);
+      if (p4_bits) consume(port++, frames * p4_bits * p4_mod);
+
       return noutput_items;
     }
 
@@ -277,20 +349,12 @@ namespace gr {
       conv_enc(in, out, len, poly, 2, 2);
     }
 
-    /* 1011sG.pdf sections 10.2.3 & 10.2.4 */
+    /* 1011sG.pdf sections 10.2.3 */
     void
-    l1_fm_encoder_impl::interleaver_i_ii()
+    l1_fm_encoder_impl::interleaver_i(unsigned char *in, unsigned char *matrix,
+      int J, int B, int C, int M, unsigned char *V, int N)
     {
-      int J = 20; // number of partitions
-      int B = 16; // blocks
-      int C = 36; // columns per partition
-      int M = 1;  // factor: 1, 2 or 4
-
-      int b = 200;
-      int N1 = 365440;
-      int N2 = 3200;
-
-      for (int i = 0; i < N1; i++) {
+      for (int i = 0; i < N; i++) {
         int partition = V[((i + 2 * (M / 4)) / M) % J];
         int block;
         if (M == 1)
@@ -299,17 +363,23 @@ namespace gr {
           block = (i + (i / (J * B))) % B;
         int ki = i / (J * B);
         int row = (ki * 11) % 32;
-        int col = ((ki * 11) + (ki / (32*9))) % C;
-        int_mat_i_ii[(block * 32) + row][(partition * C) + col] = p1_g[i];
+        int col = ((ki * 11) + (ki / (32 * 9))) % C;
+        matrix[((block * 32) + row) * (J * C) + (partition * C) + col] = in[i];
       }
+    }
 
-      for (int i = 0; i < N2; i++) {
+    /* 1011sG.pdf sections 10.2.4 */
+    void
+    l1_fm_encoder_impl::interleaver_ii(unsigned char *in, unsigned char *matrix,
+      int J, int B, int C, int M, unsigned char *V, int b, int I0, int N)
+    {
+      for (int i = 0; i < N; i++) {
         int partition = V[i % J];
         int block = i / b;
-        int ki = ((i / J) % (b / J)) + (N1 / (J * B));
+        int ki = ((i / J) % (b / J)) + (I0 / (J * B));
         int row = (ki * 11) % 32;
-        int col = ((ki * 11) + (ki / (32*9))) % C;
-        int_mat_i_ii[(block * 32) + row][(partition * C) + col] = pids_g[i];
+        int col = ((ki * 11) + (ki / (32 * 9))) % C;
+        matrix[((block * 32) + row) * (J * C) + (partition * C) + col] = in[i];
       }
     }
 

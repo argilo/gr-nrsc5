@@ -54,6 +54,28 @@
       <opt>port3_hide:</opt>
       <opt>port3_vlen:4608</opt>
     </option>
+    <option>
+      <name>MP5</name>
+      <key>5</key>
+      <opt>port1_vlen:4608</opt>
+      <opt>port2_optional:0</opt>
+      <opt>port2_hide:</opt>
+      <opt>port2_vlen:109312</opt>
+      <opt>port3_optional:0</opt>
+      <opt>port3_hide:</opt>
+      <opt>port3_vlen:4608</opt>
+    </option>
+    <option>
+      <name>MP6</name>
+      <key>6</key>
+      <opt>port1_vlen:9216</opt>
+      <opt>port2_optional:0</opt>
+      <opt>port2_hide:</opt>
+      <opt>port2_vlen:72448</opt>
+      <opt>port3_optional:1</opt>
+      <opt>port3_hide:all</opt>
+      <opt>port3_vlen:</opt>
+    </option>
   </param>
   <sink>
     <name>pids</name>

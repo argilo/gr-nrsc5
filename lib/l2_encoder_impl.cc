@@ -60,12 +60,15 @@ namespace gr {
 
       switch(size) {
       case 146176:
+      case 109312:
+      case 72448:
         target_nop = 32;
         lc_bits = 16;
         psd_bytes = 128;
         pdu_seq_len = 2;
         codec_mode = 0;
         break;
+      case 9216:
       case 4608:
       case 2304:
         target_nop = 4;
