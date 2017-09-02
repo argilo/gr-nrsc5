@@ -47,15 +47,12 @@ namespace gr {
       int p2_bits, p2_mod;
       int p3_bits, p3_mod;
       int p4_bits, p4_mod;
-      unsigned char pids_s[PIDS_BITS];
-      unsigned char p1_s[P1_BITS];
-      unsigned char *p3_p4_s;
+      unsigned char buf[P1_BITS];
       unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
       unsigned char *p3_p4_g;
       int p1_prime_off;
       unsigned char *p1_prime;
-      unsigned char *p1_prime_s;
       unsigned char *p1_prime_g;
       unsigned char pm_matrix[SYMBOLS_PER_FRAME * 20 * 36];
       unsigned char *px1_matrix;
@@ -69,6 +66,7 @@ namespace gr {
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
       void conv_enc(int mode, const unsigned char *in, unsigned char *out, int len);
+      void encode_l2_pdu(int mode, const unsigned char *in, unsigned char *out, int len);
       void interleaver_i(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int N);
       void interleaver_ii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int b, int I0, int N);
       void interleaver_iv(unsigned char *matrix, unsigned char *internal, int half);

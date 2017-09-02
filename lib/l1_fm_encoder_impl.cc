@@ -87,12 +87,10 @@ namespace gr {
       if (p1_mod == 8) {
         p1_prime_off = 0;
         p1_prime = (unsigned char *) malloc(p1_bits * p1_mod * 3);
-        p1_prime_s = (unsigned char *) malloc(p1_bits * p1_mod);
         p1_prime_g = (unsigned char *) malloc(p1_bits * 2 * p1_mod);
         px2_matrix = (unsigned char *) malloc(p1_bits * 2 * p1_mod);
       }
       if (p3_bits) {
-        p3_p4_s = (unsigned char *) malloc(p3_bits);
         p3_p4_g = (unsigned char *) malloc(p3_bits * 2 * p3_mod);
         px1_matrix = (unsigned char *) malloc(p3_bits * 2 * p3_mod);
         px1_internal = (unsigned char *) malloc(p3_bits * 2 * p3_mod * 2);
@@ -133,12 +131,10 @@ namespace gr {
     {
       if (p1_mod == 8) {
         free(p1_prime);
-        free(p1_prime_s);
         free(p1_prime_g);
         free(px2_matrix);
       }
       if (p3_bits) {
-        free(p3_p4_s);
         free(p3_p4_g);
         free(px1_matrix);
         free(px1_internal);
@@ -189,26 +185,17 @@ namespace gr {
       int out_off = 0;
       for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
-          reverse_bytes(pids + pids_off, pids_s, PIDS_BITS);
-          scramble(pids_s, PIDS_BITS);
-          conv_enc(CONV_2_5, pids_s, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
+          encode_l2_pdu(CONV_2_5, pids + pids_off, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
           pids_off += PIDS_BITS;
         }
 
         if (p1_mod == 1) {
-          reverse_bytes(p1 + p1_off, p1_s, p1_bits);
-          scramble(p1_s, p1_bits);
-          conv_enc(CONV_2_5, p1_s, p1_g, p1_bits);
+          encode_l2_pdu(CONV_2_5, p1 + p1_off, p1_g, p1_bits);
           p1_off += p1_bits;
         } else {
           for (int i = 0; i < p1_mod; i++) {
-            reverse_bytes(p1 + p1_off, p1_s + (p1_bits * i), p1_bits);
-            scramble(p1_s + (p1_bits * i), p1_bits);
-            conv_enc(CONV_2_5, p1_s + (p1_bits * i), p1_g + (p1_bits * 5 / 2 * i), p1_bits);
-
-            reverse_bytes(p1_prime + p1_prime_off, p1_prime_s + (p1_bits * i), p1_bits);
-            scramble(p1_prime_s + (p1_bits * i), p1_bits);
-            conv_enc(CONV_1_2, p1_prime_s + (p1_bits * i), p1_prime_g + (p1_bits * 2 * i), p1_bits);
+            encode_l2_pdu(CONV_2_5, p1 + p1_off, p1_g + (p1_bits * 5 / 2 * i), p1_bits);
+            encode_l2_pdu(CONV_1_2, p1_prime + p1_prime_off, p1_prime_g + (p1_bits * 2 * i), p1_bits);
 
             if (psm == 5) {
               interleaver_i(p1_prime_g + (p1_bits * 2 * i), px2_matrix + (p1_bits * 2 * i), 4, 2, 36, 2, V_PX2_MP5, 9216);
@@ -220,9 +207,7 @@ namespace gr {
             p1_off += p1_bits;
             p1_prime_off = (p1_prime_off + p1_bits) % (p1_bits * p1_mod * 3);
           }
-          reverse_bytes(p2 + p2_off, p1_s + (p1_bits * p1_mod), p2_bits);
-          scramble(p1_s + (p1_bits * p1_mod), p2_bits);
-          conv_enc(CONV_2_5, p1_s + (p1_bits * p1_mod), p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
+          encode_l2_pdu(CONV_2_5, p2 + p2_off, p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
           p2_off += p2_bits;
         }
         interleaver_i(p1_g, pm_matrix, 20, 16, 36, 1, V_PM, 365440);
@@ -230,18 +215,14 @@ namespace gr {
 
         if (p3_bits) {
           for (int i = 0; i < p3_mod; i++) {
-            reverse_bytes(p3 + p3_off, p3_p4_s, p3_bits);
-            scramble(p3_p4_s, p3_bits);
-            conv_enc(CONV_1_2, p3_p4_s, p3_p4_g + (p3_bits * 2 * i), p3_bits);
+            encode_l2_pdu(CONV_1_2, p3 + p3_off, p3_p4_g + (p3_bits * 2 * i), p3_bits);
             p3_off += p3_bits;
           }
           interleaver_iv(px1_matrix, px1_internal, internal_half);
         }
         if (p4_bits) {
           for (int i = 0; i < p4_mod; i++) {
-            reverse_bytes(p4 + p4_off, p3_p4_s, p4_bits);
-            scramble(p3_p4_s, p4_bits);
-            conv_enc(CONV_1_2, p3_p4_s, p3_p4_g + (p4_bits * 2 * i), p4_bits);
+            encode_l2_pdu(CONV_1_2, p4 + p4_off, p3_p4_g + (p4_bits * 2 * i), p4_bits);
             p4_off += p4_bits;
           }
           interleaver_iv(px2_matrix, px2_internal, internal_half);
@@ -339,6 +320,14 @@ namespace gr {
           out[out_off++] = parity[reg & poly[i+2]];
         }
       }
+    }
+
+    void
+    l1_fm_encoder_impl::encode_l2_pdu(int mode, const unsigned char *in, unsigned char *out, int len)
+    {
+      reverse_bytes(in, buf, len);
+      scramble(buf, len);
+      conv_enc(mode, buf, out, len);
     }
 
     /* 1011sG.pdf sections 10.2.3 */
