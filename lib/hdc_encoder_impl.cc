@@ -144,7 +144,7 @@ namespace gr {
       }
 
       while (out_off < noutput_items) {
-        if (out_off + outbuf_len >= noutput_items) {
+        if (out_off + outbuf_len > noutput_items) {
           int space = noutput_items - out_off;
           memcpy(out + out_off, outbuf + outbuf_off, space);
           out_off += space;
@@ -201,7 +201,6 @@ namespace gr {
         if ((err = aacEncEncode(handle, &in_buf, &out_buf, &in_args, &out_args)) != AACENC_OK) {
           throw std::runtime_error("hdc_encoder: Encoding failed");
         }
-        outbuf_off = 0;
         outbuf_len = out_args.numOutBytes;
       }
 
