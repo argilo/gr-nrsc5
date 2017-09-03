@@ -136,6 +136,13 @@ namespace gr {
       int in_off = 0;
       int out_off = 0;
 
+      int min_input_items = INT_MAX;
+      for (int channel = 0; channel < channels; channel++) {
+        if (ninput_items[channel] < min_input_items) {
+          min_input_items = ninput_items[channel];
+        }
+      }
+
       while (out_off < noutput_items) {
         if (out_off + outbuf_len >= noutput_items) {
           int space = noutput_items - out_off;
@@ -151,9 +158,7 @@ namespace gr {
         outbuf_off = 0;
         outbuf_len = 0;
 
-        for (int channel = 0; channel < channels; channel++) {
-          if (in_off + frame_length > ninput_items[channel]) break;
-        }
+        if (in_off + frame_length > min_input_items) break;
 
         AACENC_BufDesc in_buf = { 0 }, out_buf = { 0 };
         AACENC_InArgs in_args = { 0 };
