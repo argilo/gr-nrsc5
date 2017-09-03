@@ -61,6 +61,8 @@ namespace gr {
       int pdu_seq_len;
       int codec_mode;
       int start_seq_no[8];
+      int target_seq_no;
+      int partial_bytes[8];
       unsigned char *out_buf;
 
       void write_control_word(unsigned char *out, int codec_mode, int stream_id,
@@ -69,6 +71,8 @@ namespace gr {
       void write_hef(unsigned char *out, int program_number, int access, int program_type);
       void write_locator(unsigned char *out, int i, int locator);
       void header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci);
+      int adts_length(const unsigned char *header);
+      int len_locators(int nop);
 
      public:
       l2_encoder_impl(const int num_progs, const int first_prog, const int size);

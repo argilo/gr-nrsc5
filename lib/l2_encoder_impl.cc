@@ -29,6 +29,8 @@ extern "C" {
 #include <gnuradio/fec/rs.h>
 }
 
+#include <stdio.h>
+
 namespace gr {
   namespace nrsc5 {
 
@@ -57,6 +59,8 @@ namespace gr {
       memset(rs_buf, 0, 255);
       pdu_seq_no = 0;
       memset(start_seq_no, 0, sizeof(start_seq_no));
+      target_seq_no = 0;
+      memset(partial_bytes, 0, sizeof(partial_bytes));
 
       switch(size) {
       case 146176:
@@ -115,23 +119,61 @@ namespace gr {
         memset(out_buf, 0, payload_bytes);
 
         unsigned char *out_program = out_buf;
+        target_seq_no += target_nop;
         for (int p = 0; p < num_progs; p++) {
-          int nop = target_nop;
-          int len_locators = ((lc_bits * nop) + 4) / 8;
-          int la_loc = 14 + len_locators + 3 + psd_bytes - 1;
+
+          int bytes_left = (out_buf + payload_bytes) - out_program;
+          int nop = 0;
+          int off = hdc_off[p];
+          int audio_length = 0;
+          int begin_bytes = 0;
+          int end_bytes = 0;
+          if (partial_bytes[p]) {
+            nop++;
+            audio_length = partial_bytes[p] + 1;
+            off += partial_bytes[p];
+          }
+          while (nop < target_seq_no - start_seq_no[p]) {
+            if (off + 7 > ninput_items[p]) break;
+            int length = adts_length(hdc[p] + off);
+            off += 7;
+
+            if (off + length > ninput_items[p]) break;
+            off += length;
+
+            if (14 + len_locators(nop + 1) + 3 + psd_bytes + audio_length + 2 > bytes_left) break;
+            if (14 + len_locators(nop + 1) + 3 + psd_bytes + audio_length + length + 1 > bytes_left) {
+              begin_bytes = bytes_left - (14 + len_locators(nop + 1) + 3 + psd_bytes + audio_length + 1);
+              end_bytes = length - begin_bytes;
+              nop++;
+              break;
+            }
+
+            nop++;
+            audio_length += length + 1;
+          }
+
+          int la_loc = 14 + len_locators(nop) + 3 + psd_bytes - 1;
 
           write_control_word(out_program + 8, codec_mode, /*stream_id*/ 0, pdu_seq_no, /*blend_control*/ 2,
-            /*per_stream_delay*/ 0, /*common_delay*/ 0, /*latency*/ 4, /*p_first*/ 0, /*p_last*/ 0,
+            /*per_stream_delay*/ 0, /*common_delay*/ 0, /*latency*/ 4, partial_bytes[p] ? 1 : 0, begin_bytes ? 1 : 0,
             start_seq_no[p], nop, /*hef*/ 1, la_loc);
 
           int end = la_loc;
           for (int i = 0; i < nop; i++) {
-            int length = ((hdc[p][hdc_off[p]+3] & 0x03) << 11 | (hdc[p][hdc_off[p]+4] << 3) | (hdc[p][hdc_off[p]+5] >> 5)) - 7;
-            if (end + 1 + length >= payload_bytes) {
-              // TODO: Handle this more gracefully.
-              throw std::runtime_error("l2_encoder: too much audio data");
+            int length;
+            if ((i == 0) && partial_bytes[p]) {
+              length = partial_bytes[p];
+            } else if ((i == nop - 1) && begin_bytes) {
+              length = begin_bytes;
+              hdc_off[p] += 7;
+              start_seq_no[p]++;
+            } else {
+              length = adts_length(hdc[p] + hdc_off[p]);
+              hdc_off[p] += 7;
+              start_seq_no[p]++;
             }
-            hdc_off[p] += 7;
+
             unsigned char crc_reg = 0xff;
             for (int j = 0; j < length; j++) {
               crc_reg = CRC8_TABLE[crc_reg ^ hdc[p][hdc_off[p]]];
@@ -140,10 +182,11 @@ namespace gr {
             out_program[++end] = crc_reg;
             write_locator(out_program + 14, i, end);
           }
+          partial_bytes[p] = end_bytes;
 
-          write_hef(out_program + 14 + len_locators, first_prog + p, /*access*/ 0, /*program_type*/ 0);
+          write_hef(out_program + 14 + len_locators(nop), first_prog + p, /*access*/ 0, /*program_type*/ 0);
 
-          memcpy(out_program + (14 + len_locators + 3), psd[p] + psd_off[p], psd_bytes);
+          memcpy(out_program + (14 + len_locators(nop) + 3), psd[p] + psd_off[p], psd_bytes);
           psd_off[p] += psd_bytes;
 
           // Reed-Solomon encoding
@@ -156,7 +199,10 @@ namespace gr {
           }
 
           out_program += (end + 1);
-          start_seq_no[p] = (start_seq_no[p] + nop) % 64;
+
+          if (target_seq_no - start_seq_no[p] > 8) {
+            fprintf(stderr, "Audio bitrate it too high\n");
+          }
         }
 
         header_spread(out_buf, out + out_off, CW0);
@@ -181,7 +227,7 @@ namespace gr {
       out[1] = (per_stream_delay << 3) | (blend_control << 1) | (pdu_seq_no >> 2);
       out[2] = ((latency & 0x3) << 6) | common_delay;
       out[3] = ((start_seq_no & 0x1f) << 3) | (p_last << 2) | (p_first << 1) | (latency >> 2);
-      out[4] = (hef << 7) | (nop << 1) | (start_seq_no >> 5);
+      out[4] = (hef << 7) | (nop << 1) | ((start_seq_no & 0x20) >> 5);
       out[5] = la_loc;
     }
 
@@ -235,6 +281,18 @@ namespace gr {
           out[out_off++] = (in[i] >> (7-j)) & 1;
         }
       }
+    }
+
+    int
+    l2_encoder_impl::adts_length(const unsigned char *header)
+    {
+      return ((header[3] & 0x03) << 11 | (header[4] << 3) | (header[5] >> 5)) - 7;
+    }
+
+    int
+    l2_encoder_impl::len_locators(int nop)
+    {
+      return ((lc_bits * nop) + 4) / 8;
     }
 
   } /* namespace nrsc5 */
