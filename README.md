@@ -24,8 +24,8 @@ gr-nrsc5
 
 The goal of this project is to implement an HD Radio receiver and transmitter
 in GNU Radio. HD Radio is standardized in NRSC-5. The latest version of the
-standard is NRSC-5-C, which can be found at
-http://www.nrscstandards.org/NRSC-5-C.asp.
+standard is NRSC-5-D, which can be found at
+http://www.nrscstandards.org/NRSC-5-D.asp.
 
 So far only a transmitter has been implemented. A stand-alone receiver for RTL-SDR is available here: https://github.com/theori-io/nrsc5/
 
@@ -37,19 +37,19 @@ This block encodes audio into High-Definition Coding (HDC) frames. The input sam
 
 ### PSD encoder
 
-This block encodes Program Service Data PDUs, as described in http://www.nrscstandards.org/SG/NRSC-5-C/1028sD.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
+This block encodes Program Service Data PDUs, as described in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
 
 ### PIDS encoder
 
-This block encodes Station Information Service PDUs, as described in http://www.nrscstandards.org/SG/NRSC-5-C/1020sI.pdf, and assembles them into the PIDS logical channel. SIS provides information about the station. Currently only the short station name (i.e. call sign) is encoded.
+This block encodes Station Information Service PDUs, as described in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1020s.pdf, and assembles them into the PIDS logical channel. SIS provides information about the station. Currently only the short station name (i.e. call sign) is encoded.
 
 ### Layer 2 encoder
 
-This block assembles HDC audio frames and PSD PDUs into the audio transport, producing layer 2 PDUs (as defined in http://www.nrscstandards.org/SG/NRSC-5-C/1014sI.pdf and http://www.nrscstandards.org/SG/NRSC-5-C/1017sG.pdf).
+This block assembles HDC audio frames and PSD PDUs into the audio transport, producing layer 2 PDUs (as defined in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1014s.pdf and http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1017s.pdf).
 
 ### Layer 1 FM encoder
 
-This block implements Layer 1 FM (as defined in http://www.nrscstandards.org/SG/NRSC-5-C/1011sG.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid and Extended Hybrid modes have been implemented so far. The All Digital modes are not yet supported.
+This block implements Layer 1 FM (as defined in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1011s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid and Extended Hybrid modes have been implemented so far. The All Digital modes are not yet supported.
 
 The output bytes map to symbols as follows:
 

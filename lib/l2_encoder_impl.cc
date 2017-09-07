@@ -217,7 +217,7 @@ namespace gr {
       return noutput_items;
     }
 
-    /* 1017sG.pdf figure 5-2 */
+    /* 1017s.pdf figure 5-2 */
     void
     l2_encoder_impl::write_control_word(unsigned char *out, int codec_mode, int stream_id,
       int pdu_seq_no, int blend_control, int per_stream_delay, int common_delay, int latency,
@@ -231,7 +231,7 @@ namespace gr {
       out[5] = la_loc;
     }
 
-    /* 1017sG.pdf section 5.2.1.6 */
+    /* 1017s.pdf section 5.2.1.6 */
     void
     l2_encoder_impl::write_hef(unsigned char *out, int program_number, int access, int program_type)
     {
@@ -257,7 +257,7 @@ namespace gr {
       }
     }
 
-    /* 1014sI.pdf figure 5-2 */
+    /* 1014s.pdf figure 5-2 */
     void
     l2_encoder_impl::header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci)
     {

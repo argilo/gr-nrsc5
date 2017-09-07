@@ -286,7 +286,7 @@ namespace gr {
       }
     }
 
-    /* 1011sG.pdf section 8.2 */
+    /* 1011s.pdf section 8.2 */
     void
     l1_fm_encoder_impl::scramble(unsigned char *buf, int len)
     {
@@ -298,7 +298,7 @@ namespace gr {
       }
     }
 
-    /* 1011sG.pdf section 9.3 */
+    /* 1011s.pdf section 9.3 */
     void
     l1_fm_encoder_impl::conv_enc(int mode, const unsigned char *in, unsigned char *out, int len)
     {
@@ -330,7 +330,7 @@ namespace gr {
       conv_enc(mode, buf, out, len);
     }
 
-    /* 1011sG.pdf sections 10.2.3 */
+    /* 1011s.pdf sections 10.2.3 */
     void
     l1_fm_encoder_impl::interleaver_i(unsigned char *in, unsigned char *matrix,
       int J, int B, int C, int M, unsigned char *V, int N)
@@ -349,7 +349,7 @@ namespace gr {
       }
     }
 
-    /* 1011sG.pdf sections 10.2.4 */
+    /* 1011s.pdf sections 10.2.4 */
     void
     l1_fm_encoder_impl::interleaver_ii(unsigned char *in, unsigned char *matrix,
       int J, int B, int C, int M, unsigned char *V, int b, int I0, int N)
@@ -364,7 +364,7 @@ namespace gr {
       }
     }
 
-    /* 1011sG.pdf sections 10.2.6 */
+    /* 1011s.pdf sections 10.2.6 */
     void
     l1_fm_encoder_impl::interleaver_iv(unsigned char *matrix, unsigned char *internal, int half)
     {
@@ -408,7 +408,7 @@ namespace gr {
       }
     }
 
-    /* 1011sG.pdf table 11-1 */
+    /* 1011s.pdf table 11-1 */
     void
     l1_fm_encoder_impl::primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi)
     {

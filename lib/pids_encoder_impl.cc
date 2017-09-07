@@ -86,7 +86,7 @@ namespace gr {
       return noutput_items;
     }
 
-    /* 1020sI.pdf section 4.10
+    /* 1020s.pdf section 4.10
      * Note: The specified CRC is incorrect. It's actually a 16-bit CRC
      * truncated to 12 bits, and g(x) = X^16 + X^11 + X^3 + X + 1 */
     int

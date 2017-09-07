@@ -28,7 +28,7 @@
 #define PIDS_BITS 80
 #define BLOCKS_PER_FRAME 16
 
-/* 1020sI.pdf Figure 4-1 */
+/* 1020s.pdf Figure 4-1 */
 #define PIDS_FORMATTED               0
 
 #define NO_EXTENSION                 0
