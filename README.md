@@ -69,4 +69,10 @@ Several sample flowgraphs are available in the apps folder:
 * hd_tx_hackrf.grc, hd_tx_hackrf.py: tested on a HackRF One
 * hd_tx_rtl_file.grc, hd_tx_rtl_file.py: produces an output file in the format used by https://github.com/theori-io/nrsc5/
 
-Before using these, create a WAV file named sample.wav encoded at 44,100 samples per second.
+These flowgraphs read a WAV file named sample.wav, which must be encoded at 44,100 samples per second. The license for the supplied sample.wav file is as follows:
+
+> Copyright 2013, Canonical Ltd.
+> This work is licensed under the Creative Commons Attribution-ShareAlike 3.0
+> Unported License. To view a copy of this license, visit
+> http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative
+> Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.
