@@ -28,6 +28,9 @@ namespace gr {
     unsigned char V_PM[] = { 10, 2, 18, 6, 14, 8, 16, 0, 12, 4, 11, 3, 19, 7, 15, 9, 17, 1, 13, 5 };
     unsigned char V_PX2_MP5[] = { 0, 1, 2, 3 };
     unsigned char V_PX2_MP6[] = { 0, 1, 3, 2, 4, 5, 7, 6 };
+    unsigned char V_SM[] = { 19, 7, 11, 3, 15, 1, 13, 9, 17, 5, 18, 6, 10, 2, 14, 0, 12, 8, 16, 4 };
+    unsigned char V_SB[] = { 27, 7, 19, 12, 3, 23, 10, 1, 21, 9, 14, 25, 5, 17, 26, 6, 18, 13, 2, 22, 11, 0, 20, 8, 15, 24, 4, 16 };
+    unsigned char V_SP[] = { 1, 0 };
     int REF_SC_CHAN[] = {
       478, 497, 516, 535, 554, 573, 592, 611, 630, 649, 668, 687, 706, 725, 744,
       745, 758, 777, 796, 815, 834, 853, 872, 891, 910, 929, 948, 967, 986, 1005, 1024, 1043, 1062, 1081, 1100, 1119, 1138, 1157, 1176, 1195, 1214, 1233, 1252, 1271, 1290, 1303,
@@ -69,9 +72,11 @@ namespace gr {
       void encode_l2_pdu(int mode, const unsigned char *in, unsigned char *out, int len);
       void interleaver_i(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int N);
       void interleaver_ii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int b, int I0, int N);
+      void interleaver_iii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int N);
       void interleaver_iv(unsigned char *matrix, unsigned char *internal, int half);
       void write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels);
       void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
+      void secondary_sc_data_seq(unsigned char *out, int scid, int bc, int ssmi);
       int partitions_per_band();
 
      public:

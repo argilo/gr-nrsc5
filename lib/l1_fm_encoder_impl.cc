@@ -302,13 +302,17 @@ namespace gr {
     void
     l1_fm_encoder_impl::conv_enc(int mode, const unsigned char *in, unsigned char *out, int len)
     {
+      unsigned char poly_1_3[] = { 3, 3, 0133, 0171, 0165 };
       unsigned char poly_2_5[] = { 3, 2, 0133, 0171, 0165 };
       unsigned char poly_1_2[] = { 2, 2, 0133, 0165 };
+      unsigned char poly_2_7[] = { 4, 3, 0133, 0171, 0165, 0165 };
       unsigned char *poly;
 
       switch (mode) {
+        case CONV_1_3: poly = poly_1_3; break;
         case CONV_2_5: poly = poly_2_5; break;
         case CONV_1_2: poly = poly_1_2; break;
+        case CONV_2_7: poly = poly_2_7; break;
       }
 
       unsigned char reg = (in[len-6] << 1) | (in[len-5] << 2) | (in[len-4] << 3)
@@ -364,6 +368,20 @@ namespace gr {
       }
     }
 
+    /* 1011s.pdf sections 10.2.5 */
+    void
+    l1_fm_encoder_impl::interleaver_iii(unsigned char *in, unsigned char *matrix,
+      int J, int B, int C, int M, unsigned char *V, int N)
+    {
+      for (int i = 0; i < N; i++) {
+        int partition = V[(i + (i / M)) % J];
+        int ki = i / J;
+        int row = (ki * 11) % 32;
+        int col = ((ki * 11) + (ki / 32)) % C;
+        matrix[row * (J * C) + (partition * C) + col] = in[i];
+      }
+    }
+
     /* 1011s.pdf sections 10.2.6 */
     void
     l1_fm_encoder_impl::interleaver_iv(unsigned char *matrix, unsigned char *internal, int half)
@@ -412,44 +430,89 @@ namespace gr {
     void
     l1_fm_encoder_impl::primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi)
     {
-      out[0] = 0;
-      out[1] = 1;
-      out[2] = 1;
-      out[3] = 0;
-      out[4] = 0;
-      out[5] = 1;
-      out[6] = 0;
+      out[0] = 0; // sync
+      out[1] = 1; // sync
+      out[2] = 1; // sync
+      out[3] = 0; // sync
+      out[4] = 0; // sync
+      out[5] = 1; // sync
+      out[6] = 0; // sync
 
-      out[7] = 0;
+      out[7] = 0; // reserved
       out[8] = out[7]; // parity
 
-      out[9] = 1;
+      out[9] = 1; // sync
 
       out[10] = (scid & 0x2) >> 1;
       out[11] = (scid & 0x1);
       out[12] = sci;
       out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
-      out[14] = 0;
+      out[14] = 0; // sync
 
-      out[15] = 0;
+      out[15] = 0; // reserved
       out[16] = (bc & 0x8) >> 3;
       out[17] = (bc & 0x4) >> 2;
       out[18] = (bc & 0x2) >> 1;
       out[19] = (bc & 0x1);
       out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
 
-      out[21] = 1;
-      out[22] = 1;
+      out[21] = 1; // sync
+      out[22] = 1; // sync
 
-      out[23] = 1;
-      out[24] = 0;
+      out[23] = 1; // P3ISI
+      out[24] = 0; // reserved
       out[25] = (psmi & 0x20) >> 5;
       out[26] = (psmi & 0x10) >> 4;
       out[27] = (psmi & 0x08) >> 3;
       out[28] = (psmi & 0x04) >> 2;
       out[29] = (psmi & 0x02) >> 1;
       out[30] = (psmi & 0x01);
+      out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
+    }
+
+    /* 1011s.pdf table 11-2 */
+    void
+    l1_fm_encoder_impl::secondary_sc_data_seq(unsigned char *out, int scid, int bc, int ssmi)
+    {
+      out[0] = 0; // sync
+      out[1] = 1; // sync
+      out[2] = 1; // sync
+      out[3] = 0; // sync
+      out[4] = 0; // sync
+      out[5] = 1; // sync
+      out[6] = 0; // sync
+
+      out[7] = 0; // reserved
+      out[8] = out[7]; // parity
+
+      out[9] = 1; // sync
+
+      out[10] = (scid & 0x2) >> 1;
+      out[11] = (scid & 0x1);
+      out[12] = 0; // reserved
+      out[13] = out[10] ^ out[11] ^ out[12]; // parity
+
+      out[14] = 0; // sync
+
+      out[15] = 0; // reserved
+      out[16] = (bc & 0x8) >> 3;
+      out[17] = (bc & 0x4) >> 2;
+      out[18] = (bc & 0x2) >> 1;
+      out[19] = (bc & 0x1);
+      out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
+
+      out[21] = 1; // sync
+      out[22] = 1; // sync
+
+      out[23] = 0; // reserved
+      out[24] = 0; // reserved
+      out[25] = 0; // reserved
+      out[26] = (ssmi & 0x10) >> 4;
+      out[27] = (ssmi & 0x08) >> 3;
+      out[28] = (ssmi & 0x04) >> 2;
+      out[29] = (ssmi & 0x02) >> 1;
+      out[30] = (ssmi & 0x01);
       out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
     }
 
