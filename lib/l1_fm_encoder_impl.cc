@@ -29,21 +29,22 @@ namespace gr {
   namespace nrsc5 {
 
     l1_fm_encoder::sptr
-    l1_fm_encoder::make(const int psm)
+    l1_fm_encoder::make(const int psm, const int ssm)
     {
       return gnuradio::get_initial_sptr
-        (new l1_fm_encoder_impl(psm));
+        (new l1_fm_encoder_impl(psm, ssm));
     }
 
     /*
      * The private constructor
      */
-    l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm)
+    l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
       : gr::block("l1_fm_encoder",
               gr::io_signature::make(2, 4, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->psm = psm;
+      this->ssm = ssm;
       set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
 
       p1_bits = 0;
@@ -84,6 +85,40 @@ namespace gr {
         break;
       }
 
+      s1_bits = 0;
+      s2_bits = 0;
+      s3_bits = 0;
+      s4_bits = 0;
+      s5_bits = 0;
+      s1_mod = 8;
+      s2_mod = 1;
+      s3_mod = 8;
+      s4_mod = 8;
+      s5_mod = 16;
+      switch(ssm) {
+      case 1:
+        s4_bits = 18272;
+        s5_bits = 512;
+        break;
+      case 2:
+        s1_bits = 4608;
+        s2_bits = 109312;
+        s3_bits = 4608;
+        s5_bits = 512;
+        break;
+      case 3:
+        s1_bits = 9216;
+        s2_bits = 72448;
+        s5_bits = 512;
+        break;
+      case 4:
+        s1_bits = 4608;
+        s2_bits = 146176;
+        s3_bits = 4608;
+        s5_bits = 512;
+        break;
+      }
+
       if (p1_mod == 8) {
         p1_prime_off = 0;
         p1_prime = (unsigned char *) malloc(p1_bits * p1_mod * 3);
@@ -112,14 +147,8 @@ namespace gr {
 
       for (int scid = 0; scid < 4; scid++) {
         for (int bc = 0; bc < BLOCKS_PER_FRAME; bc++) {
-          primary_sc_data_seq(primary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, 0, bc, psm);
-        }
-        unsigned char last_symbol = 0;
-        for (int i = 0; i < SYMBOLS_PER_FRAME; i++) {
-          if (primary_sc_symbols[scid][i]) {
-            last_symbol ^= 3;
-          }
-          primary_sc_symbols[scid][i] = last_symbol;
+          primary_sc_data_seq(primary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, ssm ? 1 : 0, bc, psm);
+          secondary_sc_data_seq(secondary_sc_symbols[scid] + (bc * SYMBOLS_PER_BLOCK), scid, bc, ssm);
         }
       }
     }
@@ -469,6 +498,8 @@ namespace gr {
       out[29] = (psmi & 0x02) >> 1;
       out[30] = (psmi & 0x01);
       out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
+
+      differential_encode(out);
     }
 
     /* 1011s.pdf table 11-2 */
@@ -514,6 +545,19 @@ namespace gr {
       out[29] = (ssmi & 0x02) >> 1;
       out[30] = (ssmi & 0x01);
       out[31] = out[23] ^ out[24] ^ out[25] ^ out[26] ^ out[27] ^ out[28] ^ out[29] ^ out[30]; // parity
+
+      differential_encode(out);
+    }
+
+    void l1_fm_encoder_impl::differential_encode(unsigned char *buf)
+    {
+      unsigned char last_symbol = 0;
+      for (int i = 0; i < SYMBOLS_PER_BLOCK; i++) {
+        if (buf[i]) {
+          last_symbol ^= 3;
+        }
+        buf[i] = last_symbol;
+      }
     }
 
     int l1_fm_encoder_impl::partitions_per_band()

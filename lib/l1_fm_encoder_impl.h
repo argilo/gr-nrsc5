@@ -50,6 +50,14 @@ namespace gr {
       int p2_bits, p2_mod;
       int p3_bits, p3_mod;
       int p4_bits, p4_mod;
+
+      int ssm;
+      int s1_bits, s1_mod;
+      int s2_bits, s2_mod;
+      int s3_bits, s3_mod;
+      int s4_bits, s4_mod;
+      int s5_bits, s5_mod;
+
       unsigned char buf[P1_BITS];
       unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
@@ -65,6 +73,7 @@ namespace gr {
       int internal_half;
       unsigned char parity[128];
       unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
+      unsigned char secondary_sc_symbols[4][SYMBOLS_PER_FRAME];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
@@ -77,10 +86,11 @@ namespace gr {
       void write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels);
       void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
       void secondary_sc_data_seq(unsigned char *out, int scid, int bc, int ssmi);
+      void differential_encode(unsigned char *buf);
       int partitions_per_band();
 
      public:
-      l1_fm_encoder_impl(const int psm);
+      l1_fm_encoder_impl(const int psm, const int ssm);
       ~l1_fm_encoder_impl();
 
       // Where all the action really happens

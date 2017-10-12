@@ -72,6 +72,7 @@ namespace gr {
         pdu_seq_len = 2;
         codec_mode = 0;
         break;
+      case 18272:
       case 9216:
       case 4608:
       case 2304:

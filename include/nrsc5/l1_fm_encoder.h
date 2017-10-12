@@ -58,7 +58,7 @@ namespace gr {
        * class. nrsc5::l1_fm_encoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make(const int psm);
+      static sptr make(const int psm, const int ssm = 0);
     };
 
   } // namespace nrsc5
