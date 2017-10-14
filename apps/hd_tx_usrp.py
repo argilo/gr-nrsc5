@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Usrp
-# Generated: Mon Aug 28 19:09:53 2017
+# Generated: Sat Oct 14 10:01:10 2017
 ##################################################
 
 from gnuradio import analog
@@ -68,7 +68,7 @@ class hd_tx_usrp(gr.top_block):
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_pids_encoder_0 = nrsc5.pids_encoder('ABCD')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176)
-        self.nrsc5_l1_fm_encoder_0 = nrsc5.l1_fm_encoder(1)
+        self.nrsc5_l1_fm_encoder_mp1_0 = nrsc5.l1_fm_encoder(1)
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 64000)
         self.low_pass_filter_0 = filter.fir_filter_ccf(1, firdes.low_pass(
         	1, samp_rate, 80000, 20000, firdes.WIN_HAMMING, 6.76))
@@ -115,9 +115,9 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.blocks_multiply_const_vxx_1, 0))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
-        self.connect((self.nrsc5_l1_fm_encoder_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
-        self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_0, 1))
-        self.connect((self.nrsc5_pids_encoder_0, 0), (self.nrsc5_l1_fm_encoder_0, 0))
+        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
+        self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 0))
+        self.connect((self.nrsc5_pids_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.rational_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.rational_resampler_xxx_2, 0))

@@ -1094,7 +1094,7 @@
     </param>
   </block>
   <block>
-    <key>nrsc5_l1_fm_encoder</key>
+    <key>nrsc5_l1_fm_encoder_mp1</key>
     <param>
       <key>alias</key>
       <value></value>
@@ -1113,7 +1113,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(888, 40)</value>
+      <value>(888, 48)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1121,7 +1121,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>nrsc5_l1_fm_encoder_0</value>
+      <value>nrsc5_l1_fm_encoder_mp1_0</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1130,10 +1130,6 @@
     <param>
       <key>minoutbuf</key>
       <value>0</value>
-    </param>
-    <param>
-      <key>psm</key>
-      <value>1</value>
     </param>
   </block>
   <block>
@@ -1164,7 +1160,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(696, 80)</value>
+      <value>(696, 32)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1207,7 +1203,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(688, 36)</value>
+      <value>(688, 108)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2390,22 +2386,22 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>nrsc5_l1_fm_encoder_0</source_block_id>
+    <source_block_id>nrsc5_l1_fm_encoder_mp1_0</source_block_id>
     <sink_block_id>digital_chunks_to_symbols_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>nrsc5_l2_encoder_0</source_block_id>
-    <sink_block_id>nrsc5_l1_fm_encoder_0</sink_block_id>
+    <sink_block_id>nrsc5_l1_fm_encoder_mp1_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>1</sink_key>
+    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>nrsc5_pids_encoder_0</source_block_id>
-    <sink_block_id>nrsc5_l1_fm_encoder_0</sink_block_id>
+    <sink_block_id>nrsc5_l1_fm_encoder_mp1_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>0</sink_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>nrsc5_psd_encoder_0</source_block_id>

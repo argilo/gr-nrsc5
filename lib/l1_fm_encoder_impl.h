@@ -65,11 +65,16 @@ namespace gr {
       int p1_prime_off;
       unsigned char *p1_prime;
       unsigned char *p1_prime_g;
+      unsigned char *sids_g;
+      unsigned char *s4_g;
+      unsigned char *s5_g;
       unsigned char pm_matrix[SYMBOLS_PER_FRAME * 20 * 36];
       unsigned char *px1_matrix;
       unsigned char *px2_matrix;
       unsigned char *px1_internal;
       unsigned char *px2_internal;
+      unsigned char *sb_matrix;
+      unsigned char *sp_matrix;
       int internal_half;
       unsigned char parity[128];
       unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];

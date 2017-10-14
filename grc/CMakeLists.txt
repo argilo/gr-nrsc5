@@ -18,7 +18,14 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    nrsc5_l1_fm_encoder.xml
+    nrsc5_l1_fm_encoder_mp1.xml
+    nrsc5_l1_fm_encoder_mp2.xml
+    nrsc5_l1_fm_encoder_mp3.xml
+    nrsc5_l1_fm_encoder_mp11.xml
+    nrsc5_l1_fm_encoder_mp5.xml
+    nrsc5_l1_fm_encoder_mp5_ms1.xml
+    nrsc5_l1_fm_encoder_mp6.xml
+    nrsc5_l1_fm_encoder_mp6_ms1.xml
     nrsc5_pids_encoder.xml
     nrsc5_l2_encoder.xml
     nrsc5_hdc_encoder.xml

@@ -40,7 +40,7 @@ namespace gr {
      */
     l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
       : gr::block("l1_fm_encoder",
-              gr::io_signature::make(2, 4, sizeof(unsigned char)),
+              gr::io_signature::make(2, 9, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
     {
       this->psm = psm;
@@ -136,6 +136,18 @@ namespace gr {
       }
       internal_half = 0;
 
+      if (ssm) {
+        sids_g = (unsigned char *) malloc(PIDS_BITS * 7 / 2 * BLOCKS_PER_FRAME);
+      }
+      if (s4_bits) {
+        s4_g = (unsigned char *) malloc(s4_bits * 7 / 2 * s4_mod);
+        sb_matrix = (unsigned char *) malloc((63952 + 560) * s4_mod);
+      }
+      if (s5_bits) {
+        s5_g = (unsigned char *) malloc(s5_bits * 3 * s5_mod);
+        sp_matrix = (unsigned char *) malloc(1536 * s5_mod);
+      }
+
       for (int i = 0; i < 128; i++) {
         int tmp = i;
         parity[i] = 0;
@@ -172,6 +184,18 @@ namespace gr {
         free(px2_matrix);
         free(px2_internal);
       }
+
+      if (ssm) {
+        free(sids_g);
+      }
+      if (s4_bits) {
+        free(s4_g);
+        free(sb_matrix);
+      }
+      if (s5_bits) {
+        free(s5_g);
+        free(sp_matrix);
+      }
     }
 
     void
@@ -180,11 +204,17 @@ namespace gr {
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
       int port = 0;
 
-      ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
-      ninput_items_required[port++] = frames * p1_bits * p1_mod;
+      if (p1_bits) ninput_items_required[port++] = frames * p1_bits * p1_mod;
       if (p2_bits) ninput_items_required[port++] = frames * p2_bits * p2_mod;
       if (p3_bits) ninput_items_required[port++] = frames * p3_bits * p3_mod;
       if (p4_bits) ninput_items_required[port++] = frames * p4_bits * p4_mod;
+      if (psm) ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
+      if (s1_bits) ninput_items_required[port++] = frames * s1_bits * s1_mod;
+      if (s2_bits) ninput_items_required[port++] = frames * s2_bits * s2_mod;
+      if (s3_bits) ninput_items_required[port++] = frames * s3_bits * s3_mod;
+      if (s4_bits) ninput_items_required[port++] = frames * s4_bits * s4_mod;
+      if (s5_bits) ninput_items_required[port++] = frames * s5_bits * s5_mod;
+      if (ssm) ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
     }
 
     int
@@ -194,23 +224,26 @@ namespace gr {
                        gr_vector_void_star &output_items)
     {
       int port = 0;
-      const unsigned char *pids = (const unsigned char *) input_items[port++];
-      const unsigned char *p1 = (const unsigned char *) input_items[port++];
-      const unsigned char *p2 = NULL;
-      const unsigned char *p3 = NULL;
-      const unsigned char *p4 = NULL;
+      const unsigned char *pids = NULL, *p1 = NULL, *p2 = NULL, *p3 = NULL, *p4 = NULL;
+      const unsigned char *sids = NULL, *s1 = NULL, *s2 = NULL, *s3 = NULL, *s4 = NULL, *s5 = NULL;
+
+      if (p1_bits) p1 = (const unsigned char *) input_items[port++];
       if (p2_bits) p2 = (const unsigned char*) input_items[port++];
       if (p3_bits) p3 = (const unsigned char*) input_items[port++];
       if (p4_bits) p4 = (const unsigned char*) input_items[port++];
+      if (psm) pids = (const unsigned char *) input_items[port++];
+      if (s1_bits) s1 = (const unsigned char*) input_items[port++];
+      if (s2_bits) s2 = (const unsigned char*) input_items[port++];
+      if (s3_bits) s3 = (const unsigned char*) input_items[port++];
+      if (s4_bits) s4 = (const unsigned char*) input_items[port++];
+      if (s5_bits) s5 = (const unsigned char*) input_items[port++];
+      if (ssm) sids = (const unsigned char*) input_items[port++];
 
       unsigned char *out = (unsigned char *) output_items[0];
       int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
 
-      int pids_off = 0;
-      int p1_off = 0;
-      int p2_off = 0;
-      int p3_off = 0;
-      int p4_off = 0;
+      int pids_off = 0, p1_off = 0, p2_off = 0, p3_off = 0, p4_off = 0;
+      int sids_off = 0, s1_off = 0, s2_off = 0, s3_off = 0, s4_off = 0, s5_off = 0;
       int out_off = 0;
       for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
@@ -258,6 +291,28 @@ namespace gr {
         }
         internal_half ^= 1;
 
+        if (ssm) {
+          for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
+            encode_l2_pdu(CONV_2_7, sids + sids_off, sids_g + (PIDS_BITS * 7 / 2 * i), PIDS_BITS);
+            sids_off += PIDS_BITS;
+          }
+        }
+        if (s4_bits) {
+          for (int i = 0; i < s4_mod; i++) {
+            encode_l2_pdu(CONV_2_7, s4 + s4_off, s4_g + (s4_bits * 7 / 2 * i), s4_bits);
+            interleaver_ii(sids_g + (2 * PIDS_BITS * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 280, 63952, 560);
+            interleaver_i(s4_g + (s4_bits * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 63952);
+            s4_off += s4_bits;
+          }
+        }
+        if (s5_bits) {
+          for (int i = 0; i < s5_mod; i++) {
+            encode_l2_pdu(CONV_1_3, s5 + s5_off, s5_g + (s5_bits * 3 * i), s5_bits);
+            interleaver_iii(s5_g + (s5_bits * 3 * i), sp_matrix + (1536 * i), 2, 1, 24, 6, V_SP, 1536);
+            s5_off += s5_bits;
+          }
+        }
+
         for (int symbol = 0; symbol < SYMBOLS_PER_FRAME; symbol++) {
           for (int i = 0; i < FFT_SIZE; i++) {
             out[out_off + i] = 4;
@@ -291,16 +346,39 @@ namespace gr {
             write_symbol(px2_matrix + (symbol * 8 * 36), out + out_off, px2_channels, 8);
           }
 
+          if (ssm) {
+            for (int chan = 15; chan < 46; chan++) {
+              out[out_off + REF_SC_CHAN[chan]] = secondary_sc_symbols[REF_SC_ID[chan]][symbol];
+            }
+
+            if (ssm == 1) {
+              int sb_channels[] = {
+                16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43
+              };
+              write_symbol(sb_matrix + (symbol * 28 * 36), out + out_off, sb_channels, 28);
+            }
+
+            int sp_channels[] = { 15, 44 };
+            write_symbol(sp_matrix + (symbol * 2 * 24), out + out_off, sp_channels, 2);
+          }
+
           out_off += FFT_SIZE;
         }
       }
 
       port = 0;
-      consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
-      consume(port++, frames * p1_bits * p1_mod);
+      if (p1_bits) consume(port++, frames * p1_bits * p1_mod);
       if (p2_bits) consume(port++, frames * p2_bits * p2_mod);
       if (p3_bits) consume(port++, frames * p3_bits * p3_mod);
       if (p4_bits) consume(port++, frames * p4_bits * p4_mod);
+      if (psm) consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
+      if (s1_bits) consume(port++, frames * s1_bits * s1_mod);
+      if (s2_bits) consume(port++, frames * s2_bits * s2_mod);
+      if (s3_bits) consume(port++, frames * s3_bits * s3_mod);
+      if (s4_bits) consume(port++, frames * s4_bits * s4_mod);
+      if (s5_bits) consume(port++, frames * s5_bits * s5_mod);
+      if (ssm) consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
 
       return noutput_items;
     }
@@ -445,9 +523,10 @@ namespace gr {
     l1_fm_encoder_impl::write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels)
     {
       for (int i = 0; i < num_channels; i++) {
-        for (int j = 0; j < 18; j++) {
-          unsigned char ii = matrix_row[(i * 36) + (j * 2)];
-          unsigned char qq = matrix_row[(i * 36) + (j * 2) + 1];
+        int width = (channels[i] == 15 || channels[i] == 44) ? 12 : 18;
+        for (int j = 0; j < width; j++) {
+          unsigned char ii = matrix_row[(i * width * 2) + (j * 2)];
+          unsigned char qq = matrix_row[(i * width * 2) + (j * 2) + 1];
           unsigned char symbol = (ii << 1) | qq;
           int carrier = REF_SC_CHAN[channels[i]] + 1 + j;
           out_row[carrier] = symbol;
