@@ -49,7 +49,7 @@ This block assembles HDC audio frames and PSD PDUs into the audio transport, pro
 
 ### Layer 1 FM encoder
 
-This block implements Layer 1 FM (as defined in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1011s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid and Extended Hybrid modes have been implemented so far. The All Digital modes are not yet supported.
+This block implements Layer 1 FM (as defined in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1011s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid and Extended Hybrid modes have been implemented and tested so far. The All Digital modes are currently under development.
 
 The output bytes map to symbols as follows:
 
