@@ -36,34 +36,34 @@ namespace gr {
       switch(psm) {
       case 1:
         in_sizeofs.push_back(146176);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 2:
         in_sizeofs.push_back(146176);
         in_sizeofs.push_back(2304);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 3:
         in_sizeofs.push_back(146176);
         in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 11:
         in_sizeofs.push_back(146176);
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 5:
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(109312);
         in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 6:
         in_sizeofs.push_back(9216);
         in_sizeofs.push_back(72448);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       }
 
@@ -71,27 +71,27 @@ namespace gr {
       case 1:
         in_sizeofs.push_back(18272);
         in_sizeofs.push_back(512);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 2:
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(109312);
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(512);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 3:
         in_sizeofs.push_back(9216);
         in_sizeofs.push_back(72448);
         in_sizeofs.push_back(512);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       case 4:
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(146176);
         in_sizeofs.push_back(4608);
         in_sizeofs.push_back(512);
-        in_sizeofs.push_back(PIDS_BITS);
+        in_sizeofs.push_back(SIS_BITS);
         break;
       }
 
@@ -206,7 +206,7 @@ namespace gr {
       internal_half = 0;
 
       if (ssm) {
-        sids_g = (unsigned char *) malloc(PIDS_BITS * 7 / 2 * BLOCKS_PER_FRAME);
+        sids_g = (unsigned char *) malloc(SIS_BITS * 7 / 2 * BLOCKS_PER_FRAME);
       }
       if (s4_bits) {
         s4_g = (unsigned char *) malloc(s4_bits * 7 / 2 * s4_mod);
@@ -314,8 +314,8 @@ namespace gr {
       int out_off = 0;
       for (int in_off = 0; in_off < noutput_items * SYMBOLS_PER_FRAME * FFT_SIZE; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
-          encode_l2_pdu(CONV_2_5, pids + pids_off, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
-          pids_off += PIDS_BITS;
+          encode_l2_pdu(CONV_2_5, pids + pids_off, pids_g + (SIS_BITS * 5 / 2 * i), SIS_BITS);
+          pids_off += SIS_BITS;
         }
 
         if (p1_mod == 1) {
@@ -360,14 +360,14 @@ namespace gr {
 
         if (ssm) {
           for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
-            encode_l2_pdu(CONV_2_7, sids + sids_off, sids_g + (PIDS_BITS * 7 / 2 * i), PIDS_BITS);
-            sids_off += PIDS_BITS;
+            encode_l2_pdu(CONV_2_7, sids + sids_off, sids_g + (SIS_BITS * 7 / 2 * i), SIS_BITS);
+            sids_off += SIS_BITS;
           }
         }
         if (s4_bits) {
           for (int i = 0; i < s4_mod; i++) {
             encode_l2_pdu(CONV_2_7, s4 + s4_off, s4_g + (s4_bits * 7 / 2 * i), s4_bits);
-            interleaver_ii(sids_g + (2 * PIDS_BITS * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 280, 63952, 560);
+            interleaver_ii(sids_g + (2 * SIS_BITS * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 280, 63952, 560);
             interleaver_i(s4_g + (s4_bits * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 63952);
             s4_off += s4_bits;
           }

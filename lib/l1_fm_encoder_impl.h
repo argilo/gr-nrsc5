@@ -59,7 +59,7 @@ namespace gr {
       int s5_bits, s5_mod;
 
       unsigned char buf[P1_BITS];
-      unsigned char pids_g[PIDS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
+      unsigned char pids_g[SIS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
       unsigned char p1_g[P1_BITS * 5 / 2];
       unsigned char *p3_p4_g;
       int p1_prime_off;

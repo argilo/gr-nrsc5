@@ -25,7 +25,7 @@
 #include <nrsc5/api.h>
 #include <gnuradio/sync_block.h>
 
-#define PIDS_BITS 80
+#define SIS_BITS 80
 #define BLOCKS_PER_FRAME 16
 
 /* 1020s.pdf Figure 4-1 */
