@@ -19,8 +19,8 @@
  */
 
 
-#ifndef INCLUDED_NRSC5_PIDS_ENCODER_H
-#define INCLUDED_NRSC5_PIDS_ENCODER_H
+#ifndef INCLUDED_NRSC5_SIS_ENCODER_H
+#define INCLUDED_NRSC5_SIS_ENCODER_H
 
 #include <nrsc5/api.h>
 #include <gnuradio/sync_block.h>
@@ -59,17 +59,17 @@ namespace gr {
      * \ingroup nrsc5
      *
      */
-    class NRSC5_API pids_encoder : virtual public gr::sync_block
+    class NRSC5_API sis_encoder : virtual public gr::sync_block
     {
      public:
-      typedef boost::shared_ptr<pids_encoder> sptr;
+      typedef boost::shared_ptr<sis_encoder> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of nrsc5::pids_encoder.
+       * \brief Return a shared_ptr to a new instance of nrsc5::sis_encoder.
        *
-       * To avoid accidental use of raw pointers, nrsc5::pids_encoder's
+       * To avoid accidental use of raw pointers, nrsc5::sis_encoder's
        * constructor is in a private implementation
-       * class. nrsc5::pids_encoder::make is the public interface for
+       * class. nrsc5::sis_encoder::make is the public interface for
        * creating new instances.
        */
       static sptr make(const std::string& short_name="ABCD");
@@ -78,4 +78,4 @@ namespace gr {
   } // namespace nrsc5
 } // namespace gr
 
-#endif /* INCLUDED_NRSC5_PIDS_ENCODER_H */
+#endif /* INCLUDED_NRSC5_SIS_ENCODER_H */

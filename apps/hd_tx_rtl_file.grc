@@ -1121,7 +1121,7 @@
     </param>
   </block>
   <block>
-    <key>nrsc5_pids_encoder</key>
+    <key>nrsc5_sis_encoder</key>
     <param>
       <key>alias</key>
       <value></value>
@@ -1148,7 +1148,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>nrsc5_pids_encoder_0</value>
+      <value>nrsc5_sis_encoder_0</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1400,7 +1400,7 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>nrsc5_pids_encoder_0</source_block_id>
+    <source_block_id>nrsc5_sis_encoder_0</source_block_id>
     <sink_block_id>nrsc5_l1_fm_encoder_mp1_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>1</sink_key>

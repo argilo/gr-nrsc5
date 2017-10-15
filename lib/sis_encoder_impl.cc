@@ -23,23 +23,23 @@
 #endif
 
 #include <gnuradio/io_signature.h>
-#include "pids_encoder_impl.h"
+#include "sis_encoder_impl.h"
 
 namespace gr {
   namespace nrsc5 {
 
-    pids_encoder::sptr
-    pids_encoder::make(const std::string& short_name)
+    sis_encoder::sptr
+    sis_encoder::make(const std::string& short_name)
     {
       return gnuradio::get_initial_sptr
-        (new pids_encoder_impl(short_name));
+        (new sis_encoder_impl(short_name));
     }
 
     /*
      * The private constructor
      */
-    pids_encoder_impl::pids_encoder_impl(const std::string& short_name)
-      : gr::sync_block("pids_encoder",
+    sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
+      : gr::sync_block("sis_encoder",
               gr::io_signature::make(0, 0, 0),
               gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
     {
@@ -51,12 +51,12 @@ namespace gr {
     /*
      * Our virtual destructor.
      */
-    pids_encoder_impl::~pids_encoder_impl()
+    sis_encoder_impl::~sis_encoder_impl()
     {
     }
 
     int
-    pids_encoder_impl::work(int noutput_items,
+    sis_encoder_impl::work(int noutput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items)
     {
@@ -90,7 +90,7 @@ namespace gr {
      * Note: The specified CRC is incorrect. It's actually a 16-bit CRC
      * truncated to 12 bits, and g(x) = X^16 + X^11 + X^3 + X + 1 */
     int
-    pids_encoder_impl::crc12(unsigned char *pids)
+    sis_encoder_impl::crc12(unsigned char *sis)
     {
       unsigned short poly = 0xD010;
       unsigned short reg = 0x0000;
@@ -99,7 +99,7 @@ namespace gr {
       for (i = 67; i >= 0; i--) {
         lowbit = reg & 1;
         reg >>= 1;
-        reg ^= ((unsigned short)pids[i] << 15);
+        reg ^= ((unsigned short)sis[i] << 15);
         if (lowbit) reg ^= poly;
       }
       for (i = 0; i < 16; i++) {
@@ -111,13 +111,13 @@ namespace gr {
     }
 
     void
-    pids_encoder_impl::write_bit(int b)
+    sis_encoder_impl::write_bit(int b)
     {
       *(bit++) = b;
     }
 
     void
-    pids_encoder_impl::write_int(int n, int len)
+    sis_encoder_impl::write_int(int n, int len)
     {
       for (int i = 0; i < len; i++) {
         write_bit((n >> (len - i - 1)) & 1);
@@ -125,7 +125,7 @@ namespace gr {
     }
 
     void
-    pids_encoder_impl::write_char5(char c)
+    sis_encoder_impl::write_char5(char c)
     {
       int n;
       if (c >= 'A' && c <= 'Z') {
@@ -145,7 +145,7 @@ namespace gr {
     }
 
     void
-    pids_encoder_impl::write_station_name_short()
+    sis_encoder_impl::write_station_name_short()
     {
       write_int(STATION_NAME_SHORT, 4);
       for (int i = 0; i < 4; i++) {

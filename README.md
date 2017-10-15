@@ -39,9 +39,9 @@ This block encodes audio into High-Definition Coding (HDC) frames. The input sam
 
 This block encodes Program Service Data PDUs, as described in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
 
-### PIDS encoder
+### SIS encoder
 
-This block encodes Station Information Service PDUs, as described in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1020s.pdf, and assembles them into the PIDS logical channel. SIS provides information about the station. Currently only the short station name (i.e. call sign) is encoded.
+This block encodes Station Information Service PDUs, as described in http://www.nrscstandards.org/sg/nrsc-5-d-reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station. Currently only the short station name (i.e. call sign) is encoded.
 
 ### Layer 2 encoder
 

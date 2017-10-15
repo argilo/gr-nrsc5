@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <block>
-  <name>PIDS encoder</name>
-  <key>nrsc5_pids_encoder</key>
+  <name>SIS encoder</name>
+  <key>nrsc5_sis_encoder</key>
   <category>[NRSC-5]</category>
   <import>import nrsc5</import>
-  <make>nrsc5.pids_encoder($short_name)</make>
+  <make>nrsc5.sis_encoder($short_name)</make>
   <param>
     <name>Station name</name>
     <key>short_name</key>

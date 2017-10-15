@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Hackrf
-# Generated: Sat Oct 14 23:44:28 2017
+# Generated: Sun Oct 15 00:11:49 2017
 ##################################################
 
 from gnuradio import analog
@@ -65,8 +65,8 @@ class hd_tx_hackrf(gr.top_block):
         self.osmosdr_sink_0.set_antenna('', 0)
         self.osmosdr_sink_0.set_bandwidth(1.5e6, 0)
 
+        self.nrsc5_sis_encoder_0 = nrsc5.sis_encoder('ABCD')
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
-        self.nrsc5_pids_encoder_0 = nrsc5.pids_encoder('ABCD')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176)
         self.nrsc5_l1_fm_encoder_mp1_0 = nrsc5.l1_fm_encoder(1)
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 64000)
@@ -119,8 +119,8 @@ class hd_tx_hackrf(gr.top_block):
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
         self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.blocks_vector_to_stream_1, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 0))
-        self.connect((self.nrsc5_pids_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
+        self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.rational_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.rational_resampler_xxx_2, 0))
         self.connect((self.rational_resampler_xxx_2, 0), (self.blocks_multiply_const_vxx_0, 0))

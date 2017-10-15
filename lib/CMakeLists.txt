@@ -27,7 +27,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 list(APPEND nrsc5_sources
     l1_fm_encoder_impl.cc
-    pids_encoder_impl.cc
+    sis_encoder_impl.cc
     l2_encoder_impl.cc
     hdc_encoder_impl.cc
     psd_encoder_impl.cc
