@@ -367,8 +367,8 @@ namespace gr {
         if (s4_bits) {
           for (int i = 0; i < s4_mod; i++) {
             encode_l2_pdu(CONV_2_7, s4 + s4_off, s4_g + (s4_bits * 7 / 2 * i), s4_bits);
-            interleaver_ii(sids_g + (2 * SIS_BITS * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 280, 63952, 560);
             interleaver_i(s4_g + (s4_bits * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 63952);
+            interleaver_ii(sids_g + (2 * SIS_BITS * 7 / 2 * i), sb_matrix + ((63952 + 560) * i), 28, 2, 36, 1, V_SB, 280, 63952, 560);
             s4_off += s4_bits;
           }
         }
