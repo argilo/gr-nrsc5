@@ -47,14 +47,13 @@ namespace gr {
     l2_encoder_impl::l2_encoder_impl(const int num_progs, const int first_prog, const int size)
       : gr::block("l2_encoder",
               gr::io_signature::make(2, 16, sizeof(unsigned char)),
-              gr::io_signature::make(1, 1, sizeof(unsigned char)))
+              gr::io_signature::make(1, 1, sizeof(unsigned char) * size))
     {
       this->num_progs = num_progs;
       this->first_prog = first_prog;
       this->size = size;
       payload_bytes = (size - 24) / 8;
       out_buf = (unsigned char *) malloc(payload_bytes);
-      set_output_multiple(size);
       rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
       memset(rs_buf, 0, 255);
       pdu_seq_no = 0;
@@ -76,6 +75,7 @@ namespace gr {
       case 9216:
       case 4608:
       case 2304:
+        set_min_output_buffer(0, 16);
         target_nop = 4;
         lc_bits = 12;
         psd_bytes = 8;
@@ -98,8 +98,8 @@ namespace gr {
     l2_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
       for (int p = 0; p < num_progs; p++) {
-        ninput_items_required[p] = noutput_items / 8;
-        ninput_items_required[num_progs + p] = noutput_items / size * psd_bytes;
+        ninput_items_required[p] = noutput_items * size / 8;
+        ninput_items_required[num_progs + p] = noutput_items * psd_bytes;
       }
     }
 
@@ -116,7 +116,7 @@ namespace gr {
       int hdc_off[8] = {0};
       int psd_off[8] = {0};
 
-      for (int out_off = 0; out_off < noutput_items; out_off += size) {
+      for (int out_off = 0; out_off < noutput_items * size; out_off += size) {
         memset(out_buf, 0, payload_bytes);
 
         unsigned char *out_program = out_buf;

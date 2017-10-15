@@ -41,9 +41,9 @@ namespace gr {
     pids_encoder_impl::pids_encoder_impl(const std::string& short_name)
       : gr::sync_block("pids_encoder",
               gr::io_signature::make(0, 0, 0),
-              gr::io_signature::make(1, 1, sizeof(unsigned char)))
+              gr::io_signature::make(1, 1, sizeof(unsigned char) * PIDS_BITS))
     {
-      set_output_multiple(PIDS_BITS * BLOCKS_PER_FRAME);
+      set_output_multiple(BLOCKS_PER_FRAME);
       this->short_name = short_name;
       alfn = 800000000;
     }
@@ -63,7 +63,7 @@ namespace gr {
       unsigned char *out = (unsigned char *) output_items[0];
 
       bit = out;
-      while (bit < out + noutput_items) {
+      while (bit < out + (noutput_items * PIDS_BITS)) {
         for (int block = 0; block < BLOCKS_PER_FRAME; block++) {
           unsigned char *start = bit;
 

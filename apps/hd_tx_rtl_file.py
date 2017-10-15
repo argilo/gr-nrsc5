@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Rtl File
-# Generated: Sat Oct 14 09:57:28 2017
+# Generated: Sat Oct 14 21:51:15 2017
 ##################################################
 
 from gnuradio import blocks
@@ -42,6 +42,7 @@ class hd_tx_rtl_file(gr.top_block):
         self.fft_vxx_0 = fft.fft_vcc(2048, False, (window.rectangular(2048)), True, 1)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc((-1-1j, -1+1j, 1-1j, 1+1j, 0), 1)
         self.blocks_wavfile_source_0 = blocks.wavfile_source('sample.wav', False)
+        self.blocks_vector_to_stream_1 = blocks.vector_to_stream(gr.sizeof_char*1, 1048576)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, 2048)
         self.blocks_vector_source_x_0 = blocks.vector_source_c([math.sin(math.pi / 2 * i / 112) for i in range(112)] + [1] * (2048-112) + [math.cos(math.pi / 2 * i / 112) for i in range(112)], True, 1, [])
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 2048)
@@ -73,12 +74,13 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.blocks_stream_to_vector_0, 0), (self.fft_vxx_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
+        self.connect((self.blocks_vector_to_stream_1, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_stream_to_vector_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
-        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
+        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.blocks_vector_to_stream_1, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 0))
         self.connect((self.nrsc5_pids_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))

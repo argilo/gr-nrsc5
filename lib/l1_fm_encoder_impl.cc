@@ -28,6 +28,76 @@
 namespace gr {
   namespace nrsc5 {
 
+    std::vector<int>
+    get_in_sizeofs(const int psm, const int ssm)
+    {
+      std::vector<int> in_sizeofs;
+
+      switch(psm) {
+      case 1:
+        in_sizeofs.push_back(146176);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 2:
+        in_sizeofs.push_back(146176);
+        in_sizeofs.push_back(2304);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 3:
+        in_sizeofs.push_back(146176);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 11:
+        in_sizeofs.push_back(146176);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 5:
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(109312);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 6:
+        in_sizeofs.push_back(9216);
+        in_sizeofs.push_back(72448);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      }
+
+      switch(ssm) {
+      case 1:
+        in_sizeofs.push_back(18272);
+        in_sizeofs.push_back(512);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 2:
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(109312);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(512);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 3:
+        in_sizeofs.push_back(9216);
+        in_sizeofs.push_back(72448);
+        in_sizeofs.push_back(512);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      case 4:
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(146176);
+        in_sizeofs.push_back(4608);
+        in_sizeofs.push_back(512);
+        in_sizeofs.push_back(PIDS_BITS);
+        break;
+      }
+
+      return in_sizeofs;
+    }
+
     l1_fm_encoder::sptr
     l1_fm_encoder::make(const int psm, const int ssm)
     {
@@ -40,12 +110,11 @@ namespace gr {
      */
     l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
       : gr::block("l1_fm_encoder",
-              gr::io_signature::make(2, 9, sizeof(unsigned char)),
-              gr::io_signature::make(1, 1, sizeof(unsigned char)))
+              gr::io_signature::makev(2, 9, get_in_sizeofs(psm, ssm)),
+              gr::io_signature::make(1, 1, sizeof(unsigned char) * SYMBOLS_PER_FRAME * FFT_SIZE))
     {
       this->psm = psm;
       this->ssm = ssm;
-      set_output_multiple(SYMBOLS_PER_FRAME * FFT_SIZE);
 
       p1_bits = 0;
       p2_bits = 0;
@@ -201,20 +270,19 @@ namespace gr {
     void
     l1_fm_encoder_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-      int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
       int port = 0;
 
-      if (p1_bits) ninput_items_required[port++] = frames * p1_bits * p1_mod;
-      if (p2_bits) ninput_items_required[port++] = frames * p2_bits * p2_mod;
-      if (p3_bits) ninput_items_required[port++] = frames * p3_bits * p3_mod;
-      if (p4_bits) ninput_items_required[port++] = frames * p4_bits * p4_mod;
-      if (psm) ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
-      if (s1_bits) ninput_items_required[port++] = frames * s1_bits * s1_mod;
-      if (s2_bits) ninput_items_required[port++] = frames * s2_bits * s2_mod;
-      if (s3_bits) ninput_items_required[port++] = frames * s3_bits * s3_mod;
-      if (s4_bits) ninput_items_required[port++] = frames * s4_bits * s4_mod;
-      if (s5_bits) ninput_items_required[port++] = frames * s5_bits * s5_mod;
-      if (ssm) ninput_items_required[port++] = frames * PIDS_BITS * BLOCKS_PER_FRAME;
+      if (p1_bits) ninput_items_required[port++] = noutput_items * p1_mod;
+      if (p2_bits) ninput_items_required[port++] = noutput_items * p2_mod;
+      if (p3_bits) ninput_items_required[port++] = noutput_items * p3_mod;
+      if (p4_bits) ninput_items_required[port++] = noutput_items * p4_mod;
+      if (psm) ninput_items_required[port++] = noutput_items * BLOCKS_PER_FRAME;
+      if (s1_bits) ninput_items_required[port++] = noutput_items * s1_mod;
+      if (s2_bits) ninput_items_required[port++] = noutput_items * s2_mod;
+      if (s3_bits) ninput_items_required[port++] = noutput_items * s3_mod;
+      if (s4_bits) ninput_items_required[port++] = noutput_items * s4_mod;
+      if (s5_bits) ninput_items_required[port++] = noutput_items * s5_mod;
+      if (ssm) ninput_items_required[port++] = noutput_items * BLOCKS_PER_FRAME;
     }
 
     int
@@ -240,12 +308,11 @@ namespace gr {
       if (ssm) sids = (const unsigned char*) input_items[port++];
 
       unsigned char *out = (unsigned char *) output_items[0];
-      int frames = noutput_items / (SYMBOLS_PER_FRAME * FFT_SIZE);
 
       int pids_off = 0, p1_off = 0, p2_off = 0, p3_off = 0, p4_off = 0;
       int sids_off = 0, s1_off = 0, s2_off = 0, s3_off = 0, s4_off = 0, s5_off = 0;
       int out_off = 0;
-      for (int in_off = 0; in_off < noutput_items; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
+      for (int in_off = 0; in_off < noutput_items * SYMBOLS_PER_FRAME * FFT_SIZE; in_off += SYMBOLS_PER_FRAME * FFT_SIZE) {
         for (int i = 0; i < BLOCKS_PER_FRAME; i++) {
           encode_l2_pdu(CONV_2_5, pids + pids_off, pids_g + (PIDS_BITS * 5 / 2 * i), PIDS_BITS);
           pids_off += PIDS_BITS;
@@ -368,17 +435,17 @@ namespace gr {
       }
 
       port = 0;
-      if (p1_bits) consume(port++, frames * p1_bits * p1_mod);
-      if (p2_bits) consume(port++, frames * p2_bits * p2_mod);
-      if (p3_bits) consume(port++, frames * p3_bits * p3_mod);
-      if (p4_bits) consume(port++, frames * p4_bits * p4_mod);
-      if (psm) consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
-      if (s1_bits) consume(port++, frames * s1_bits * s1_mod);
-      if (s2_bits) consume(port++, frames * s2_bits * s2_mod);
-      if (s3_bits) consume(port++, frames * s3_bits * s3_mod);
-      if (s4_bits) consume(port++, frames * s4_bits * s4_mod);
-      if (s5_bits) consume(port++, frames * s5_bits * s5_mod);
-      if (ssm) consume(port++, frames * PIDS_BITS * BLOCKS_PER_FRAME);
+      if (p1_bits) consume(port++, noutput_items * p1_mod);
+      if (p2_bits) consume(port++, noutput_items * p2_mod);
+      if (p3_bits) consume(port++, noutput_items * p3_mod);
+      if (p4_bits) consume(port++, noutput_items * p4_mod);
+      if (psm) consume(port++, noutput_items * BLOCKS_PER_FRAME);
+      if (s1_bits) consume(port++, noutput_items * s1_mod);
+      if (s2_bits) consume(port++, noutput_items * s2_mod);
+      if (s3_bits) consume(port++, noutput_items * s3_mod);
+      if (s4_bits) consume(port++, noutput_items * s4_mod);
+      if (s5_bits) consume(port++, noutput_items * s5_mod);
+      if (ssm) consume(port++, noutput_items * BLOCKS_PER_FRAME);
 
       return noutput_items;
     }
