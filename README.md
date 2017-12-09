@@ -29,6 +29,24 @@ http://www.nrscstandards.org/NRSC-5-D.asp.
 
 So far only a transmitter has been implemented. A stand-alone receiver for RTL-SDR is available here: https://github.com/theori-io/nrsc5/
 
+## Installation
+
+If you installed GNU Radio using PyBOMBS, simply run `pybombs install gr-nrsc5`.
+
+Otherwise, run the following commands:
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+    sudo ldconfig
+
+If your GNU Radio is installed in /usr (rather than /usr/local), then
+replace the cmake line above with:
+
+    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+
 ## Blocks:
 
 ### HDC encoder
