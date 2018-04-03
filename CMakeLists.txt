@@ -200,25 +200,25 @@ if (FDK_AAC_LIBRARY AND FDK_AAC_INCLUDE_DIR)
     set_property(TARGET fdk-aac PROPERTY IMPORTED_LOCATION ${FDK_AAC_LIBRARY})
     set_property(TARGET fdk-aac PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${FDK_AAC_INCLUDE_DIR})
 else()
-include (ExternalProject)
+    include (ExternalProject)
 
-set (FDK_AAC_PREFIX "${CMAKE_BINARY_DIR}/fdk-aac-prefix")
-ExternalProject_Add (
-    fdk_aac_external
-    GIT_REPOSITORY "https://github.com/argilo/fdk-aac.git"
-    GIT_TAG 3b63dab59416a629f3de82463eb3875319a086d5
-    PREFIX ${FDK_AAC_PREFIX}
+    set (FDK_AAC_PREFIX "${CMAKE_BINARY_DIR}/fdk-aac-prefix")
+    ExternalProject_Add (
+        fdk_aac_external
+        GIT_REPOSITORY "https://github.com/argilo/fdk-aac.git"
+        GIT_TAG 3b63dab59416a629f3de82463eb3875319a086d5
+        PREFIX ${FDK_AAC_PREFIX}
 
-    BINARY_DIR ${FDK_AAC_PREFIX}/src/fdk_aac_external
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ./autogen.sh && ./configure --prefix=${FDK_AAC_PREFIX} --disable-shared --enable-static CXXFLAGS=-fPIC
-    BUILD_COMMAND make
-)
+        BINARY_DIR ${FDK_AAC_PREFIX}/src/fdk_aac_external
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND ./autogen.sh && ./configure --prefix=${FDK_AAC_PREFIX} --disable-shared --enable-static CXXFLAGS=-fPIC
+        BUILD_COMMAND make
+    )
 
-add_library (fdk-aac STATIC IMPORTED)
-set_property (TARGET fdk-aac PROPERTY IMPORTED_LOCATION "${FDK_AAC_PREFIX}/lib/libfdk-aac.a")
-add_dependencies (fdk-aac fdk_aac_external)
-include_directories ("${FDK_AAC_PREFIX}/include")
+    add_library (fdk-aac STATIC IMPORTED)
+    set_property (TARGET fdk-aac PROPERTY IMPORTED_LOCATION "${FDK_AAC_PREFIX}/lib/libfdk-aac.a")
+    add_dependencies (fdk-aac fdk_aac_external)
+    include_directories ("${FDK_AAC_PREFIX}/include")
 endif()
 
 ########################################################################
