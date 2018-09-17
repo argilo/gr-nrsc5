@@ -1,16 +1,22 @@
-title: The NRSC5 OOT Module
-brief: Short description of gr-nrsc5
-tags: # Tags are arbitrary, but look at CGRAN what other authors are using
-  - sdr
+title: gr-nrsc5
+brief: A GNU Radio implementation of HD Radio (NRSC-5)
+tags:
+  - HD Radio
+  - NRSC-5
 author:
-  - Author Name <authors@email.address>
+  - Clayton Smith <argilo@gmail.com>
 copyright_owner:
-  - Copyright Owner 1
-license:
-#repo: # Put the URL of the repository here, or leave blank for default
-#website: <module_website> # If you have a separate project website, put it here
-#icon: <icon_url> # Put a URL to a square image here that will be used as an icon on CGRAN
+  - Clayton Smith <argilo@gmail.com>
+dependencies:
+  - gnuradio (>= 3.7.0)
+license: GPLv3
+repo: https://github.com/argilo/gr-nrsc5.git
+stable_release: HEAD
 ---
-A longer, multi-line description of gr-nrsc5.
-You may use some *basic* Markdown here.
-If left empty, it will try to find a README file instead.
+The goal of this project is to implement an HD Radio receiver and transmitter
+in GNU Radio. HD Radio is standardized in NRSC-5. The latest version of the
+standard is NRSC-5-D, which can be found at
+http://www.nrscstandards.org/NRSC-5-D.asp.
+
+So far only a transmitter has been implemented. A stand-alone receiver for
+RTL-SDR is available here: https://github.com/theori-io/nrsc5/
