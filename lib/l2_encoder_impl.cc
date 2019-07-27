@@ -41,6 +41,7 @@ namespace gr {
         (new l2_encoder_impl(num_progs, first_prog, size));
     }
 
+
     /*
      * The private constructor
      */

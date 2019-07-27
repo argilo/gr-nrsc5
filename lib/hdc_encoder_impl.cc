@@ -35,6 +35,7 @@ namespace gr {
         (new hdc_encoder_impl(channels, bitrate));
     }
 
+
     /*
      * The private constructor
      */

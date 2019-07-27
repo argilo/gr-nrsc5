@@ -35,6 +35,7 @@ namespace gr {
         (new psd_encoder_impl(prog_num, title, artist));
     }
 
+
     /*
      * The private constructor
      */

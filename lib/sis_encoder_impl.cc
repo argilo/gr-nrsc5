@@ -35,6 +35,7 @@ namespace gr {
         (new sis_encoder_impl(short_name));
     }
 
+
     /*
      * The private constructor
      */

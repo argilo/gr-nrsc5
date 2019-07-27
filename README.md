@@ -84,7 +84,6 @@ The output bytes map to symbols as follows:
 Several sample flowgraphs are available in the apps folder:
 
 * hd_tx_usrp.grc, hd_tx_usrp.py: tested on a USRP B200
-* hd_tx_hackrf.grc, hd_tx_hackrf.py: tested on a HackRF One
 * hd_tx_rtl_file.grc, hd_tx_rtl_file.py: produces an output file in the format used by https://github.com/theori-io/nrsc5/
 
 These flowgraphs read a WAV file named sample.wav, which must be encoded at 44,100 samples per second. The license for the supplied sample.wav file is as follows:
