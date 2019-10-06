@@ -297,16 +297,16 @@ namespace gr {
       const unsigned char *sids = NULL, *s1 = NULL, *s2 = NULL, *s3 = NULL, *s4 = NULL, *s5 = NULL;
 
       if (p1_bits) p1 = (const unsigned char *) input_items[port++];
-      if (p2_bits) p2 = (const unsigned char*) input_items[port++];
-      if (p3_bits) p3 = (const unsigned char*) input_items[port++];
-      if (p4_bits) p4 = (const unsigned char*) input_items[port++];
+      if (p2_bits) p2 = (const unsigned char *) input_items[port++];
+      if (p3_bits) p3 = (const unsigned char *) input_items[port++];
+      if (p4_bits) p4 = (const unsigned char *) input_items[port++];
       if (psm) pids = (const unsigned char *) input_items[port++];
-      if (s1_bits) s1 = (const unsigned char*) input_items[port++];
-      if (s2_bits) s2 = (const unsigned char*) input_items[port++];
-      if (s3_bits) s3 = (const unsigned char*) input_items[port++];
-      if (s4_bits) s4 = (const unsigned char*) input_items[port++];
-      if (s5_bits) s5 = (const unsigned char*) input_items[port++];
-      if (ssm) sids = (const unsigned char*) input_items[port++];
+      if (s1_bits) s1 = (const unsigned char *) input_items[port++];
+      if (s2_bits) s2 = (const unsigned char *) input_items[port++];
+      if (s3_bits) s3 = (const unsigned char *) input_items[port++];
+      if (s4_bits) s4 = (const unsigned char *) input_items[port++];
+      if (s5_bits) s5 = (const unsigned char *) input_items[port++];
+      if (ssm) sids = (const unsigned char *) input_items[port++];
 
       unsigned char *out = (unsigned char *) output_items[0];
 
