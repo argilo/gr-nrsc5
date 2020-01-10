@@ -85,7 +85,13 @@ ENDIF()
 ########################################################################
 # Install directories
 ########################################################################
-find_package(Gnuradio "3.8" REQUIRED COMPONENTS blocks fec)
+find_package(Gnuradio "3.8" COMPONENTS blocks fec)
+if(NOT Gnuradio_FOUND)
+    find_package(Gnuradio "3.9" COMPONENTS blocks fec)
+    if(NOT Gnuradio_FOUND)
+        message(FATAL_ERROR "Unable to find GNURadio")
+    ENDIF(NOT Gnuradio_FOUND)
+ENDIF(NOT Gnuradio_FOUND)
 find_package(GSL)
 include(GrVersion)
 
