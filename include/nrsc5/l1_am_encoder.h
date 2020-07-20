@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017 Clayton Smith.
+ * Copyright 2019 Clayton Smith.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef INCLUDED_NRSC5_L1_FM_ENCODER_H
-#define INCLUDED_NRSC5_L1_FM_ENCODER_H
+#ifndef INCLUDED_NRSC5_L1_AM_ENCODER_H
+#define INCLUDED_NRSC5_L1_AM_ENCODER_H
 
 #include <nrsc5/api.h>
 #include <gnuradio/block.h>
 
-#define FM_BLOCKS_PER_FRAME 16
+#define AM_BLOCKS_PER_FRAME 8
 #define SYMBOLS_PER_BLOCK 32
-#define FM_SYMBOLS_PER_FRAME (16 * 32)
-#define FM_FFT_SIZE 2048
+#define AM_SYMBOLS_PER_FRAME (8 * 32)
+#define AM_FFT_SIZE 256
 #define SIS_BITS 80
-#define FM_P1_BITS 146176
+#define DIVERSITY_DELAY (18000 * 3)
 
-#define CONV_1_3 1
-#define CONV_2_5 2
-#define CONV_1_2 3
-#define CONV_2_7 4
+#define CONV_E1 1
+#define CONV_E2 2
+#define CONV_E3 3
 
 namespace gr {
   namespace nrsc5 {
@@ -44,23 +43,23 @@ namespace gr {
      * \ingroup nrsc5
      *
      */
-    class NRSC5_API l1_fm_encoder : virtual public gr::block
+    class NRSC5_API l1_am_encoder : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<l1_fm_encoder> sptr;
+      typedef boost::shared_ptr<l1_am_encoder> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of nrsc5::l1_fm_encoder.
+       * \brief Return a shared_ptr to a new instance of nrsc5::l1_am_encoder.
        *
-       * To avoid accidental use of raw pointers, nrsc5::l1_fm_encoder's
+       * To avoid accidental use of raw pointers, nrsc5::l1_am_encoder's
        * constructor is in a private implementation
-       * class. nrsc5::l1_fm_encoder::make is the public interface for
+       * class. nrsc5::l1_am_encoder::make is the public interface for
        * creating new instances.
        */
-      static sptr make(const int psm, const int ssm = 0);
+      static sptr make(const int sm);
     };
 
   } // namespace nrsc5
 } // namespace gr
 
-#endif /* INCLUDED_NRSC5_L1_FM_ENCODER_H */
+#endif /* INCLUDED_NRSC5_L1_AM_ENCODER_H */

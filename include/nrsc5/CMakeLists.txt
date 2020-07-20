@@ -25,6 +25,7 @@ install(FILES
     api.h
     hdc_encoder.h
     l1_fm_encoder.h
+    l1_am_encoder.h
     l2_encoder.h
     psd_encoder.h
     sis_encoder.h DESTINATION include/nrsc5

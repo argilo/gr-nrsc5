@@ -66,6 +66,7 @@ namespace gr {
       case 146176:
       case 109312:
       case 72448:
+      case 24000:
         target_nop = 32;
         lc_bits = 16;
         psd_bytes = 128;
@@ -75,6 +76,7 @@ namespace gr {
       case 18272:
       case 9216:
       case 4608:
+      case 3750:
       case 2304:
         set_min_output_buffer(0, 16);
         target_nop = 4;
@@ -263,21 +265,50 @@ namespace gr {
     void
     l2_encoder_impl::header_spread(const unsigned char *in, unsigned char *out, unsigned char *pci)
     {
-      int n_start, n_offset;
+      int n_start, n_offset, header_bits;
 
+      /* 1014s.pdf table 5-4 */
       if (size >= 72000) {
-        n_start = size - 30000;
-        n_offset = 1247;
+        switch (size % 8) {
+        case 0:
+          n_start = size - 30000;
+          n_offset = 1247;
+          header_bits = 24;
+          break;
+        case 7:
+          n_start = 8*(size/8) - 29999;
+          n_offset = 1303;
+          header_bits = 23;
+          break;
+        default:
+          n_start = 8*(size/8) - 29999;
+          n_offset = 1359;
+          header_bits = 22;
+        }
       } else {
-        n_start = 120;
-        n_offset = ((size - 192) / 24) - 1;
+        switch (size % 8) {
+        case 0:
+          n_start = 120;
+          n_offset = ((size - 192) / 24) - 1;
+          header_bits = 24;
+          break;
+        case 7:
+          n_start = 120;
+          n_offset = ((size/8 - 14) / 23)*8 - 1;
+          header_bits = 23;
+          break;
+        default:
+          n_start = 120;
+          n_offset = ((size/8 - 14) / 22)*8 - 1;
+          header_bits = 22;
+        }
       }
 
       int out_off = 0;
       int pci_off = 0;
       for (int i = 0; i < payload_bytes; i++) {
         for (int j = 0; j < 8; j++) {
-          if ((out_off >= n_start) && (pci_off < 24) && ((out_off - n_start) % (n_offset + 1) == 0)) {
+          if ((out_off >= n_start) && (pci_off < header_bits) && ((out_off - n_start) % (n_offset + 1) == 0)) {
             out[out_off++] = pci[pci_off++];
           }
           out[out_off++] = (in[i] >> (7-j)) & 1;

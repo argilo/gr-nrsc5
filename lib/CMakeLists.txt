@@ -26,6 +26,7 @@ include(GrPlatform) #define LIB_SUFFIX
 list(APPEND nrsc5_sources
     hdc_encoder_impl.cc
     l1_fm_encoder_impl.cc
+    l1_am_encoder_impl.cc
     l2_encoder_impl.cc
     psd_encoder_impl.cc
     sis_encoder_impl.cc

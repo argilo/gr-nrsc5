@@ -17,7 +17,7 @@ parameters:
     label: Frame size
     dtype: int
     default: 146176
-    options: [146176, 109312, 72448, 18272, 9216, 4608, 2304]
+    options: [146176, 109312, 72448, 24000, 18272, 9216, 4608, 3750, 2304]
 
 inputs:
 -   label: hdc

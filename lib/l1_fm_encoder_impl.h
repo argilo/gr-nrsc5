@@ -58,9 +58,9 @@ namespace gr {
       int s4_bits, s4_mod;
       int s5_bits, s5_mod;
 
-      unsigned char buf[P1_BITS];
-      unsigned char pids_g[SIS_BITS * 5 / 2 * BLOCKS_PER_FRAME];
-      unsigned char p1_g[P1_BITS * 5 / 2];
+      unsigned char buf[FM_P1_BITS];
+      unsigned char pids_g[SIS_BITS * 5 / 2 * FM_BLOCKS_PER_FRAME];
+      unsigned char p1_g[FM_P1_BITS * 5 / 2];
       unsigned char *p3_p4_g;
       int p1_prime_off;
       unsigned char *p1_prime;
@@ -68,7 +68,7 @@ namespace gr {
       unsigned char *sids_g;
       unsigned char *s4_g;
       unsigned char *s5_g;
-      unsigned char pm_matrix[SYMBOLS_PER_FRAME * 20 * 36];
+      unsigned char pm_matrix[FM_SYMBOLS_PER_FRAME * 20 * 36];
       unsigned char *px1_matrix;
       unsigned char *px2_matrix;
       unsigned char *px1_internal;
@@ -77,8 +77,8 @@ namespace gr {
       unsigned char *sp_matrix;
       int internal_half;
       unsigned char parity[128];
-      unsigned char primary_sc_symbols[4][SYMBOLS_PER_FRAME];
-      unsigned char secondary_sc_symbols[4][SYMBOLS_PER_FRAME];
+      unsigned char primary_sc_symbols[4][FM_SYMBOLS_PER_FRAME];
+      unsigned char secondary_sc_symbols[4][FM_SYMBOLS_PER_FRAME];
 
       void reverse_bytes(const unsigned char *in, unsigned char *out, int len);
       void scramble(unsigned char *buf, int len);
