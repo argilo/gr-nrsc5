@@ -92,12 +92,14 @@ namespace gr {
       }
 
       for (int bc = 0; bc < AM_BLOCKS_PER_FRAME; bc++) {
-        sc_data_seq(sc_symbols + (bc * SYMBOLS_PER_BLOCK), 0, 0, 0, 0, bc, sm);
+        sc_data_seq(sc_symbols + (bc * SYMBOLS_PER_BLOCK), 0, 0, 0, 0, bc, sm == 1 ? 1 : 2);
       }
 
       set_channel_power();
       memset(bl, 0, DIVERSITY_DELAY);
       memset(bu, 0, DIVERSITY_DELAY);
+      memset(ebl, 0, DIVERSITY_DELAY);
+      memset(ebu, 0, DIVERSITY_DELAY);
     }
 
     /*
@@ -140,29 +142,60 @@ namespace gr {
           p1_off += p1_bits;
           pids_off += SIS_BITS;
         }
-        encode_l2_pdu(CONV_E2, p3 + p3_off, p3_g, p3_bits);
-        interleaver_ma1();
+        switch (sm) {
+        case 1:
+          encode_l2_pdu(CONV_E2, p3 + p3_off, p3_g, p3_bits);
+          interleaver_ma1();
+          break;
+        case 3:
+          encode_l2_pdu(CONV_E1, p3 + p3_off, p3_g, p3_bits);
+          interleaver_ma3();
+          break;
+        }
+        p3_off += p3_bits;
 
         for (int symbol = 0; symbol < AM_SYMBOLS_PER_FRAME; symbol++) {
           for (int col = 0; col < 25; col++) {
-            /* 1012s.pdf table 12-2 */
-            out[out_off + 128 - 57 - col] = -std::conj(qam64[pl_matrix[col][symbol]]);
-            out[out_off + 128 + 57 + col] = qam64[pu_matrix[col][symbol]];
+            switch (sm) {
+            case 1:
+              /* 1012s.pdf table 12-2 */
+              out[out_off + 128 - 57 - col] = -std::conj(qam64[pl_matrix[col][symbol]]);
+              out[out_off + 128 + 57 + col] = qam64[pu_matrix[col][symbol]];
 
-            /* 1012s.pdf table 12-6 */
-            out[out_off + 128 + 2 + col] = qpsk[t_matrix[col][symbol]];
-            out[out_off + 128 + 28 + col] = qam16[s_matrix[col][symbol]];
-            out[out_off + 128 - 2 - col] = -std::conj(qpsk[t_matrix[col][symbol]]);
-            out[out_off + 128 - 28 - col] = -std::conj(qam16[s_matrix[col][symbol]]);
+              /* 1012s.pdf table 12-6 */
+              out[out_off + 128 + 2 + col] = qpsk[t_matrix[col][symbol]];
+              out[out_off + 128 + 28 + col] = qam16[s_matrix[col][symbol]];
+              out[out_off + 128 - 2 - col] = -std::conj(qpsk[t_matrix[col][symbol]]);
+              out[out_off + 128 - 28 - col] = -std::conj(qam16[s_matrix[col][symbol]]);
+              break;
+            case 3:
+              /* 1012s.pdf table 12-3 */
+              out[out_off + 128 - 2 - col] = -std::conj(qam64[pl_matrix[col][symbol]]);
+              out[out_off + 128 + 2 + col] = qam64[pu_matrix[col][symbol]];
+
+              /* 1012s.pdf table 12-8 */
+              out[out_off + 128 - 28 - col] = -std::conj(qam64[t_matrix[col][symbol]]);
+              out[out_off + 128 + 28 + col] = qam64[s_matrix[col][symbol]];
+              break;
+            }
           }
 
-          /* 1012s.pdf table 12-7 */
           gr_complex pids_point_0 = qam16[pids_matrix[0][symbol]];
           gr_complex pids_point_1 = qam16[pids_matrix[1][symbol]];
-          out[out_off + 128 - 27] = -std::conj(pids_point_0);
-          out[out_off + 128 - 53] = -std::conj(pids_point_1);
-          out[out_off + 128 + 27] = pids_point_0;
-          out[out_off + 128 + 53] = pids_point_1;
+          switch (sm) {
+          case 1:
+            /* 1012s.pdf table 12-7 */
+            out[out_off + 128 - 27] = -std::conj(pids_point_0);
+            out[out_off + 128 - 53] = -std::conj(pids_point_1);
+            out[out_off + 128 + 27] = pids_point_0;
+            out[out_off + 128 + 53] = pids_point_1;
+            break;
+          case 3:
+            /* 1012s.pdf table 12-9 */
+            out[out_off + 128 - 27] = -std::conj(pids_point_0);
+            out[out_off + 128 + 27] = pids_point_1;
+            break;
+          }
 
           /* 1012s.pdf table 12-12 */
           gr_complex sc_point = bpsk[sc_symbols[symbol]];
@@ -336,6 +369,87 @@ namespace gr {
     }
 
     void
+    l1_am_encoder_impl::interleaver_ma3()
+    {
+      memset(pu_matrix, 0, 25 * AM_SYMBOLS_PER_FRAME);
+      memset(pl_matrix, 0, 25 * AM_SYMBOLS_PER_FRAME);
+      memset(s_matrix, 0, 25 * AM_SYMBOLS_PER_FRAME);
+      memset(t_matrix, 0, 25 * AM_SYMBOLS_PER_FRAME);
+
+      for (int i = 0; i < 6000; i++) {
+        for (int j = 0; j < 3; j++) {
+          bl[DIVERSITY_DELAY + i*3 + j] = p1_g[i*12 + bl_delay[j]];
+          ml[i*3 + j] = p1_g[i*12 + ml_delay[j]];
+          bu[DIVERSITY_DELAY + i*3 + j] = p1_g[i*12 + bu_delay[j]];
+          mu[i*3 + j] = p1_g[i*12 + mu_delay[j]];
+
+          ebl[DIVERSITY_DELAY + i*3 + j] = p3_g[i*12 + bl_delay[j]];
+          eml[i*3 + j] = p3_g[i*12 + ml_delay[j]];
+          ebu[DIVERSITY_DELAY + i*3 + j] = p3_g[i*12 + bu_delay[j]];
+          emu[i*3 + j] = p3_g[i*12 + mu_delay[j]];
+        }
+      }
+
+      int b, k, p;
+      for (int n = 0; n < 18000; n++) {
+        b = n/2250;
+        k = (n + n/750 + 1) % 750;
+        p = n % 3;
+        bit_map(pl_matrix, b, k, bl[n] << p);
+
+        b = (3*n + 3) % 8;
+        k = (n + n/3000 + 3) % 750;
+        p = 3 + (n % 3);
+        bit_map(pl_matrix, b, k, ml[n] << p);
+
+        b = n/2250;
+        k = (n + n/750) % 750;
+        p = n % 3;
+        bit_map(pu_matrix, b, k, bu[n] << p);
+
+        b = (3*n) % 8;
+        k = (n + n/3000 + 2) % 750;
+        p = 3 + (n % 3);
+        bit_map(pu_matrix, b, k, mu[n] << p);
+
+        b = (3*n + 3) % 8;
+        k = (n + n/3000 + 3) % 750;
+        p = n % 3;
+        bit_map(t_matrix, b, k, ebl[n] << p);
+
+        b = (3*n + 3) % 8;
+        k = (n + n/3000 + 3) % 750;
+        p = 3 + (n % 3);
+        bit_map(t_matrix, b, k, eml[n] << p);
+
+        b = (3*n) % 8;
+        k = (n + n/3000 + 2) % 750;
+        p = n % 3;
+        bit_map(s_matrix, b, k, ebu[n] << p);
+
+        b = (3*n) % 8;
+        k = (n + n/3000 + 2) % 750;
+        p = 3 + (n % 3);
+        bit_map(s_matrix, b, k, emu[n] << p);
+      }
+
+      /* training symbols */
+      for (int block = 0; block < AM_BLOCKS_PER_FRAME; block++) {
+        for (int k = 750; k < 800; k++) {
+          bit_map(pu_matrix, block, k, 0b100101);
+          bit_map(pl_matrix, block, k, 0b100101);
+          bit_map(s_matrix, block, k, 0b100101);
+          bit_map(t_matrix, block, k, 0b100101);
+        }
+      }
+
+      memmove(bl, bl + 18000, DIVERSITY_DELAY);
+      memmove(bu, bu + 18000, DIVERSITY_DELAY);
+      memmove(ebl, ebl + 18000, DIVERSITY_DELAY);
+      memmove(ebu, ebu + 18000, DIVERSITY_DELAY);
+    }
+
+    void
     l1_am_encoder_impl::interleaver_pids(unsigned char *in, unsigned char matrix[2][AM_SYMBOLS_PER_FRAME], int block)
     {
       unsigned char il[120], iu[120];
@@ -423,24 +537,44 @@ namespace gr {
         channel_power[i] = -INFINITY;
       }
 
-      for (int col = 0; col < 25; col++) {
-        channel_power[128 + 57 + col] = -30 - 10;
-        channel_power[128 - 57 - col] = -30 - 10;
+      // Table 4-6 from 1082s.pdf
+      switch(sm) {
+      case 1:
+        for (int col = 0; col < 25; col++) {
+          channel_power[128 + 57 + col] = -30 - 10;
+          channel_power[128 - 57 - col] = -30 - 10;
 
-        channel_power[128 + 28 + col] = -43 - 4;
-        channel_power[128 - 28 - col] = -43 - 4;
+          channel_power[128 + 28 + col] = -43 - 4;
+          channel_power[128 - 28 - col] = -43 - 4;
 
-        channel_power[128 + 2 + col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
-        channel_power[128 - 2 - col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
+          channel_power[128 + 2 + col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
+          channel_power[128 - 2 - col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
+        }
+
+        channel_power[128 + 1] = -26 + 6;
+        channel_power[128 - 1] = -26 + 6;
+
+        channel_power[128 + 27] = -43 - 4;
+        channel_power[128 - 27] = -43 - 4;
+        channel_power[128 + 53] = -43 - 4;
+        channel_power[128 - 53] = -43 - 4;
+        break;
+      case 3:
+        for (int col = 0; col < 25; col++) {
+          channel_power[128 + 2 + col] = -15 - 10;
+          channel_power[128 - 2 - col] = -15 - 10;
+
+          channel_power[128 + 28 + col] = -30 - 10;
+          channel_power[128 - 28 - col] = -30 - 10;
+        }
+
+        channel_power[128 + 1] = -15 + 6;
+        channel_power[128 - 1] = -15 + 6;
+
+        channel_power[128 + 27] = -15 - 4;
+        channel_power[128 - 27] = -15 - 4;
+        break;
       }
-
-      channel_power[128 + 1] = -26 + 6;
-      channel_power[128 - 1] = -26 + 6;
-
-      channel_power[128 + 27] = -43 - 4;
-      channel_power[128 - 27] = -43 - 4;
-      channel_power[128 + 53] = -43 - 4;
-      channel_power[128 - 53] = -43 - 4;
 
       for (int i = 0; i < AM_FFT_SIZE; i++) {
         channel_power[i] = pow(10, channel_power[i] / 20);

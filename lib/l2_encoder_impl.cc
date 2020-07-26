@@ -66,6 +66,7 @@ namespace gr {
       case 146176:
       case 109312:
       case 72448:
+      case 30000:
       case 24000:
         target_nop = 32;
         lc_bits = 16;

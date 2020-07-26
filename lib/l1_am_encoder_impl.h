@@ -160,10 +160,12 @@ namespace gr {
       unsigned char buf[30000];
       unsigned char pids_g[SIS_BITS * 3];
       unsigned char p1_g[72000];
-      unsigned char p3_g[36000];
+      unsigned char p3_g[72000];
       unsigned char bl[18000 + DIVERSITY_DELAY], ml[18000];
       unsigned char bu[18000 + DIVERSITY_DELAY], mu[18000];
       unsigned char el[12000], eu[24000];
+      unsigned char ebl[18000 + DIVERSITY_DELAY], eml[18000];
+      unsigned char ebu[18000 + DIVERSITY_DELAY], emu[18000];
       unsigned char parity[512];
       unsigned char sc_symbols[AM_SYMBOLS_PER_FRAME];
       unsigned char pu_matrix[25][AM_SYMBOLS_PER_FRAME];
@@ -179,6 +181,7 @@ namespace gr {
       void encode_l2_pdu(int mode, const unsigned char *in, unsigned char *out, int len);
       void bit_map(unsigned char matrix[25][AM_SYMBOLS_PER_FRAME], int b, int k, int bits);
       void interleaver_ma1();
+      void interleaver_ma3();
       void interleaver_pids(unsigned char *in, unsigned char matrix[2][AM_SYMBOLS_PER_FRAME], int block);
       void sc_data_seq(unsigned char *out, int pli, int hppi, int abbi, int rdbi, int bc, int smi);
       void set_channel_power();
