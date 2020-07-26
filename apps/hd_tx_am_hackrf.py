@@ -71,7 +71,7 @@ class hd_tx_am_hackrf(gr.top_block):
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 3750)
         self.nrsc5_l1_am_encoder_ma1_0 = nrsc5.l1_am_encoder(1)
-        self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 18000)
+        self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 17900)
         self.low_pass_filter_0 = filter.fir_filter_ccf(
             1,
             firdes.low_pass(
