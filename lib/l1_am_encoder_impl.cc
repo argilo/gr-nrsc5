@@ -176,6 +176,8 @@ namespace gr {
               /* 1012s.pdf table 12-8 */
               out[out_off + 128 - 28 - col] = -std::conj(qam64[t_matrix[col][symbol]]);
               out[out_off + 128 + 28 + col] = qam64[s_matrix[col][symbol]];
+
+              out[out_off + 128] = 1;
               break;
             }
           }
@@ -571,8 +573,10 @@ namespace gr {
         channel_power[128 + 1] = -15 + 6;
         channel_power[128 - 1] = -15 + 6;
 
-        channel_power[128 + 27] = -15 - 4;
-        channel_power[128 - 27] = -15 - 4;
+        channel_power[128 + 27] = -30 - 4;
+        channel_power[128 - 27] = -30 - 4;
+
+        channel_power[128] = 0;
         break;
       }
 

@@ -60,7 +60,7 @@ The output bytes map to symbols as follows:
 
 ### Layer 1 AM encoder
 
-This block implements Layer 1 AM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1012s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid (MA1) mode has been implemented and tested so far. The All Digital mode (MA3) is currently under development.
+This block implements Layer 1 AM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1012s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Both Hybrid (MA1) mode and All Digital mode (MA3) are working.
 
 ## Flowgraphs:
 
@@ -74,7 +74,8 @@ Several sample flowgraphs are available in the apps folder:
 
 ### AM
 
-* hd_tx_am_hackrf.grc, hd_tx_am_hackrf.py: tested on a HackRF One
+* hd_tx_am_hackrf.grc, hd_tx_am_hackrf.py: Hybrid mode, tested on a HackRF One
+* hd_tx_am_ma3_hackrf.grc, hd_tx_am_ma3_hackrf.py: All Digital mode, tested on a HackRF One
 
 These flowgraphs read a WAV file named sample.wav, which must be encoded at 44,100 samples per second. The license for the supplied sample.wav file is as follows:
 
