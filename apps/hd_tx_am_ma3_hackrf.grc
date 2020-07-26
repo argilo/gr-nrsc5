@@ -546,7 +546,7 @@ blocks:
     gain7: '10'
     gain8: '10'
     gain9: '10'
-    if_gain0: '20'
+    if_gain0: '1'
     if_gain1: '20'
     if_gain10: '20'
     if_gain11: '20'
