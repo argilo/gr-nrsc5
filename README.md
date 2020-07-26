@@ -60,7 +60,7 @@ The output bytes map to symbols as follows:
 
 ### Layer 1 AM encoder
 
-This block implements Layer 1 AM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1012s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Both Hybrid (MA1) mode and All Digital mode (MA3) are working.
+This block implements Layer 1 AM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1012s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Both Hybrid (MA1) mode and All Digital (MA3) mode are implemented.
 
 ## Flowgraphs:
 
