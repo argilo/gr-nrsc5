@@ -188,8 +188,9 @@ namespace gr {
     l1_am_encoder_impl::reverse_bytes(const unsigned char *in, unsigned char *out, int len)
     {
       for (int off = 0; off < len; off += 8) {
-        for (int i = 0; i < 8; i++) {
-          out[off + i] = in[off + 7 - i];
+        int bits = (len - off < 8) ? len - off : 8;
+        for (int i = 0; i < bits; i++) {
+          out[off + i] = in[off + bits - 1 - i];
         }
       }
     }

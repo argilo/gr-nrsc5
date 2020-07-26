@@ -53,7 +53,7 @@ namespace gr {
       this->num_progs = num_progs;
       this->first_prog = first_prog;
       this->size = size;
-      payload_bytes = (size - 24) / 8;
+      payload_bytes = (size - 22) / 8;
       out_buf = (unsigned char *) malloc(payload_bytes);
       rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
       memset(rs_buf, 0, 255);
