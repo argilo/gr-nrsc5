@@ -48,16 +48,6 @@ This block assembles HDC audio frames and PSD PDUs into the audio transport, pro
 
 This block implements Layer 1 FM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1011s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Only the Hybrid and Extended Hybrid modes have been implemented and tested so far. The All Digital modes are currently under development.
 
-The output bytes map to symbols as follows:
-
-| byte | constellation value |
-|:----:|---------------------|
-| 0    | -1-j                |
-| 1    | -1+j                |
-| 2    | 1-j                 |
-| 3    | 1+j                 |
-| 4    | 0 (unused channel)  |
-
 ### Layer 1 AM encoder
 
 This block implements Layer 1 AM (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1012s.pdf). It takes PIDS and Layer 2 PDUs as input, and produces OFDM symbols as output. Both Hybrid (MA1) mode and All Digital (MA3) mode are implemented.

@@ -163,9 +163,9 @@ namespace gr {
               out[out_off + 128 + 57 + col] = qam64[pu_matrix[col][symbol]];
 
               /* 1012s.pdf table 12-6 */
-              out[out_off + 128 + 2 + col] = qpsk[t_matrix[col][symbol]];
+              out[out_off + 128 + 2 + col] = qpsk_am[t_matrix[col][symbol]];
               out[out_off + 128 + 28 + col] = qam16[s_matrix[col][symbol]];
-              out[out_off + 128 - 2 - col] = -std::conj(qpsk[t_matrix[col][symbol]]);
+              out[out_off + 128 - 2 - col] = -std::conj(qpsk_am[t_matrix[col][symbol]]);
               out[out_off + 128 - 28 - col] = -std::conj(qam16[s_matrix[col][symbol]]);
               break;
             case 3:
@@ -200,7 +200,7 @@ namespace gr {
           }
 
           /* 1012s.pdf table 12-12 */
-          gr_complex sc_point = bpsk[sc_symbols[symbol]];
+          gr_complex sc_point = bpsk_am[sc_symbols[symbol]];
           out[out_off + 128 - 1] = sc_point;
           out[out_off + 128 + 1] = sc_point;
 

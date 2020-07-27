@@ -112,7 +112,7 @@ namespace gr {
     l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
       : gr::block("l1_fm_encoder",
               gr::io_signature::makev(2, 9, get_in_sizeofs(psm, ssm)),
-              gr::io_signature::make(1, 1, sizeof(unsigned char) * FM_FFT_SIZE))
+              gr::io_signature::make(1, 1, sizeof(gr_complex) * FM_FFT_SIZE))
     {
       set_output_multiple(FM_SYMBOLS_PER_FRAME);
 
@@ -311,7 +311,7 @@ namespace gr {
       if (s5_bits) s5 = (const unsigned char *) input_items[port++];
       if (ssm) sids = (const unsigned char *) input_items[port++];
 
-      unsigned char *out = (unsigned char *) output_items[0];
+      gr_complex *out = (gr_complex *) output_items[0];
 
       int frames = noutput_items / FM_SYMBOLS_PER_FRAME;
 
@@ -388,11 +388,11 @@ namespace gr {
 
         for (int symbol = 0; symbol < FM_SYMBOLS_PER_FRAME; symbol++) {
           for (int i = 0; i < FM_FFT_SIZE; i++) {
-            out[out_off + i] = 4;
+            out[out_off + i] = 0;
           }
 
           for (int chan = 0; chan < 61; chan++) {
-            out[out_off + REF_SC_CHAN[chan]] = primary_sc_symbols[REF_SC_ID[chan]][symbol];
+            out[out_off + REF_SC_CHAN[chan]] = bpsk_fm[primary_sc_symbols[REF_SC_ID[chan]][symbol]];
             if (chan == partitions_per_band()) chan = 61 - partitions_per_band() - 2;
           }
 
@@ -421,7 +421,7 @@ namespace gr {
 
           if (ssm) {
             for (int chan = 15; chan < 46; chan++) {
-              out[out_off + REF_SC_CHAN[chan]] = secondary_sc_symbols[REF_SC_ID[chan]][symbol];
+              out[out_off + REF_SC_CHAN[chan]] = bpsk_fm[secondary_sc_symbols[REF_SC_ID[chan]][symbol]];
             }
 
             if (ssm == 1) {
@@ -593,7 +593,7 @@ namespace gr {
     }
 
     void
-    l1_fm_encoder_impl::write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels)
+    l1_fm_encoder_impl::write_symbol(unsigned char *matrix_row, gr_complex *out_row, int *channels, int num_channels)
     {
       for (int i = 0; i < num_channels; i++) {
         int width = (channels[i] == 15 || channels[i] == 44) ? 12 : 18;
@@ -602,7 +602,7 @@ namespace gr {
           unsigned char qq = matrix_row[(i * width * 2) + (j * 2) + 1];
           unsigned char symbol = (ii << 1) | qq;
           int carrier = REF_SC_CHAN[channels[i]] + 1 + j;
-          out_row[carrier] = symbol;
+          out_row[carrier] = qpsk_fm[symbol];
         }
       }
     }
@@ -706,7 +706,7 @@ namespace gr {
       unsigned char last_symbol = 0;
       for (int i = 0; i < SYMBOLS_PER_BLOCK; i++) {
         if (buf[i]) {
-          last_symbol ^= 3;
+          last_symbol ^= 1;
         }
         buf[i] = last_symbol;
       }

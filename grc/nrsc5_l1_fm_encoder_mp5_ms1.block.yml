@@ -36,7 +36,7 @@ inputs:
 
 outputs:
 -   domain: stream
-    dtype: byte
+    dtype: complex
     vlen: 2048
 
 templates:

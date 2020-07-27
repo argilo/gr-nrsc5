@@ -25,6 +25,20 @@
 
 namespace gr {
   namespace nrsc5 {
+    /* 1011s.pdf table 12-1 */
+    gr_complex qpsk_fm[] = {
+      -1 - 1j,
+      -1 + 1j,
+      1 - 1j,
+      1 + 1j
+    };
+
+    /* 1012s.pdf table 12-2 */
+    gr_complex bpsk_fm[] = {
+      -1 - 1j,
+      1 + 1j
+    };
+
     unsigned char V_PM[] = { 10, 2, 18, 6, 14, 8, 16, 0, 12, 4, 11, 3, 19, 7, 15, 9, 17, 1, 13, 5 };
     unsigned char V_PX2_MP5[] = { 0, 1, 2, 3 };
     unsigned char V_PX2_MP6[] = { 0, 1, 3, 2, 4, 5, 7, 6 };
@@ -88,7 +102,7 @@ namespace gr {
       void interleaver_ii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int b, int I0, int N);
       void interleaver_iii(unsigned char *in, unsigned char *matrix, int J, int B, int C, int M, unsigned char *V, int N);
       void interleaver_iv(unsigned char *matrix, unsigned char *internal, int half);
-      void write_symbol(unsigned char *matrix_row, unsigned char *out_row, int *channels, int num_channels);
+      void write_symbol(unsigned char *matrix_row, gr_complex *out_row, int *channels, int num_channels);
       void primary_sc_data_seq(unsigned char *out, int scid, int sci, int bc, int psmi);
       void secondary_sc_data_seq(unsigned char *out, int scid, int bc, int ssmi);
       void differential_encode(unsigned char *buf);

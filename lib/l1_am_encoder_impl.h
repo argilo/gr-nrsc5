@@ -26,13 +26,13 @@
 namespace gr {
   namespace nrsc5 {
     /* 1012s.pdf table 12-10 */
-    gr_complex bpsk[] = {
+    gr_complex bpsk_am[] = {
       -0.5j,
       0.5j
     };
 
     /* 1012s.pdf table 12-4 */
-    gr_complex qpsk[] = {
+    gr_complex qpsk_am[] = {
       -0.5 - 0.5j,
       0.5 - 0.5j,
 
