@@ -434,6 +434,11 @@ namespace gr {
 
             int sp_channels[] = { 15, 44 };
             write_symbol(sp_matrix + (symbol * 2 * 24), out + out_off, sp_channels, 2);
+
+            float secondary_scale_factor = pow(10, -5 / 20);
+            for (int i = REF_SC_CHAN[15]; i <= REF_SC_CHAN[45]; i++) {
+              out[out_off + i] *= secondary_scale_factor;
+            }
           }
 
           out_off += FM_FFT_SIZE;
