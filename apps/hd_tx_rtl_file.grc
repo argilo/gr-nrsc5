@@ -271,7 +271,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_items: '1048576'
+    num_items: '2048'
     type: byte
     vlen: '1'
   states:

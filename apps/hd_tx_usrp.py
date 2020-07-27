@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Usrp
-# GNU Radio version: 3.8.0.0-rc2
+# GNU Radio version: 3.8.1.0
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -25,6 +25,7 @@ from gnuradio import uhd
 import time
 import math
 import nrsc5
+
 
 class hd_tx_usrp(gr.top_block):
 
@@ -45,7 +46,7 @@ class hd_tx_usrp(gr.top_block):
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
-                channels=[],
+                channels=list(range(0,1)),
             ),
             '',
         )
@@ -86,7 +87,7 @@ class hd_tx_usrp(gr.top_block):
         self.fft_vxx_0 = fft.fft_vcc(2048, False, window.rectangular(2048), True, 1)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc((-1-1j, -1+1j, 1-1j, 1+1j, 0), 1)
         self.blocks_wavfile_source_0 = blocks.wavfile_source('sample.wav', True)
-        self.blocks_vector_to_stream_1 = blocks.vector_to_stream(gr.sizeof_char*1, 1048576)
+        self.blocks_vector_to_stream_1 = blocks.vector_to_stream(gr.sizeof_char*1, 2048)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, 2048)
         self.blocks_vector_source_x_0 = blocks.vector_source_c([math.sin(math.pi / 2 * i / 112) for i in range(112)] + [1] * (2048-112) + [math.cos(math.pi / 2 * i / 112) for i in range(112)], True, 1, [])
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 2048)
@@ -124,8 +125,8 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
         self.connect((self.blocks_vector_to_stream_1, 0), (self.digital_chunks_to_symbols_xx_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
+        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_stream_to_vector_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.blocks_multiply_const_vxx_1, 0))
@@ -137,6 +138,7 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.rational_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.rational_resampler_xxx_2, 0))
         self.connect((self.rational_resampler_xxx_2, 0), (self.blocks_multiply_const_vxx_0, 0))
+
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -155,18 +157,22 @@ class hd_tx_usrp(gr.top_block):
 
 
 
+
+
 def main(top_block_cls=hd_tx_usrp, options=None):
     tb = top_block_cls()
 
     def sig_handler(sig=None, frame=None):
         tb.stop()
         tb.wait()
+
         sys.exit(0)
 
     signal.signal(signal.SIGINT, sig_handler)
     signal.signal(signal.SIGTERM, sig_handler)
 
     tb.start()
+
     try:
         input('Press Enter to quit: ')
     except EOFError:
