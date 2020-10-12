@@ -6,9 +6,8 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Am Hackrf
-# GNU Radio version: 3.8.1.0
+# GNU Radio version: 3.8.2.0
 
-from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import fft
 from gnuradio.fft import window
@@ -36,6 +35,7 @@ class hd_tx_am_hackrf(gr.top_block):
         ##################################################
         self.samp_rate = samp_rate = 2000000
         self.freq = freq = 1710e3
+        self.audio_rate = audio_rate = 44100
 
         ##################################################
         # Blocks
@@ -50,9 +50,14 @@ class hd_tx_am_hackrf(gr.top_block):
                 decimation=49,
                 taps=None,
                 fractional_bw=None)
+        self.rational_resampler_xxx_0_0 = filter.rational_resampler_ccc(
+                interpolation=200,
+                decimation=21,
+                taps=None,
+                fractional_bw=None)
         self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
-                interpolation=samp_rate // 50000,
-                decimation=1,
+                interpolation=100,
+                decimation=21,
                 taps=None,
                 fractional_bw=None)
         self.osmosdr_sink_0 = osmosdr.sink(
@@ -72,16 +77,17 @@ class hd_tx_am_hackrf(gr.top_block):
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 3750)
         self.nrsc5_l1_am_encoder_ma1_0 = nrsc5.l1_am_encoder(1)
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 17900)
-        self.low_pass_filter_0 = filter.fir_filter_ccf(
+        self.low_pass_filter_1 = filter.fir_filter_fff(
             1,
             firdes.low_pass(
-                1,
-                samp_rate,
-                80000,
-                20000,
+                0.5,
+                audio_rate,
+                4500,
+                1000,
                 firdes.WIN_HAMMING,
                 6.76))
         self.fft_vxx_0 = fft.fft_vcc(256, False, window.rectangular(256), True, 1)
+        self.blocks_wavfile_source_1 = blocks.wavfile_source('sample_mono.wav', True)
         self.blocks_wavfile_source_0 = blocks.wavfile_source('sample.wav', True)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, 256)
         self.blocks_vector_source_x_0 = blocks.vector_source_c([math.sin(math.pi / 2 * i / 14) for i in range(14)] + [1] * (256-14) + [math.cos(math.pi / 2 * i / 14) for i in range(14)], True, 1, [])
@@ -91,18 +97,18 @@ class hd_tx_am_hackrf(gr.top_block):
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 270, 512, 121)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, int(audio_rate * 5.5))
         self.blocks_add_xx_0 = blocks.add_vcc(1)
         self.blocks_add_const_vxx_0 = blocks.add_const_ff(0.5)
-        self.analog_sig_source_x_0 = analog.sig_source_f(50000, analog.GR_COS_WAVE, 1000, 0.1, 0, 0)
 
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_sig_source_x_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_float_to_complex_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.blocks_rotator_cc_0, 0))
+        self.connect((self.blocks_delay_0, 0), (self.low_pass_filter_1, 0))
         self.connect((self.blocks_float_to_complex_0, 0), (self.rational_resampler_xxx_0, 0))
         self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_multiply_xx_0, 0), (self.rational_resampler_xxx_1, 0))
@@ -111,16 +117,18 @@ class hd_tx_am_hackrf(gr.top_block):
         self.connect((self.blocks_rotator_cc_0, 0), (self.osmosdr_sink_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
+        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
+        self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
-        self.connect((self.low_pass_filter_0, 0), (self.blocks_add_xx_0, 1))
+        self.connect((self.low_pass_filter_1, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
         self.connect((self.nrsc5_l1_am_encoder_ma1_0, 0), (self.fft_vxx_0, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_am_encoder_ma1_0, 0))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_am_encoder_ma1_0, 2))
-        self.connect((self.rational_resampler_xxx_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.rational_resampler_xxx_0, 0), (self.rational_resampler_xxx_0_0, 0))
+        self.connect((self.rational_resampler_xxx_0_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.rational_resampler_xxx_1, 0), (self.rational_resampler_xxx_2, 0))
         self.connect((self.rational_resampler_xxx_2, 0), (self.blocks_add_xx_0, 0))
 
@@ -131,7 +139,6 @@ class hd_tx_am_hackrf(gr.top_block):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_rotator_cc_0.set_phase_inc(-2 * math.pi * 100000 / self.samp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 80000, 20000, firdes.WIN_HAMMING, 6.76))
         self.osmosdr_sink_0.set_sample_rate(self.samp_rate)
 
     def get_freq(self):
@@ -140,6 +147,14 @@ class hd_tx_am_hackrf(gr.top_block):
     def set_freq(self, freq):
         self.freq = freq
         self.osmosdr_sink_0.set_center_freq(self.freq + 100000, 0)
+
+    def get_audio_rate(self):
+        return self.audio_rate
+
+    def set_audio_rate(self, audio_rate):
+        self.audio_rate = audio_rate
+        self.blocks_delay_0.set_dly(int(self.audio_rate * 5.5))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(0.5, self.audio_rate, 4500, 1000, firdes.WIN_HAMMING, 6.76))
 
 
 
