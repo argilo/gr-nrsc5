@@ -76,7 +76,7 @@ class hd_tx_am_hackrf(gr.top_block):
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 3750)
         self.nrsc5_l1_am_encoder_ma1_0 = nrsc5.l1_am_encoder(1)
-        self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 17900)
+        self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(1, 17900)
         self.low_pass_filter_1 = filter.fir_filter_fff(
             1,
             firdes.low_pass(
@@ -88,7 +88,7 @@ class hd_tx_am_hackrf(gr.top_block):
                 6.76))
         self.fft_vxx_0 = fft.fft_vcc(256, False, window.rectangular(256), True, 1)
         self.blocks_wavfile_source_1 = blocks.wavfile_source('sample_mono.wav', True)
-        self.blocks_wavfile_source_0 = blocks.wavfile_source('sample.wav', True)
+        self.blocks_wavfile_source_0 = blocks.wavfile_source('sample_mono.wav', True)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, 256)
         self.blocks_vector_source_x_0 = blocks.vector_source_c([math.sin(math.pi / 2 * i / 14) for i in range(14)] + [1] * (256-14) + [math.cos(math.pi / 2 * i / 14) for i in range(14)], True, 1, [])
         self.blocks_rotator_cc_0 = blocks.rotator_cc(-2 * math.pi * 100000 / samp_rate)
@@ -118,7 +118,6 @@ class hd_tx_am_hackrf(gr.top_block):
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_1, 0), (self.blocks_add_const_vxx_0, 0))
