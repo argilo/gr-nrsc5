@@ -274,16 +274,16 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    file: sample.wav
+    file: sample_mono.wav
     maxoutbuf: '0'
     minoutbuf: '0'
-    nchan: '2'
+    nchan: '1'
     repeat: 'True'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 24.0]
+    coordinate: [904, 28.0]
     rotation: 180
     state: enabled
 - name: blocks_wavfile_source_1
@@ -368,7 +368,7 @@ blocks:
     affinity: ''
     alias: ''
     bitrate: '17900'
-    channels: '2'
+    channels: '1'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -376,7 +376,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 24.0]
+    coordinate: [736, 28.0]
     rotation: 180
     state: enabled
 - name: nrsc5_l1_am_encoder_ma1_0
@@ -801,7 +801,6 @@ connections:
 - [blocks_vector_source_x_0, '0', blocks_multiply_xx_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_keep_m_in_n_0, '0']
 - [blocks_wavfile_source_0, '0', nrsc5_hdc_encoder_0, '0']
-- [blocks_wavfile_source_0, '1', nrsc5_hdc_encoder_0, '1']
 - [blocks_wavfile_source_1, '0', blocks_delay_0, '0']
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [low_pass_filter_1, '0', blocks_add_const_vxx_0, '0']
