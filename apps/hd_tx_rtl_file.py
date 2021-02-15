@@ -53,7 +53,7 @@ class hd_tx_rtl_file(gr.top_block):
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 2160, 4096, 0)
         self.blocks_interleave_0 = blocks.interleave(gr.sizeof_float*1, 1)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar()
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'hd-generated.raw', False)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'hd_generated.cu8', False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_conjugate_cc_0 = blocks.conjugate_cc()
         self.blocks_complex_to_float_0 = blocks.complex_to_float(1)
