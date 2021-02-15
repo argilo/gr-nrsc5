@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: ''
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -137,7 +137,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 732.0]
+    coordinate: [1104, 720.0]
     rotation: 180
     state: true
 - name: blocks_keep_m_in_n_0
@@ -285,7 +285,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 724.0]
+    coordinate: [1240, 708.0]
     rotation: 180
     state: true
 - name: fft_vxx_0
@@ -338,7 +338,7 @@ blocks:
     samp_rate: samp_rate
     type: fir_filter_ccf
     width: '20000'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false

@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Hackrf
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.9.0.0
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -26,10 +26,12 @@ import osmosdr
 import time
 
 
+
+
 class hd_tx_hackrf(gr.top_block):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Hd Tx Hackrf")
+        gr.top_block.__init__(self, "Hd Tx Hackrf", catch_exceptions=True)
 
         ##################################################
         # Variables
@@ -44,23 +46,23 @@ class hd_tx_hackrf(gr.top_block):
         self.rational_resampler_xxx_2 = filter.rational_resampler_ccc(
                 interpolation=256,
                 decimation=243,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=125,
                 decimation=49,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_0_0_0 = filter.rational_resampler_ccc(
                 interpolation=100,
                 decimation=21,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_0_0 = filter.rational_resampler_ccc(
                 interpolation=50,
                 decimation=21,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.osmosdr_sink_0 = osmosdr.sink(
             args="numchan=" + str(1) + " " + ""
         )
@@ -85,7 +87,7 @@ class hd_tx_hackrf(gr.top_block):
                 samp_rate,
                 80000,
                 20000,
-                firdes.WIN_HAMMING,
+                window.WIN_HAMMING,
                 6.76))
         self.fft_vxx_0 = fft.fft_vcc(2048, False, window.rectangular(2048), True, 1)
         self.blocks_wavfile_source_1 = blocks.wavfile_source('sample_mono.wav', True)
@@ -143,7 +145,7 @@ class hd_tx_hackrf(gr.top_block):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.low_pass_filter_0.set_taps(firdes.low_pass(0.1, self.samp_rate, 80000, 20000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(0.1, self.samp_rate, 80000, 20000, window.WIN_HAMMING, 6.76))
         self.osmosdr_sink_0.set_sample_rate(self.samp_rate)
 
     def get_freq(self):
@@ -159,7 +161,6 @@ class hd_tx_hackrf(gr.top_block):
     def set_audio_rate(self, audio_rate):
         self.audio_rate = audio_rate
         self.blocks_delay_0.set_dly(int(self.audio_rate * 3.5))
-
 
 
 

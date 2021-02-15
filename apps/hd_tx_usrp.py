@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Usrp
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.9.0.0
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -26,10 +26,12 @@ import math
 import nrsc5
 
 
+
+
 class hd_tx_usrp(gr.top_block):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Hd Tx Usrp")
+        gr.top_block.__init__(self, "Hd Tx Usrp", catch_exceptions=True)
 
         ##################################################
         # Variables
@@ -50,31 +52,32 @@ class hd_tx_usrp(gr.top_block):
             ),
             '',
         )
-        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
-        self.uhd_usrp_sink_0.set_gain(70, 0)
-        self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
         self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec())
+        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
+
+        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
+        self.uhd_usrp_sink_0.set_antenna('TX/RX', 0)
+        self.uhd_usrp_sink_0.set_gain(70, 0)
         self.rational_resampler_xxx_2 = filter.rational_resampler_ccc(
                 interpolation=256,
                 decimation=243,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=125,
                 decimation=49,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_0_0_0 = filter.rational_resampler_ccc(
                 interpolation=100,
                 decimation=21,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_0_0 = filter.rational_resampler_ccc(
                 interpolation=50,
                 decimation=21,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.nrsc5_sis_encoder_0 = nrsc5.sis_encoder('ABCD')
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176)
@@ -87,7 +90,7 @@ class hd_tx_usrp(gr.top_block):
                 samp_rate,
                 80000,
                 20000,
-                firdes.WIN_HAMMING,
+                window.WIN_HAMMING,
                 6.76))
         self.fft_vxx_0 = fft.fft_vcc(2048, False, window.rectangular(2048), True, 1)
         self.blocks_wavfile_source_1 = blocks.wavfile_source('sample_mono.wav', True)
@@ -124,8 +127,8 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
+        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.blocks_add_xx_0, 1))
@@ -145,7 +148,7 @@ class hd_tx_usrp(gr.top_block):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.low_pass_filter_0_0.set_taps(firdes.low_pass(0.1, self.samp_rate, 80000, 20000, firdes.WIN_HAMMING, 6.76))
+        self.low_pass_filter_0_0.set_taps(firdes.low_pass(0.1, self.samp_rate, 80000, 20000, window.WIN_HAMMING, 6.76))
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
 
     def get_freq(self):
@@ -161,7 +164,6 @@ class hd_tx_usrp(gr.top_block):
     def set_audio_rate(self, audio_rate):
         self.audio_rate = audio_rate
         self.blocks_delay_0.set_dly(int(self.audio_rate * 3.5))
-
 
 
 

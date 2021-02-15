@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Am Ma3 Hackrf
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.9.0.0
 
 from gnuradio import blocks
 from gnuradio import fft
@@ -25,10 +25,12 @@ import osmosdr
 import time
 
 
+
+
 class hd_tx_am_ma3_hackrf(gr.top_block):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Hd Tx Am Ma3 Hackrf")
+        gr.top_block.__init__(self, "Hd Tx Am Ma3 Hackrf", catch_exceptions=True)
 
         ##################################################
         # Variables
@@ -42,13 +44,13 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         self.rational_resampler_xxx_2 = filter.rational_resampler_ccc(
                 interpolation=4096,
                 decimation=243,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=125,
                 decimation=49,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.osmosdr_sink_0 = osmosdr.sink(
             args="numchan=" + str(1) + " " + ""
         )
@@ -115,7 +117,6 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
     def set_freq(self, freq):
         self.freq = freq
         self.osmosdr_sink_0.set_center_freq(self.freq + 100000, 0)
-
 
 
 

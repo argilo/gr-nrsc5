@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Rtl File
-# GNU Radio version: 3.8.2.0
+# GNU Radio version: 3.9.0.0
 
 from gnuradio import blocks
 from gnuradio import fft
@@ -23,10 +23,12 @@ import math
 import nrsc5
 
 
+
+
 class hd_tx_rtl_file(gr.top_block):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Hd Tx Rtl File")
+        gr.top_block.__init__(self, "Hd Tx Rtl File", catch_exceptions=True)
 
         ##################################################
         # Blocks
@@ -34,8 +36,8 @@ class hd_tx_rtl_file(gr.top_block):
         self.rational_resampler_xxx_1 = filter.rational_resampler_ccc(
                 interpolation=2,
                 decimation=1,
-                taps=None,
-                fractional_bw=None)
+                taps=[],
+                fractional_bw=-1.0)
         self.nrsc5_sis_encoder_0 = nrsc5.sis_encoder('ABCD')
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist')
         self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176)
@@ -63,8 +65,8 @@ class hd_tx_rtl_file(gr.top_block):
         # Connections
         ##################################################
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
-        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_interleave_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_conjugate_cc_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_interleave_0, 0), (self.blocks_add_const_vxx_0_0, 0))
@@ -83,7 +85,6 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_multiply_const_vxx_0, 0))
-
 
 
 

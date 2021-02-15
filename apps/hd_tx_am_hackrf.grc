@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: ''
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -120,7 +120,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1088, 788.0]
+    coordinate: [1088, 776.0]
     rotation: 180
     state: true
 - name: blocks_float_to_complex_0
@@ -301,7 +301,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 780.0]
+    coordinate: [1224, 764.0]
     rotation: 180
     state: true
 - name: fft_vxx_0
@@ -354,7 +354,7 @@ blocks:
     samp_rate: audio_rate
     type: fir_filter_fff
     width: '1000'
-    win: firdes.WIN_HAMMING
+    win: window.WIN_HAMMING
   states:
     bus_sink: false
     bus_source: false
