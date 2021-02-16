@@ -26,8 +26,20 @@ class qa_l1_fm_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = l1_fm_encoder()
+        instance = l1_fm_encoder(psm=1)
+        instance = l1_fm_encoder(psm=2)
+        instance = l1_fm_encoder(psm=3)
+        instance = l1_fm_encoder(psm=11)
+        instance = l1_fm_encoder(psm=5)
+        instance = l1_fm_encoder(psm=5, ssm=1)
+        instance = l1_fm_encoder(psm=5, ssm=2)
+        instance = l1_fm_encoder(psm=5, ssm=3)
+        instance = l1_fm_encoder(psm=5, ssm=4)
+        instance = l1_fm_encoder(psm=6)
+        instance = l1_fm_encoder(psm=6, ssm=1)
+        instance = l1_fm_encoder(psm=6, ssm=2)
+        instance = l1_fm_encoder(psm=6, ssm=3)
+        instance = l1_fm_encoder(psm=6, ssm=4)
 
     def test_001_descriptive_test_name(self):
         # set up fg

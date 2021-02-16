@@ -26,8 +26,16 @@ class qa_l2_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = l2_encoder()
+        instance = l2_encoder(num_progs=1, first_prog=0, size=146176)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=109312)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=72448)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=30000)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=24000)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=18272)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=9216)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=4608)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=3750)
+        instance = l2_encoder(num_progs=1, first_prog=0, size=2304)
 
     def test_001_descriptive_test_name(self):
         # set up fg

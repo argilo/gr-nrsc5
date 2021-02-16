@@ -26,8 +26,7 @@ class qa_sis_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = sis_encoder()
+        instance = sis_encoder(short_name="ABCD")
 
     def test_001_descriptive_test_name(self):
         # set up fg

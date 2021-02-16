@@ -26,8 +26,8 @@ class qa_psd_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = psd_encoder()
+        instance = psd_encoder(prog_num=0, title="Title", artist="Artist")
+        instance = psd_encoder(prog_num=1, title="Title 2", artist="Artist 2")
 
     def test_001_descriptive_test_name(self):
         # set up fg

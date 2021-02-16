@@ -26,8 +26,8 @@ class qa_hdc_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = hdc_encoder()
+        instance = hdc_encoder(channels=1, bitrate=32000)
+        instance = hdc_encoder(channels=2, bitrate=64000)
 
     def test_001_descriptive_test_name(self):
         # set up fg

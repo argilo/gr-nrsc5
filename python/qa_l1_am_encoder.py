@@ -26,8 +26,8 @@ class qa_l1_am_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = l1_am_encoder()
+        instance = l1_am_encoder(sm=1)
+        instance = l1_am_encoder(sm=3)
 
     def test_001_descriptive_test_name(self):
         # set up fg
