@@ -8,8 +8,8 @@
 #ifndef INCLUDED_NRSC5_L1_FM_ENCODER_H
 #define INCLUDED_NRSC5_L1_FM_ENCODER_H
 
-#include <nrsc5/api.h>
 #include <gnuradio/block.h>
+#include <nrsc5/api.h>
 
 #define FM_BLOCKS_PER_FRAME 16
 #define SYMBOLS_PER_BLOCK 32
@@ -24,30 +24,30 @@
 #define CONV_2_7 4
 
 namespace gr {
-  namespace nrsc5 {
+namespace nrsc5 {
+
+/*!
+ * \brief <+description of block+>
+ * \ingroup nrsc5
+ *
+ */
+class NRSC5_API l1_fm_encoder : virtual public gr::block
+{
+public:
+    typedef std::shared_ptr<l1_fm_encoder> sptr;
 
     /*!
-     * \brief <+description of block+>
-     * \ingroup nrsc5
+     * \brief Return a shared_ptr to a new instance of nrsc5::l1_fm_encoder.
      *
+     * To avoid accidental use of raw pointers, nrsc5::l1_fm_encoder's
+     * constructor is in a private implementation
+     * class. nrsc5::l1_fm_encoder::make is the public interface for
+     * creating new instances.
      */
-    class NRSC5_API l1_fm_encoder : virtual public gr::block
-    {
-     public:
-      typedef std::shared_ptr<l1_fm_encoder> sptr;
+    static sptr make(const int psm, const int ssm = 0);
+};
 
-      /*!
-       * \brief Return a shared_ptr to a new instance of nrsc5::l1_fm_encoder.
-       *
-       * To avoid accidental use of raw pointers, nrsc5::l1_fm_encoder's
-       * constructor is in a private implementation
-       * class. nrsc5::l1_fm_encoder::make is the public interface for
-       * creating new instances.
-       */
-      static sptr make(const int psm, const int ssm = 0);
-    };
-
-  } // namespace nrsc5
+} // namespace nrsc5
 } // namespace gr
 
 #endif /* INCLUDED_NRSC5_L1_FM_ENCODER_H */
