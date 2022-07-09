@@ -13,10 +13,10 @@
 namespace gr {
 namespace nrsc5 {
 /* 1011s.pdf table 12-1 */
-gr_complex qpsk_fm[] = { -1 - 1j, -1 + 1j, 1 - 1j, 1 + 1j };
+gr_complex qpsk_fm[] = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
 /* 1012s.pdf table 12-2 */
-gr_complex bpsk_fm[] = { -1 - 1j, 1 + 1j };
+gr_complex bpsk_fm[] = { { -1, -1 }, { 1, 1 } };
 
 unsigned char V_PM[] = { 10, 2, 18, 6, 14, 8, 16, 0, 12, 4,
                          11, 3, 19, 7, 15, 9, 17, 1, 13, 5 };
