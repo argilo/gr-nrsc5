@@ -17,6 +17,8 @@ class sis_encoder_impl : public sis_encoder
 {
 private:
     unsigned int alfn;
+    std::string country_code;
+    unsigned int fcc_facility_id;
     std::string short_name;
     unsigned char* bit;
 
@@ -24,7 +26,14 @@ private:
     void write_bit(int b);
     void write_int(int n, int len);
     void write_char5(char c);
+    void write_station_id();
     void write_station_name_short();
+    void write_station_name_long();
+    void write_station_location();
+    void write_station_message();
+    void write_service_information_message();
+    void write_sis_parameter_message();
+    void write_station_slogan();
 
 public:
     sis_encoder_impl(const std::string& short_name = "ABCD");
