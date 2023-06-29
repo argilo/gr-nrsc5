@@ -11,6 +11,7 @@
 
 #include "sis_encoder_impl.h"
 #include <gnuradio/io_signature.h>
+#include <cmath>
 
 namespace gr {
 namespace nrsc5 {
@@ -34,6 +35,41 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     country_code = "US";
     fcc_facility_id = 1337;
     this->short_name = short_name;
+
+    /* Station location vars
+    S9.13 fractional format/WGS84: P.351 NRSC-5-E reference doc.
+    also requires two frames to send Lo/Hi -> long/lat
+    altitude is in units of 16m. okay.
+    These will be converted to apropraite format
+    */
+    NS = 0;
+    EW = 1;
+    lat = 47;
+    lon = 105;
+    altitude = 2000;
+    //computational vars
+    //convert to apropriate values according to pg. 382 of NRSC5E standard
+    nlat = std::round(lat*8192);
+    //convert to negative value by taking 2's compliment if needed
+    if (NS){nlat = (~nlat);}
+    nlon = std::round(lon*8192);
+    if (EW){nlon = (~nlon);}
+    nalt = std::round(altitude/16);
+    //var for determining frame number in sending lat/lon
+    sendLat = 0;
+
+    //vars for audio service descriptors
+    programs = 2;
+    progtypes = {15, 4};
+    progno = 0;
+
+    //vars for service parameter message
+    sis7idx = 0;
+    UTCoffset = -6;
+    DSTSchedule = 1;
+    DSTLocal = 1;
+    DSTReg = 1;
+
 }
 
 /*
@@ -205,7 +241,19 @@ void sis_encoder_impl::write_station_name_long()
 void sis_encoder_impl::write_station_location()
 {
     write_int(STATION_LOCATION, 4);
-    // TODO: Implement
+    //frame number
+    write_bit(sendLat);
+    if (sendLat){
+        //send latitude and alt. bits 7-4
+        write_int(nlat, 22);
+        write_int(nalt >> 4, 4);
+    }
+    else {
+        //send llongitude and alt. bits 3-0
+        write_int(nlon, 22);
+        write_int(nalt, 4);
+    }
+    sendLat = !sendLat;
 }
 
 void sis_encoder_impl::write_station_message()
@@ -217,13 +265,93 @@ void sis_encoder_impl::write_station_message()
 void sis_encoder_impl::write_service_information_message()
 {
     write_int(SERVICE_INFORMATION_MESSAGE, 4);
-    // TODO: Implement
+    //audio and data programs must be listed here
+    //for now iterate through indicated audio programs
+    //code 00 for audio program, 01 for data Pg. 355
+    if (progno >= 0){
+        //service category
+        write_int(0, 2);
+        //write access
+        write_bit(0);
+        //program number
+        write_int(progno, 6);
+        //program type
+        write_int(progtypes[progno], 8);
+        //reserved bits
+        write_bit(0); // Reserved
+        write_bit(0); // Reserved
+        write_bit(0); // Reserved
+        write_bit(0); // Reserved
+        write_bit(0); // Reserved
+        //sound experience
+        write_int(0, 5);
+    }
+    progno++;
+    if (progno > programs-1) {progno=0;}
 }
 
 void sis_encoder_impl::write_sis_parameter_message()
 {
     write_int(SIS_PARAMETER_MESSAGE, 4);
-    // TODO: Implement
+    //write DST and various TX BS that we'll ignore pg. 361
+    //reset frame count
+    if (sis7idx > 7){sis7idx=0;}
+    switch (sis7idx){
+        case 0:
+            //leap second offset
+            write_int(sis7idx, 6);
+            write_int(18, 8);
+            write_int(18, 8);
+        case 1:
+            //GPS leap second ALFN
+            write_int(sis7idx, 6);
+            write_int(0, 16);
+        case 2:
+            //second half
+            write_int(sis7idx, 6);
+            write_int(0, 16);
+        case 3:
+            //local time data (DST and UTC offset)
+            write_int(sis7idx, 6);
+            write_int(static_cast<int>(UTCoffset*60), 11);
+            write_int(DSTSchedule, 3);
+            write_bit(DSTLocal);
+            write_bit(DSTReg);
+        case 4:
+            //exciter man iD
+            write_int(sis7idx, 6);
+            write_bit(0); //reserved
+            write_int(33, 7);
+            write_bit(0);
+            write_int(33, 7);
+        case 5:
+            //exciter core ver.
+            write_int(sis7idx, 6);
+            write_int(0, 5);
+            write_int(0, 5);
+            write_int(0, 5);
+            write_bit(0); //reserved
+        case 6:
+            //exciter man. ver.
+            write_int(sis7idx, 6);
+            write_int(0, 5);
+            write_int(0, 5);
+            write_int(0, 5);
+            write_bit(0); //reserved*/
+        case 7:
+            //exciter man. ver.
+            write_int(sis7idx, 6);
+            write_int(0, 5);
+            write_int(0, 5);
+            write_int(0, 3);
+            write_int(0, 3);
+        default:
+            write_int(sis7idx, 6);
+            write_int(0, 16);
+    }
+    sis7idx++;
+
+
 }
 
 void sis_encoder_impl::write_station_slogan()

@@ -22,6 +22,36 @@ private:
     std::string short_name;
     unsigned char* bit;
 
+    //position vars
+    unsigned int NS;
+    unsigned int EW;
+    //will 22 bit values
+    float lat;
+    float lon;
+    //will be 0-255 (8bits) (represnets 0-4080m in units of 16m)
+    float altitude;
+
+    //computational vars
+    unsigned int nlat;
+    unsigned int nlon;
+    unsigned int nalt;
+    //frame tracking var
+    bool sendLat;
+
+    //vars for audio service descriptors
+    unsigned int programs;
+    std::vector<unsigned int> progtypes;
+    //tracking counter
+    int progno;
+
+    //vars for service parameter message
+    //counter
+    unsigned int sis7idx = 0;
+    float UTCoffset = -6;
+    unsigned int DSTSchedule = 1;
+    bool DSTLocal = 1;
+    bool DSTReg = 1;
+
     int crc12(unsigned char* sis);
     void write_bit(int b);
     void write_int(int n, int len);
