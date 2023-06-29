@@ -21,12 +21,16 @@ private:
     unsigned int fcc_facility_id;
     std::string short_name;
     std::string slogan;
+    std::string message;
     unsigned char* bit;
 
     unsigned int long_name_current_frame;
     unsigned int long_name_seq;
 
     unsigned int slogan_current_frame;
+
+    unsigned int message_current_frame;
+    unsigned int message_seq;
 
     //position vars
     //will 22 bit values

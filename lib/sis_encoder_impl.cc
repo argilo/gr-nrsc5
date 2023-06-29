@@ -36,11 +36,15 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     fcc_facility_id = 1337;
     this->short_name = short_name;
     slogan = "foo bar baz";
+    message = "This is a test message.";
 
     long_name_current_frame = 0;
     long_name_seq = 0;
 
     slogan_current_frame = 0;
+
+    message_current_frame = 0;
+    message_seq = 0;
 
     /* Station location vars
     S9.13 fractional format/WGS84: P.351 NRSC-5-E reference doc.
@@ -274,9 +278,41 @@ void sis_encoder_impl::write_station_location()
 void sis_encoder_impl::write_station_message()
 {
     write_int(STATION_MESSAGE, 4);
-    for (int i = 0; i < 58; i++) {
-        write_bit(0); // TODO: Replace with implementation
+
+    unsigned int num_frames = (message.length() + 7) / 6;
+
+    write_int(message_current_frame, 5);
+    write_int(message_seq, 2);
+
+    if (message_current_frame == 0) {
+        unsigned int checksum = 0;
+        for (int j = 0; j < message.length(); j++)
+            checksum += (unsigned char) message.at(j);
+        checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
+
+        write_bit(0); // priority
+        write_int(0, 3); // encoding
+        write_int(message.length(), 8);
+        write_int(checksum, 7);
+        for (int i = 0; i < 4; i++) {
+            if (i < message.length()) {
+                write_int(message.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    } else {
+        write_int(0, 3); // reserved
+        for (int i = message_current_frame * 6 - 2; i < message_current_frame * 6 + 4; i++) {
+            if (i < message.length()) {
+                write_int(message.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
     }
+
+    message_current_frame = (message_current_frame + 1) % num_frames;
 }
 
 void sis_encoder_impl::write_service_information_message()
