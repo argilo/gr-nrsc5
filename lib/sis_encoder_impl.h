@@ -20,7 +20,13 @@ private:
     std::string country_code;
     unsigned int fcc_facility_id;
     std::string short_name;
+    std::string slogan;
     unsigned char* bit;
+
+    unsigned int long_name_current_frame;
+    unsigned int long_name_seq;
+
+    unsigned int slogan_current_frame;
 
     //position vars
     unsigned int NS;

@@ -35,6 +35,12 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     country_code = "US";
     fcc_facility_id = 1337;
     this->short_name = short_name;
+    slogan = "foo bar baz";
+
+    long_name_current_frame = 0;
+    long_name_seq = 0;
+
+    slogan_current_frame = 0;
 
     /* Station location vars
     S9.13 fractional format/WGS84: P.351 NRSC-5-E reference doc.
@@ -235,7 +241,21 @@ void sis_encoder_impl::write_station_name_short()
 void sis_encoder_impl::write_station_name_long()
 {
     write_int(STATION_NAME_LONG, 4);
-    // TODO: Implement
+
+    unsigned int num_frames = (slogan.length() + 6) / 7;
+
+    write_int(num_frames - 1, 3);
+    write_int(long_name_current_frame, 3);
+    for (int i = long_name_current_frame * 7; i < long_name_current_frame * 7 + 7; i++) {
+        if (i < slogan.length()) {
+            write_int(slogan.at(i), 7);
+        } else {
+            write_int(0, 7);
+        }
+    }
+    write_int(long_name_seq, 3);
+
+    long_name_current_frame = (long_name_current_frame + 1) % num_frames;
 }
 
 void sis_encoder_impl::write_station_location()
@@ -259,7 +279,9 @@ void sis_encoder_impl::write_station_location()
 void sis_encoder_impl::write_station_message()
 {
     write_int(STATION_MESSAGE, 4);
-    // TODO: Implement
+    for (int i = 0; i < 58; i++) {
+        write_bit(0); // TODO: Replace with implementation
+    }
 }
 
 void sis_encoder_impl::write_service_information_message()
@@ -365,7 +387,35 @@ void sis_encoder_impl::write_sis_parameter_message()
 void sis_encoder_impl::write_station_slogan()
 {
     write_int(UNIVERSAL_SHORT_STATION_NAME, 4);
-    // TODO: Implement
+
+    unsigned int num_frames = (slogan.length() + 6) / 6;
+
+    write_int(slogan_current_frame, 4);
+    write_bit(NAME_TYPE_SLOGAN);
+
+    if (slogan_current_frame == 0) {
+        write_int(0, 3); // encoding
+        write_int(0, 3); // reserved
+        write_int(slogan.length(), 7);
+        for (int i = 0; i < 5; i++) {
+            if (i < slogan.length()) {
+                write_int(slogan.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    } else {
+        write_int(0, 5); // reserved
+        for (int i = slogan_current_frame * 6 - 1; i < slogan_current_frame * 6 + 5; i++) {
+            if (i < slogan.length()) {
+                write_int(slogan.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    }
+
+    slogan_current_frame = (slogan_current_frame + 1) % num_frames;
 }
 
 } /* namespace nrsc5 */
