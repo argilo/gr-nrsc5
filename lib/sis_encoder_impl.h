@@ -29,8 +29,6 @@ private:
     unsigned int slogan_current_frame;
 
     //position vars
-    unsigned int NS;
-    unsigned int EW;
     //will 22 bit values
     float lat;
     float lon;

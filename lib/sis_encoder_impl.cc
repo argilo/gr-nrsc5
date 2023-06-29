@@ -48,19 +48,14 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     altitude is in units of 16m. okay.
     These will be converted to apropraite format
     */
-    NS = 0;
-    EW = 1;
     lat = 47;
-    lon = 105;
+    lon = -105;
     altitude = 2000;
     //computational vars
     //convert to apropriate values according to pg. 382 of NRSC5E standard
-    nlat = std::round(lat*8192);
-    //convert to negative value by taking 2's compliment if needed
-    if (NS){nlat = (~nlat);}
-    nlon = std::round(lon*8192);
-    if (EW){nlon = (~nlon);}
-    nalt = std::round(altitude/16);
+    nlat = static_cast<int>(std::round(lat*8192));
+    nlon = static_cast<int>(std::round(lon*8192));
+    nalt = static_cast<int>(std::round(altitude/16));
     //var for determining frame number in sending lat/lon
     sendLat = 0;
 
