@@ -302,14 +302,17 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(sis7idx, 6);
             write_int(18, 8);
             write_int(18, 8);
+            break;
         case 1:
             //GPS leap second ALFN
             write_int(sis7idx, 6);
             write_int(0, 16);
+            break;
         case 2:
             //second half
             write_int(sis7idx, 6);
             write_int(0, 16);
+            break;
         case 3:
             //local time data (DST and UTC offset)
             write_int(sis7idx, 6);
@@ -317,6 +320,7 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(DSTSchedule, 3);
             write_bit(DSTLocal);
             write_bit(DSTReg);
+            break;
         case 4:
             //exciter man iD
             write_int(sis7idx, 6);
@@ -324,6 +328,7 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(33, 7);
             write_bit(0);
             write_int(33, 7);
+            break;
         case 5:
             //exciter core ver.
             write_int(sis7idx, 6);
@@ -331,6 +336,7 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(0, 5);
             write_int(0, 5);
             write_bit(0); //reserved
+            break;
         case 6:
             //exciter man. ver.
             write_int(sis7idx, 6);
@@ -338,6 +344,7 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(0, 5);
             write_int(0, 5);
             write_bit(0); //reserved*/
+            break;
         case 7:
             //exciter man. ver.
             write_int(sis7idx, 6);
@@ -345,6 +352,7 @@ void sis_encoder_impl::write_sis_parameter_message()
             write_int(0, 5);
             write_int(0, 3);
             write_int(0, 3);
+            break;
         default:
             write_int(sis7idx, 6);
             write_int(0, 16);
