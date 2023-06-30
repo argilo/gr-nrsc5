@@ -287,7 +287,7 @@ void sis_encoder_impl::write_station_message()
             checksum += (unsigned char)message.at(j);
         checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
 
-        write_bit(0); // priority
+        write_bit(static_cast<int>(priority::NORMAL));
         write_int(static_cast<int>(encoding::ISO_8859_1), 3);
         write_int(message_length, 8);
         write_int(checksum, 7);

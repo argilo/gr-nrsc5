@@ -60,6 +60,8 @@ constexpr int NUM_PARAMETERS = 13;
 
 enum class icb { IMPORTER_NOT_CONNECTED, IMPORTER_CONNECTED };
 
+enum class priority { NORMAL, HIGH };
+
 enum class encoding { ISO_8859_1 = 0, UCS_2 = 4 };
 
 enum class service_category { AUDIO, DATA };
