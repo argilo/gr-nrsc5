@@ -36,14 +36,14 @@ private:
     float longitude;
     float altitude;
 
-    //vars for audio service descriptors
+    // vars for audio service descriptors
     unsigned int programs;
     std::vector<unsigned int> progtypes;
-    //tracking counter
+    // tracking counter
     int progno;
 
-    //vars for service parameter message
-    //counter
+    // vars for service parameter message
+    // counter
     unsigned int sis7idx = 0;
     float UTCoffset = -6;
     unsigned int DSTSchedule = 1;

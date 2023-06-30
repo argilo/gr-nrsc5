@@ -50,18 +50,17 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     longitude = -105;
     altitude = 2000;
 
-    //vars for audio service descriptors
+    // vars for audio service descriptors
     programs = 2;
-    progtypes = {15, 4};
+    progtypes = { 15, 4 };
     progno = 0;
 
-    //vars for service parameter message
+    // vars for service parameter message
     sis7idx = 0;
     UTCoffset = -6;
     DSTSchedule = 1;
     DSTLocal = 1;
     DSTReg = 1;
-
 }
 
 /*
@@ -275,10 +274,10 @@ void sis_encoder_impl::write_station_message()
     if (message_current_frame == 0) {
         unsigned int checksum = 0;
         for (int j = 0; j < message.length(); j++)
-            checksum += (unsigned char) message.at(j);
+            checksum += (unsigned char)message.at(j);
         checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
 
-        write_bit(0); // priority
+        write_bit(0);    // priority
         write_int(0, 3); // encoding
         write_int(message.length(), 8);
         write_int(checksum, 7);
@@ -291,7 +290,8 @@ void sis_encoder_impl::write_station_message()
         }
     } else {
         write_int(0, 3); // reserved
-        for (int i = message_current_frame * 6 - 2; i < message_current_frame * 6 + 4; i++) {
+        for (int i = message_current_frame * 6 - 2; i < message_current_frame * 6 + 4;
+             i++) {
             if (i < message.length()) {
                 write_int(message.at(i), 8);
             } else {
@@ -306,101 +306,103 @@ void sis_encoder_impl::write_station_message()
 void sis_encoder_impl::write_service_information_message()
 {
     write_int(SERVICE_INFORMATION_MESSAGE, 4);
-    //audio and data programs must be listed here
-    //for now iterate through indicated audio programs
-    //code 00 for audio program, 01 for data Pg. 355
-    if (progno >= 0){
-        //service category
+    // audio and data programs must be listed here
+    // for now iterate through indicated audio programs
+    // code 00 for audio program, 01 for data Pg. 355
+    if (progno >= 0) {
+        // service category
         write_int(0, 2);
-        //write access
+        // write access
         write_bit(0);
-        //program number
+        // program number
         write_int(progno, 6);
-        //program type
+        // program type
         write_int(progtypes[progno], 8);
-        //reserved bits
+        // reserved bits
         write_bit(0); // Reserved
         write_bit(0); // Reserved
         write_bit(0); // Reserved
         write_bit(0); // Reserved
         write_bit(0); // Reserved
-        //sound experience
+        // sound experience
         write_int(0, 5);
     }
     progno++;
-    if (progno > programs-1) {progno=0;}
+    if (progno > programs - 1) {
+        progno = 0;
+    }
 }
 
 void sis_encoder_impl::write_sis_parameter_message()
 {
     write_int(SIS_PARAMETER_MESSAGE, 4);
-    //write DST and various TX BS that we'll ignore pg. 361
-    //reset frame count
-    if (sis7idx > 7){sis7idx=0;}
-    switch (sis7idx){
-        case 0:
-            //leap second offset
-            write_int(sis7idx, 6);
-            write_int(18, 8);
-            write_int(18, 8);
-            break;
-        case 1:
-            //GPS leap second ALFN
-            write_int(sis7idx, 6);
-            write_int(0, 16);
-            break;
-        case 2:
-            //second half
-            write_int(sis7idx, 6);
-            write_int(0, 16);
-            break;
-        case 3:
-            //local time data (DST and UTC offset)
-            write_int(sis7idx, 6);
-            write_int(static_cast<int>(UTCoffset*60), 11);
-            write_int(DSTSchedule, 3);
-            write_bit(DSTLocal);
-            write_bit(DSTReg);
-            break;
-        case 4:
-            //exciter man iD
-            write_int(sis7idx, 6);
-            write_bit(0); //reserved
-            write_int(33, 7);
-            write_bit(0);
-            write_int(33, 7);
-            break;
-        case 5:
-            //exciter core ver.
-            write_int(sis7idx, 6);
-            write_int(0, 5);
-            write_int(0, 5);
-            write_int(0, 5);
-            write_bit(0); //reserved
-            break;
-        case 6:
-            //exciter man. ver.
-            write_int(sis7idx, 6);
-            write_int(0, 5);
-            write_int(0, 5);
-            write_int(0, 5);
-            write_bit(0); //reserved*/
-            break;
-        case 7:
-            //exciter man. ver.
-            write_int(sis7idx, 6);
-            write_int(0, 5);
-            write_int(0, 5);
-            write_int(0, 3);
-            write_int(0, 3);
-            break;
-        default:
-            write_int(sis7idx, 6);
-            write_int(0, 16);
+    // write DST and various TX BS that we'll ignore pg. 361
+    // reset frame count
+    if (sis7idx > 7) {
+        sis7idx = 0;
+    }
+    switch (sis7idx) {
+    case 0:
+        // leap second offset
+        write_int(sis7idx, 6);
+        write_int(18, 8);
+        write_int(18, 8);
+        break;
+    case 1:
+        // GPS leap second ALFN
+        write_int(sis7idx, 6);
+        write_int(0, 16);
+        break;
+    case 2:
+        // second half
+        write_int(sis7idx, 6);
+        write_int(0, 16);
+        break;
+    case 3:
+        // local time data (DST and UTC offset)
+        write_int(sis7idx, 6);
+        write_int(static_cast<int>(UTCoffset * 60), 11);
+        write_int(DSTSchedule, 3);
+        write_bit(DSTLocal);
+        write_bit(DSTReg);
+        break;
+    case 4:
+        // exciter man iD
+        write_int(sis7idx, 6);
+        write_bit(0); // reserved
+        write_int(33, 7);
+        write_bit(0);
+        write_int(33, 7);
+        break;
+    case 5:
+        // exciter core ver.
+        write_int(sis7idx, 6);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_bit(0); // reserved
+        break;
+    case 6:
+        // exciter man. ver.
+        write_int(sis7idx, 6);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_bit(0); // reserved*/
+        break;
+    case 7:
+        // exciter man. ver.
+        write_int(sis7idx, 6);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 3);
+        write_int(0, 3);
+        break;
+    default:
+        write_int(sis7idx, 6);
+        write_int(0, 16);
     }
     sis7idx++;
-
-
 }
 
 void sis_encoder_impl::write_station_slogan()
@@ -425,7 +427,8 @@ void sis_encoder_impl::write_station_slogan()
         }
     } else {
         write_int(0, 5); // reserved
-        for (int i = slogan_current_frame * 6 - 1; i < slogan_current_frame * 6 + 5; i++) {
+        for (int i = slogan_current_frame * 6 - 1; i < slogan_current_frame * 6 + 5;
+             i++) {
             if (i < slogan.length()) {
                 write_int(slogan.at(i), 8);
             } else {
