@@ -238,12 +238,13 @@ void sis_encoder_impl::write_station_name_long()
 {
     write_int(static_cast<int>(msg_id::STATION_NAME_LONG), 4);
 
-    unsigned int num_frames = (slogan.length() + 6) / 7;
+    unsigned int name_length = std::min((unsigned int)slogan.length(), 56u);
+    unsigned int num_frames = (name_length + 6) / 7;
 
     write_int(num_frames - 1, 3);
     write_int(long_name_current_frame, 3);
     for (int i = long_name_current_frame * 7; i < long_name_current_frame * 7 + 7; i++) {
-        if (i < slogan.length()) {
+        if (i < name_length) {
             write_int(slogan.at(i), 7);
         } else {
             write_int(0, 7);
@@ -274,23 +275,24 @@ void sis_encoder_impl::write_station_message()
 {
     write_int(static_cast<int>(msg_id::STATION_MESSAGE), 4);
 
-    unsigned int num_frames = (message.length() + 7) / 6;
+    unsigned int message_length = std::min((unsigned int)message.length(), 190u);
+    unsigned int num_frames = (message_length + 7) / 6;
 
     write_int(message_current_frame, 5);
     write_int(message_seq, 2);
 
     if (message_current_frame == 0) {
         unsigned int checksum = 0;
-        for (int j = 0; j < message.length(); j++)
+        for (int j = 0; j < message_length; j++)
             checksum += (unsigned char)message.at(j);
         checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
 
         write_bit(0);    // priority
         write_int(0, 3); // encoding
-        write_int(message.length(), 8);
+        write_int(message_length, 8);
         write_int(checksum, 7);
         for (int i = 0; i < 4; i++) {
-            if (i < message.length()) {
+            if (i < message_length) {
                 write_int(message.at(i), 8);
             } else {
                 write_int(0, 8);
@@ -300,7 +302,7 @@ void sis_encoder_impl::write_station_message()
         write_int(0, 3); // reserved
         for (int i = message_current_frame * 6 - 2; i < message_current_frame * 6 + 4;
              i++) {
-            if (i < message.length()) {
+            if (i < message_length) {
                 write_int(message.at(i), 8);
             } else {
                 write_int(0, 8);
@@ -405,7 +407,8 @@ void sis_encoder_impl::write_station_slogan()
 {
     write_int(static_cast<int>(msg_id::UNIVERSAL_SHORT_STATION_NAME), 4);
 
-    unsigned int num_frames = (slogan.length() + 6) / 6;
+    unsigned int slogan_length = std::min((unsigned int)slogan.length(), 95u);
+    unsigned int num_frames = (slogan_length + 6) / 6;
 
     write_int(slogan_current_frame, 4);
     write_bit(static_cast<int>(name_type::SLOGAN));
@@ -413,9 +416,9 @@ void sis_encoder_impl::write_station_slogan()
     if (slogan_current_frame == 0) {
         write_int(0, 3); // encoding
         write_int(0, 3); // reserved
-        write_int(slogan.length(), 7);
+        write_int(slogan_length, 7);
         for (int i = 0; i < 5; i++) {
-            if (i < slogan.length()) {
+            if (i < slogan_length) {
                 write_int(slogan.at(i), 8);
             } else {
                 write_int(0, 8);
@@ -425,7 +428,7 @@ void sis_encoder_impl::write_station_slogan()
         write_int(0, 5); // reserved
         for (int i = slogan_current_frame * 6 - 1; i < slogan_current_frame * 6 + 5;
              i++) {
-            if (i < slogan.length()) {
+            if (i < slogan_length) {
                 write_int(slogan.at(i), 8);
             } else {
                 write_int(0, 8);
