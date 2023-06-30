@@ -336,7 +336,7 @@ void sis_encoder_impl::write_sis_parameter_message()
     case parameter_type::EXCITER_MANUFACTURER_ID:
         write_bit(0); // reserved
         write_int(33, 7);
-        write_bit(0);
+        write_bit(1); // importer connected
         write_int(33, 7);
         break;
     case parameter_type::EXCITER_CORE_VERSION_NUMBER_1_2_3:
@@ -360,7 +360,7 @@ void sis_encoder_impl::write_sis_parameter_message()
     case parameter_type::IMPORTER_MANUFACTURER_ID:
         write_bit(0); // reserved
         write_int(33, 7);
-        write_bit(0);
+        write_bit(0); // reserved
         write_int(33, 7);
         break;
     case parameter_type::IMPORTER_CORE_VERSION_NUMBER_1_2_3:
