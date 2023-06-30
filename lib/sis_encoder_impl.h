@@ -44,11 +44,11 @@ private:
 
     // vars for service parameter message
     // counter
-    unsigned int sis7idx = 0;
-    float UTCoffset = -6;
-    unsigned int DSTSchedule = 1;
-    bool DSTLocal = 1;
-    bool DSTReg = 1;
+    unsigned int sis7idx;
+    float UTCoffset;
+    unsigned int DSTSchedule;
+    bool DSTLocal;
+    bool DSTReg;
 
     int crc12(unsigned char* sis);
     void write_bit(int b);
