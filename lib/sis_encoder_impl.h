@@ -22,6 +22,10 @@ private:
     std::string short_name;
     std::string slogan;
     std::string message;
+    float latitude;
+    float longitude;
+    float altitude;
+
     unsigned char* bit;
 
     unsigned int long_name_current_frame;
@@ -31,10 +35,6 @@ private:
 
     unsigned int message_current_frame;
     unsigned int message_seq;
-
-    float latitude;
-    float longitude;
-    float altitude;
 
     // vars for audio service descriptors
     unsigned int programs;

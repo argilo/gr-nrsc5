@@ -37,6 +37,9 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     this->short_name = short_name;
     slogan = "foo bar baz";
     message = "This is a test message.";
+    latitude = 47;
+    longitude = -105;
+    altitude = 2000;
 
     long_name_current_frame = 0;
     long_name_seq = 0;
@@ -45,10 +48,6 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
 
     message_current_frame = 0;
     message_seq = 0;
-
-    latitude = 47;
-    longitude = -105;
-    altitude = 2000;
 
     // vars for audio service descriptors
     programs = 2;
