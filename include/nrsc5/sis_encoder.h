@@ -11,35 +11,6 @@
 #include <gnuradio/sync_block.h>
 #include <nrsc5/api.h>
 
-#define SIS_BITS 80
-#define BLOCKS_PER_FRAME 16
-
-/* 1020s.pdf Figure 4-1 */
-#define PIDS_FORMATTED 0
-
-#define NO_EXTENSION 0
-#define EXTENDED_FORMAT 1
-
-#define STATION_ID_NUMBER 0
-#define STATION_NAME_SHORT 1
-#define STATION_NAME_LONG 2
-#define ALFN 3
-#define STATION_LOCATION 4
-#define STATION_MESSAGE 5
-#define SERVICE_INFORMATION_MESSAGE 6
-#define SIS_PARAMETER_MESSAGE 7
-#define UNIVERSAL_SHORT_STATION_NAME 8
-#define ACTIVE_RADIO_MESSAGE 9
-
-#define NAME_TYPE_USSN 0
-#define NAME_TYPE_SLOGAN 1
-
-#define TIME_NOT_LOCKED 0
-#define TIME_LOCKED 1
-
-#define EXTENSION_NONE 0
-#define EXTENSION_FM 1
-
 namespace gr {
 namespace nrsc5 {
 

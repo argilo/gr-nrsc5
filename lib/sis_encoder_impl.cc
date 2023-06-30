@@ -75,7 +75,7 @@ int sis_encoder_impl::work(int noutput_items,
         for (int block = 0; block < BLOCKS_PER_FRAME; block++) {
             unsigned char* start = bit;
 
-            write_bit(PIDS_FORMATTED);
+            write_bit(static_cast<int>(pdu_type::PIDS_FORMATTED));
 
             switch (block) {
             case 0:
@@ -84,7 +84,7 @@ int sis_encoder_impl::work(int noutput_items,
             case 6:
             case 9:
             case 14:
-                write_bit(EXTENDED_FORMAT);
+                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
                 write_station_name_short();
                 write_station_id();
                 break;
@@ -92,30 +92,30 @@ int sis_encoder_impl::work(int noutput_items,
             case 5:
             case 10:
             case 15:
-                write_bit(EXTENDED_FORMAT);
+                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
                 write_service_information_message();
                 write_service_information_message();
                 break;
             case 3:
-                write_bit(NO_EXTENSION);
+                write_bit(static_cast<int>(extension::NO_EXTENSION));
                 write_station_slogan();
                 break;
             case 7:
-                write_bit(EXTENDED_FORMAT);
+                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
                 write_station_location(true);
                 write_station_location(false);
                 break;
             case 8:
             case 13:
-                write_bit(NO_EXTENSION);
+                write_bit(static_cast<int>(extension::NO_EXTENSION));
                 write_station_message();
                 break;
             case 11:
-                write_bit(NO_EXTENSION);
+                write_bit(static_cast<int>(extension::NO_EXTENSION));
                 write_station_name_long();
                 break;
             case 12:
-                write_bit(EXTENDED_FORMAT);
+                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
                 write_sis_parameter_message();
                 write_station_id();
                 break;
@@ -125,7 +125,7 @@ int sis_encoder_impl::work(int noutput_items,
                 write_bit(0);
             }
             write_bit(0); // Reserved
-            write_bit(TIME_NOT_LOCKED);
+            write_bit(static_cast<int>(time_status::NOT_LOCKED));
             write_int((alfn >> (block * 2)) & 0x3, 2);
             write_int(crc12(start), 12);
         }
@@ -203,7 +203,7 @@ void sis_encoder_impl::write_char5(char c)
 
 void sis_encoder_impl::write_station_id()
 {
-    write_int(STATION_ID_NUMBER, 4);
+    write_int(static_cast<int>(msg_id::STATION_ID_NUMBER), 4);
     for (int i = 0; i < 2; i++) {
         write_char5(country_code[i]);
     }
@@ -213,16 +213,16 @@ void sis_encoder_impl::write_station_id()
 
 void sis_encoder_impl::write_station_name_short()
 {
-    write_int(STATION_NAME_SHORT, 4);
+    write_int(static_cast<int>(msg_id::STATION_NAME_SHORT), 4);
     for (int i = 0; i < 4; i++) {
         write_char5(short_name[i]);
     }
-    write_int(EXTENSION_FM, 2);
+    write_int(static_cast<int>(name_extension::FM), 2);
 }
 
 void sis_encoder_impl::write_station_name_long()
 {
-    write_int(STATION_NAME_LONG, 4);
+    write_int(static_cast<int>(msg_id::STATION_NAME_LONG), 4);
 
     unsigned int num_frames = (slogan.length() + 6) / 7;
 
@@ -245,7 +245,7 @@ void sis_encoder_impl::write_station_location(bool high)
     int altitude_int = static_cast<int>(std::round(altitude / 16));
     altitude_int = std::max(std::min(altitude_int, 255), 0);
 
-    write_int(STATION_LOCATION, 4);
+    write_int(static_cast<int>(msg_id::STATION_LOCATION), 4);
     write_bit(high);
     if (high) {
         write_int(std::round(latitude * 8192), 22);
@@ -258,7 +258,7 @@ void sis_encoder_impl::write_station_location(bool high)
 
 void sis_encoder_impl::write_station_message()
 {
-    write_int(STATION_MESSAGE, 4);
+    write_int(static_cast<int>(msg_id::STATION_MESSAGE), 4);
 
     unsigned int num_frames = (message.length() + 7) / 6;
 
@@ -299,7 +299,7 @@ void sis_encoder_impl::write_station_message()
 
 void sis_encoder_impl::write_service_information_message()
 {
-    write_int(SERVICE_INFORMATION_MESSAGE, 4);
+    write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
 
     write_int(0, 2);                                                // service category
     write_bit(0);                                                   // access
@@ -313,7 +313,7 @@ void sis_encoder_impl::write_service_information_message()
 
 void sis_encoder_impl::write_sis_parameter_message()
 {
-    write_int(SIS_PARAMETER_MESSAGE, 4);
+    write_int(static_cast<int>(msg_id::SIS_PARAMETER_MESSAGE), 4);
     write_int(current_parameter, 6);
 
     switch (current_parameter) {
@@ -402,12 +402,12 @@ void sis_encoder_impl::write_sis_parameter_message()
 
 void sis_encoder_impl::write_station_slogan()
 {
-    write_int(UNIVERSAL_SHORT_STATION_NAME, 4);
+    write_int(static_cast<int>(msg_id::UNIVERSAL_SHORT_STATION_NAME), 4);
 
     unsigned int num_frames = (slogan.length() + 6) / 6;
 
     write_int(slogan_current_frame, 4);
-    write_bit(NAME_TYPE_SLOGAN);
+    write_bit(static_cast<int>(name_type::SLOGAN));
 
     if (slogan_current_frame == 0) {
         write_int(0, 3); // encoding

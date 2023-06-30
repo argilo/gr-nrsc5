@@ -13,6 +13,33 @@
 namespace gr {
 namespace nrsc5 {
 
+constexpr size_t SIS_BITS = 80;
+constexpr int BLOCKS_PER_FRAME = 16;
+
+enum class pdu_type { PIDS_FORMATTED, LOW_LATENCY_DATA_SERVICE };
+
+enum class extension { NO_EXTENSION, EXTENDED_FORMAT };
+
+enum class msg_id {
+    STATION_ID_NUMBER,
+    STATION_NAME_SHORT,
+    STATION_NAME_LONG,
+    ALFN,
+    STATION_LOCATION,
+    STATION_MESSAGE,
+    SERVICE_INFORMATION_MESSAGE,
+    SIS_PARAMETER_MESSAGE,
+    UNIVERSAL_SHORT_STATION_NAME,
+    ACTIVE_RADIO_MESSAGE,
+    ADVANCED_SERVICE_INFORMATION_MESSAGE
+};
+
+enum class name_type { UNIVERSAL_SHORT_STATION_NAME, SLOGAN };
+
+enum class time_status { NOT_LOCKED, LOCKED };
+
+enum class name_extension { NONE, FM };
+
 class sis_encoder_impl : public sis_encoder
 {
 private:
