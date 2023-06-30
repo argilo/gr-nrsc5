@@ -138,7 +138,7 @@ int sis_encoder_impl::work(int noutput_items,
             while (bit < start + 64) {
                 write_bit(0);
             }
-            write_bit(0); // Reserved
+            write_bit(0); // reserved
             write_bit(static_cast<int>(time_status::NOT_LOCKED));
             write_int((alfn >> (block * 2)) & 0x3, 2);
             write_int(crc12(start), 12);
@@ -221,7 +221,7 @@ void sis_encoder_impl::write_station_id()
     for (int i = 0; i < 2; i++) {
         write_char5(country_code[i]);
     }
-    write_int(0, 3); // Reserved
+    write_int(0, 3); // reserved
     write_int(fcc_facility_id, 19);
 }
 
@@ -319,7 +319,7 @@ void sis_encoder_impl::write_service_information_message()
     write_bit(0);                                                   // access
     write_int(current_program, 6);                                  // program number
     write_int(static_cast<int>(program_types[current_program]), 8); // program type
-    write_int(0, 5);                                                // Reserved
+    write_int(0, 5);                                                // reserved
     write_int(0, 5);                                                // sound experience
 
     current_program = (current_program + 1) % program_types.size();
