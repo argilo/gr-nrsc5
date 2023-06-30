@@ -40,10 +40,24 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     latitude = 47;
     longitude = -105;
     altitude = 2000;
+    pending_leap_second_offset = 18;
+    current_leap_second_offset = 18;
+    leap_second_alfn = 0;
     utc_offset = -360;
     dst_schedule = 1;
     dst_local = true;
     dst_regional = true;
+    exciter_manufacturer_id = "AA";
+    exciter_core_version = { 5, 6, 7, 8 };
+    exciter_core_status = 1;
+    exciter_manufacturer_version = { 9, 10, 11, 12 };
+    exciter_manufacturer_status = 2;
+    importer_manufacturer_id = "BB";
+    importer_core_version = { 13, 14, 15, 16 };
+    importer_core_status = 3;
+    importer_manufacturer_version = { 17, 18, 19, 20 };
+    importer_manufacturer_status = 4;
+    importer_configuration_number = 42;
 
     long_name_current_frame = 0;
     long_name_seq = 0;
@@ -318,14 +332,14 @@ void sis_encoder_impl::write_sis_parameter_message()
 
     switch (static_cast<parameter_type>(current_parameter)) {
     case parameter_type::LEAP_SECOND_OFFSET:
-        write_int(18, 8);
-        write_int(18, 8);
+        write_int(pending_leap_second_offset, 8);
+        write_int(current_leap_second_offset, 8);
         break;
     case parameter_type::LEAP_SECOND_ALFN_LSB:
-        write_int(0, 16);
+        write_int(leap_second_alfn & 0xffff, 16);
         break;
     case parameter_type::LEAP_SECOND_ALFN_MSB:
-        write_int(0, 16);
+        write_int(leap_second_alfn >> 16, 16);
         break;
     case parameter_type::LOCAL_TIME_DATA:
         write_int(utc_offset, 11);
@@ -335,54 +349,54 @@ void sis_encoder_impl::write_sis_parameter_message()
         break;
     case parameter_type::EXCITER_MANUFACTURER_ID:
         write_bit(0); // reserved
-        write_int(33, 7);
-        write_bit(1); // importer connected
-        write_int(33, 7);
+        write_int(exciter_manufacturer_id[0], 7);
+        write_bit(static_cast<int>(icb::IMPORTER_CONNECTED));
+        write_int(exciter_manufacturer_id[1], 7);
         break;
     case parameter_type::EXCITER_CORE_VERSION_NUMBER_1_2_3:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 5);
+        write_int(exciter_core_version[0], 5);
+        write_int(exciter_core_version[1], 5);
+        write_int(exciter_core_version[2], 5);
         write_bit(0); // reserved
         break;
     case parameter_type::EXCITER_MANUFACTURER_VERSION_NUMBER_1_2_3:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 5);
+        write_int(exciter_manufacturer_version[0], 5);
+        write_int(exciter_manufacturer_version[1], 5);
+        write_int(exciter_manufacturer_version[2], 5);
         write_bit(0); // reserved
         break;
     case parameter_type::EXCITER_VERSION_NUMBER_4_AND_STATUS:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 3);
-        write_int(0, 3);
+        write_int(exciter_core_version[3], 5);
+        write_int(exciter_manufacturer_version[3], 5);
+        write_int(exciter_core_status, 3);
+        write_int(exciter_manufacturer_status, 3);
         break;
     case parameter_type::IMPORTER_MANUFACTURER_ID:
         write_bit(0); // reserved
-        write_int(33, 7);
+        write_int(importer_manufacturer_id[0], 7);
         write_bit(0); // reserved
-        write_int(33, 7);
+        write_int(importer_manufacturer_id[1], 7);
         break;
     case parameter_type::IMPORTER_CORE_VERSION_NUMBER_1_2_3:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 5);
+        write_int(importer_core_version[0], 5);
+        write_int(importer_core_version[1], 5);
+        write_int(importer_core_version[2], 5);
         write_bit(0); // reserved
         break;
     case parameter_type::IMPORTER_MANUFACTURER_VERSION_NUMBER_1_2_3:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 5);
+        write_int(importer_manufacturer_version[0], 5);
+        write_int(importer_manufacturer_version[1], 5);
+        write_int(importer_manufacturer_version[2], 5);
         write_bit(0); // reserved
         break;
     case parameter_type::IMPORTER_VERSION_NUMBER_4_AND_STATUS:
-        write_int(0, 5);
-        write_int(0, 5);
-        write_int(0, 3);
-        write_int(0, 3);
+        write_int(importer_core_version[3], 5);
+        write_int(importer_manufacturer_version[3], 5);
+        write_int(importer_core_status, 3);
+        write_int(importer_manufacturer_status, 3);
         break;
     case parameter_type::IMPORTER_CONFIGURATION_NUMBER:
-        write_int(0, 16);
+        write_int(importer_configuration_number, 16);
     }
     current_parameter = (current_parameter + 1) % 13;
 }

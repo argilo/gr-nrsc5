@@ -56,6 +56,11 @@ enum class parameter_type {
     IMPORTER_CONFIGURATION_NUMBER
 };
 
+enum class icb {
+    IMPORTER_NOT_CONNECTED,
+    IMPORTER_CONNECTED
+};
+
 class sis_encoder_impl : public sis_encoder
 {
 private:
@@ -68,10 +73,24 @@ private:
     float latitude;
     float longitude;
     float altitude;
+    unsigned int pending_leap_second_offset;
+    unsigned int current_leap_second_offset;
+    unsigned int leap_second_alfn;
     int utc_offset;
     unsigned int dst_schedule;
     bool dst_local;
     bool dst_regional;
+    std::string exciter_manufacturer_id;
+    std::vector<unsigned int> exciter_core_version;
+    unsigned int exciter_core_status;
+    std::vector<unsigned int> exciter_manufacturer_version;
+    unsigned int exciter_manufacturer_status;
+    std::string importer_manufacturer_id;
+    std::vector<unsigned int> importer_core_version;
+    unsigned int importer_core_status;
+    std::vector<unsigned int> importer_manufacturer_version;
+    unsigned int importer_manufacturer_status;
+    unsigned int importer_configuration_number;
 
     unsigned char* bit;
 
