@@ -36,11 +36,8 @@ private:
     unsigned int message_current_frame;
     unsigned int message_seq;
 
-    // vars for audio service descriptors
-    unsigned int programs;
-    std::vector<unsigned int> progtypes;
-    // tracking counter
-    int progno;
+    std::vector<unsigned int> program_types;
+    unsigned int current_program;
 
     // vars for service parameter message
     // counter

@@ -49,10 +49,8 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     message_current_frame = 0;
     message_seq = 0;
 
-    // vars for audio service descriptors
-    programs = 2;
-    progtypes = { 15, 4 };
-    progno = 0;
+    program_types = { 15, 4 };
+    current_program = 0;
 
     // vars for service parameter message
     sis7idx = 0;
@@ -303,27 +301,15 @@ void sis_encoder_impl::write_station_message()
 void sis_encoder_impl::write_service_information_message()
 {
     write_int(SERVICE_INFORMATION_MESSAGE, 4);
-    // audio and data programs must be listed here
-    // for now iterate through indicated audio programs
-    // code 00 for audio program, 01 for data Pg. 355
-    if (progno >= 0) {
-        // service category
-        write_int(0, 2);
-        // write access
-        write_bit(0);
-        // program number
-        write_int(progno, 6);
-        // program type
-        write_int(progtypes[progno], 8);
-        // reserved bits
-        write_int(0, 5); // Reserved
-        // sound experience
-        write_int(0, 5);
-    }
-    progno++;
-    if (progno > programs - 1) {
-        progno = 0;
-    }
+
+    write_int(0, 2); // service category
+    write_bit(0); // access
+    write_int(current_program, 6); // program number
+    write_int(program_types[current_program], 8); // program type
+    write_int(0, 5); // Reserved
+    write_int(0, 5); // sound experience
+
+    current_program = (current_program + 1) % program_types.size();
 }
 
 void sis_encoder_impl::write_sis_parameter_message()
