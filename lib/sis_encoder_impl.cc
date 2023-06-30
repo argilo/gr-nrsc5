@@ -40,6 +40,10 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     latitude = 47;
     longitude = -105;
     altitude = 2000;
+    utc_offset = -360;
+    dst_schedule = 1;
+    dst_local = true;
+    dst_regional = true;
 
     long_name_current_frame = 0;
     long_name_seq = 0;
@@ -52,12 +56,7 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     program_types = { 15, 4 };
     current_program = 0;
 
-    // vars for service parameter message
-    sis7idx = 0;
-    UTCoffset = -6;
-    DSTSchedule = 1;
-    DSTLocal = 1;
-    DSTReg = 1;
+    current_parameter = 0;
 }
 
 /*
@@ -315,73 +314,90 @@ void sis_encoder_impl::write_service_information_message()
 void sis_encoder_impl::write_sis_parameter_message()
 {
     write_int(SIS_PARAMETER_MESSAGE, 4);
-    // write DST and various TX BS that we'll ignore pg. 361
-    // reset frame count
-    if (sis7idx > 7) {
-        sis7idx = 0;
-    }
-    switch (sis7idx) {
+    write_int(current_parameter, 6);
+
+    switch (current_parameter) {
     case 0:
         // leap second offset
-        write_int(sis7idx, 6);
         write_int(18, 8);
         write_int(18, 8);
         break;
     case 1:
-        // GPS leap second ALFN
-        write_int(sis7idx, 6);
+        // ALFN of leap second, LSB
         write_int(0, 16);
         break;
     case 2:
-        // second half
-        write_int(sis7idx, 6);
+        // ALFN of leap second, MSB
         write_int(0, 16);
         break;
     case 3:
         // local time data (DST and UTC offset)
-        write_int(sis7idx, 6);
-        write_int(static_cast<int>(UTCoffset * 60), 11);
-        write_int(DSTSchedule, 3);
-        write_bit(DSTLocal);
-        write_bit(DSTReg);
+        write_int(utc_offset, 11);
+        write_int(dst_schedule, 3);
+        write_bit(dst_local);
+        write_bit(dst_regional);
         break;
     case 4:
-        // exciter man iD
-        write_int(sis7idx, 6);
+        // exciter manufacturer ID
         write_bit(0); // reserved
         write_int(33, 7);
         write_bit(0);
         write_int(33, 7);
         break;
     case 5:
-        // exciter core ver.
-        write_int(sis7idx, 6);
+        // exciter core version, levels 1-3
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
         write_bit(0); // reserved
         break;
     case 6:
-        // exciter man. ver.
-        write_int(sis7idx, 6);
+        // exciter manufacturer version, levels 1-3
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
-        write_bit(0); // reserved*/
+        write_bit(0); // reserved
         break;
     case 7:
-        // exciter man. ver.
-        write_int(sis7idx, 6);
+        // exciter core/manufacture version, level 4 & status
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 3);
         write_int(0, 3);
         break;
-    default:
-        write_int(sis7idx, 6);
+    case 8:
+        // importer manufacturer ID
+        write_bit(0); // reserved
+        write_int(33, 7);
+        write_bit(0);
+        write_int(33, 7);
+        break;
+    case 9:
+        // importer core version, levels 1-3
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_bit(0); // reserved
+        break;
+    case 10:
+        // importer manufacturer version, levels 1-3
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 5);
+        write_bit(0); // reserved
+        break;
+    case 11:
+        // importer core/manufacture version, level 4 & status
+        write_int(0, 5);
+        write_int(0, 5);
+        write_int(0, 3);
+        write_int(0, 3);
+        break;
+    case 12:
+        // importer configuration number
         write_int(0, 16);
     }
-    sis7idx++;
+    current_parameter = (current_parameter + 1) % 13;
 }
 
 void sis_encoder_impl::write_station_slogan()

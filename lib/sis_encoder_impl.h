@@ -25,6 +25,10 @@ private:
     float latitude;
     float longitude;
     float altitude;
+    int utc_offset;
+    unsigned int dst_schedule;
+    bool dst_local;
+    bool dst_regional;
 
     unsigned char* bit;
 
@@ -39,13 +43,7 @@ private:
     std::vector<unsigned int> program_types;
     unsigned int current_program;
 
-    // vars for service parameter message
-    // counter
-    unsigned int sis7idx;
-    float UTCoffset;
-    unsigned int DSTSchedule;
-    bool DSTLocal;
-    bool DSTReg;
+    unsigned int current_parameter;
 
     int crc12(unsigned char* sis);
     void write_bit(int b);
