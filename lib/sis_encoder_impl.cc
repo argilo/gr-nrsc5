@@ -53,7 +53,7 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     message_current_frame = 0;
     message_seq = 0;
 
-    program_types = { 15, 4 };
+    program_types = { program_type::CLASSICAL, program_type::TALK };
     current_program = 0;
 
     current_parameter = 0;
@@ -301,12 +301,12 @@ void sis_encoder_impl::write_service_information_message()
 {
     write_int(SERVICE_INFORMATION_MESSAGE, 4);
 
-    write_int(0, 2);                              // service category
-    write_bit(0);                                 // access
-    write_int(current_program, 6);                // program number
-    write_int(program_types[current_program], 8); // program type
-    write_int(0, 5);                              // Reserved
-    write_int(0, 5);                              // sound experience
+    write_int(0, 2);                                                // service category
+    write_bit(0);                                                   // access
+    write_int(current_program, 6);                                  // program number
+    write_int(static_cast<int>(program_types[current_program]), 8); // program type
+    write_int(0, 5);                                                // Reserved
+    write_int(0, 5);                                                // sound experience
 
     current_program = (current_program + 1) % program_types.size();
 }

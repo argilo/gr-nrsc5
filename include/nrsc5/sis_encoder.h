@@ -43,6 +43,41 @@
 namespace gr {
 namespace nrsc5 {
 
+enum class program_type {
+    UNDEFINED = 0,
+    NEWS = 1,
+    INFORMATION = 2,
+    SPORTS = 3,
+    TALK = 4,
+    ROCK = 5,
+    CLASSIC_ROCK = 6,
+    ADULT_HITS = 7,
+    SOFT_ROCK = 8,
+    TOP_40 = 9,
+    COUNTRY = 10,
+    OLDIES = 11,
+    SOFT = 12,
+    NOSTALGIA = 13,
+    JAZZ = 14,
+    CLASSICAL = 15,
+    RHYTHM_AND_BLUES = 16,
+    SOFT_RHYTHM_AND_BLUES = 17,
+    FOREIGN_LANGUAGE = 18,
+    RELIGIOUS_MUSIC = 19,
+    RELIGIOUS_TALK = 20,
+    PERSONALITY = 21,
+    PUBLIC = 22,
+    COLLEGE = 23,
+    SPANISH_TALK = 24,
+    SPANISH_MUSIC = 25,
+    HIP_HOP = 26,
+    WEATHER = 29,
+    EMERGENCY_TEST = 30,
+    EMERGENCY = 31,
+    TRAFFIC = 65,
+    SPECIAL_READING_SERVICES = 76
+};
+
 /*!
  * \brief <+description of block+>
  * \ingroup nrsc5

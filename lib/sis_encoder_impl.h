@@ -40,7 +40,7 @@ private:
     unsigned int message_current_frame;
     unsigned int message_seq;
 
-    std::vector<unsigned int> program_types;
+    std::vector<program_type> program_types;
     unsigned int current_program;
 
     unsigned int current_parameter;
