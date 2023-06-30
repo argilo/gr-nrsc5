@@ -32,19 +32,9 @@ private:
     unsigned int message_current_frame;
     unsigned int message_seq;
 
-    //position vars
-    //will 22 bit values
-    float lat;
-    float lon;
-    //will be 0-255 (8bits) (represnets 0-4080m in units of 16m)
+    float latitude;
+    float longitude;
     float altitude;
-
-    //computational vars
-    unsigned int nlat;
-    unsigned int nlon;
-    unsigned int nalt;
-    //frame tracking var
-    bool sendLat;
 
     //vars for audio service descriptors
     unsigned int programs;
@@ -67,7 +57,7 @@ private:
     void write_station_id();
     void write_station_name_short();
     void write_station_name_long();
-    void write_station_location();
+    void write_station_location(bool high);
     void write_station_message();
     void write_service_information_message();
     void write_sis_parameter_message();

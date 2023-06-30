@@ -46,22 +46,9 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     message_current_frame = 0;
     message_seq = 0;
 
-    /* Station location vars
-    S9.13 fractional format/WGS84: P.351 NRSC-5-E reference doc.
-    also requires two frames to send Lo/Hi -> long/lat
-    altitude is in units of 16m. okay.
-    These will be converted to apropraite format
-    */
-    lat = 47;
-    lon = -105;
-    altitude = 2000;
-    //computational vars
-    //convert to apropriate values according to pg. 382 of NRSC5E standard
-    nlat = static_cast<int>(std::round(lat*8192));
-    nlon = static_cast<int>(std::round(lon*8192));
-    nalt = static_cast<int>(std::round(altitude/16));
-    //var for determining frame number in sending lat/lon
-    sendLat = 0;
+    latitude = 47;
+    longitude = -105;
+    altitude = -1000;
 
     //vars for audio service descriptors
     programs = 2;
@@ -120,8 +107,8 @@ int sis_encoder_impl::work(int noutput_items,
                 break;
             case 7:
                 write_bit(EXTENDED_FORMAT);
-                write_station_location();
-                write_station_location();
+                write_station_location(true);
+                write_station_location(false);
                 break;
             case 8:
             case 13:
@@ -183,6 +170,9 @@ void sis_encoder_impl::write_bit(int b) { *(bit++) = b; }
 
 void sis_encoder_impl::write_int(int n, int len)
 {
+    if (n < 0)
+        n += (1 << len);
+
     for (int i = 0; i < len; i++) {
         write_bit((n >> (len - i - 1)) & 1);
     }
@@ -257,22 +247,20 @@ void sis_encoder_impl::write_station_name_long()
     long_name_current_frame = (long_name_current_frame + 1) % num_frames;
 }
 
-void sis_encoder_impl::write_station_location()
+void sis_encoder_impl::write_station_location(bool high)
 {
+    int altitude_int = static_cast<int>(std::round(altitude / 16));
+    altitude_int = std::max(std::min(altitude_int, 255), 0);
+
     write_int(STATION_LOCATION, 4);
-    //frame number
-    write_bit(sendLat);
-    if (sendLat){
-        //send latitude and alt. bits 7-4
-        write_int(nlat, 22);
-        write_int(nalt >> 4, 4);
+    write_bit(high);
+    if (high) {
+        write_int(std::round(latitude * 8192), 22);
+        write_int(altitude_int >> 4, 4);
+    } else {
+        write_int(std::round(longitude * 8192), 22);
+        write_int(altitude_int & 0xf, 4);
     }
-    else {
-        //send llongitude and alt. bits 3-0
-        write_int(nlon, 22);
-        write_int(nalt, 4);
-    }
-    sendLat = !sendLat;
 }
 
 void sis_encoder_impl::write_station_message()
