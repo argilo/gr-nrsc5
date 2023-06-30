@@ -62,6 +62,21 @@ enum class icb { IMPORTER_NOT_CONNECTED, IMPORTER_CONNECTED };
 
 enum class encoding { ISO_8859_1 = 0, UCS_2 = 4 };
 
+enum class service_category { AUDIO, DATA };
+
+enum class access { PUBLIC, RESTRICTED };
+
+enum class sound_experience {
+    NONE = 0,
+    DOLBY_PRO_LOGIC_II_SURROUND = 2,
+    DTS_NEURAL_SURROUND = 3,
+    FHG_MP3_SURROUND = 4,
+    DTS_NEO_6_SURROUND = 5,
+    DTS_NEURAL_X_SURROUND = 7,
+    DOLBY_PRO_LOGIC_IIX_SURROUND = 8,
+    DOLBY_PRO_LOGIC_IIZ_SURROUND = 9
+};
+
 class sis_encoder_impl : public sis_encoder
 {
 private:

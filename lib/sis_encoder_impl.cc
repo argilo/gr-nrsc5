@@ -317,12 +317,12 @@ void sis_encoder_impl::write_service_information_message()
 {
     write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
 
-    write_int(0, 2);                                                // service category
-    write_bit(0);                                                   // access
-    write_int(current_program, 6);                                  // program number
-    write_int(static_cast<int>(program_types[current_program]), 8); // program type
-    write_int(0, 5);                                                // reserved
-    write_int(0, 5);                                                // sound experience
+    write_int(static_cast<int>(service_category::AUDIO), 2);
+    write_bit(static_cast<int>(access::PUBLIC));
+    write_int(current_program, 6);
+    write_int(static_cast<int>(program_types[current_program]), 8);
+    write_int(0, 5); // reserved
+    write_int(static_cast<int>(sound_experience::NONE), 5);
 
     current_program = (current_program + 1) % program_types.size();
 }
