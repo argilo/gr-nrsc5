@@ -211,9 +211,7 @@ void sis_encoder_impl::write_station_id()
     for (int i = 0; i < 2; i++) {
         write_char5(country_code[i]);
     }
-    write_bit(0); // Reserved
-    write_bit(0); // Reserved
-    write_bit(0); // Reserved
+    write_int(0, 3); // Reserved
     write_int(fcc_facility_id, 19);
 }
 
@@ -319,11 +317,7 @@ void sis_encoder_impl::write_service_information_message()
         // program type
         write_int(progtypes[progno], 8);
         // reserved bits
-        write_bit(0); // Reserved
-        write_bit(0); // Reserved
-        write_bit(0); // Reserved
-        write_bit(0); // Reserved
-        write_bit(0); // Reserved
+        write_int(0, 5); // Reserved
         // sound experience
         write_int(0, 5);
     }
