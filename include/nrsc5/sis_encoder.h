@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017 Clayton Smith.
+ * Copyright 2017, 2023 Clayton Smith.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
