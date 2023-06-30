@@ -48,7 +48,7 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
 
     latitude = 47;
     longitude = -105;
-    altitude = -1000;
+    altitude = 2000;
 
     //vars for audio service descriptors
     programs = 2;
