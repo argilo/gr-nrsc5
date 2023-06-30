@@ -287,8 +287,8 @@ void sis_encoder_impl::write_station_message()
             checksum += (unsigned char)message.at(j);
         checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
 
-        write_bit(0);    // priority
-        write_int(0, 3); // encoding
+        write_bit(0); // priority
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
         write_int(message_length, 8);
         write_int(checksum, 7);
         for (int i = 0; i < 4; i++) {
@@ -414,7 +414,7 @@ void sis_encoder_impl::write_station_slogan()
     write_bit(static_cast<int>(name_type::SLOGAN));
 
     if (slogan_current_frame == 0) {
-        write_int(0, 3); // encoding
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
         write_int(0, 3); // reserved
         write_int(slogan_length, 7);
         for (int i = 0; i < 5; i++) {

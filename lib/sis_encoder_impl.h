@@ -58,10 +58,9 @@ enum class parameter_type {
 
 constexpr int NUM_PARAMETERS = 13;
 
-enum class icb {
-    IMPORTER_NOT_CONNECTED,
-    IMPORTER_CONNECTED
-};
+enum class icb { IMPORTER_NOT_CONNECTED, IMPORTER_CONNECTED };
+
+enum class encoding { ISO_8859_1 = 0, UCS_2 = 4 };
 
 class sis_encoder_impl : public sis_encoder
 {
