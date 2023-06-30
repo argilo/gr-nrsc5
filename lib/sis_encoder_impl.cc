@@ -316,85 +316,72 @@ void sis_encoder_impl::write_sis_parameter_message()
     write_int(static_cast<int>(msg_id::SIS_PARAMETER_MESSAGE), 4);
     write_int(current_parameter, 6);
 
-    switch (current_parameter) {
-    case 0:
-        // leap second offset
+    switch (static_cast<parameter_type>(current_parameter)) {
+    case parameter_type::LEAP_SECOND_OFFSET:
         write_int(18, 8);
         write_int(18, 8);
         break;
-    case 1:
-        // ALFN of leap second, LSB
+    case parameter_type::LEAP_SECOND_ALFN_LSB:
         write_int(0, 16);
         break;
-    case 2:
-        // ALFN of leap second, MSB
+    case parameter_type::LEAP_SECOND_ALFN_MSB:
         write_int(0, 16);
         break;
-    case 3:
-        // local time data (DST and UTC offset)
+    case parameter_type::LOCAL_TIME_DATA:
         write_int(utc_offset, 11);
         write_int(dst_schedule, 3);
         write_bit(dst_local);
         write_bit(dst_regional);
         break;
-    case 4:
-        // exciter manufacturer ID
+    case parameter_type::EXCITER_MANUFACTURER_ID:
         write_bit(0); // reserved
         write_int(33, 7);
         write_bit(0);
         write_int(33, 7);
         break;
-    case 5:
-        // exciter core version, levels 1-3
+    case parameter_type::EXCITER_CORE_VERSION_NUMBER_1_2_3:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
         write_bit(0); // reserved
         break;
-    case 6:
-        // exciter manufacturer version, levels 1-3
+    case parameter_type::EXCITER_MANUFACTURER_VERSION_NUMBER_1_2_3:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
         write_bit(0); // reserved
         break;
-    case 7:
-        // exciter core/manufacture version, level 4 & status
+    case parameter_type::EXCITER_VERSION_NUMBER_4_AND_STATUS:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 3);
         write_int(0, 3);
         break;
-    case 8:
-        // importer manufacturer ID
+    case parameter_type::IMPORTER_MANUFACTURER_ID:
         write_bit(0); // reserved
         write_int(33, 7);
         write_bit(0);
         write_int(33, 7);
         break;
-    case 9:
-        // importer core version, levels 1-3
+    case parameter_type::IMPORTER_CORE_VERSION_NUMBER_1_2_3:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
         write_bit(0); // reserved
         break;
-    case 10:
-        // importer manufacturer version, levels 1-3
+    case parameter_type::IMPORTER_MANUFACTURER_VERSION_NUMBER_1_2_3:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 5);
         write_bit(0); // reserved
         break;
-    case 11:
-        // importer core/manufacture version, level 4 & status
+    case parameter_type::IMPORTER_VERSION_NUMBER_4_AND_STATUS:
         write_int(0, 5);
         write_int(0, 5);
         write_int(0, 3);
         write_int(0, 3);
         break;
-    case 12:
-        // importer configuration number
+    case parameter_type::IMPORTER_CONFIGURATION_NUMBER:
         write_int(0, 16);
     }
     current_parameter = (current_parameter + 1) % 13;
