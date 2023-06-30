@@ -398,7 +398,7 @@ void sis_encoder_impl::write_sis_parameter_message()
     case parameter_type::IMPORTER_CONFIGURATION_NUMBER:
         write_int(importer_configuration_number, 16);
     }
-    current_parameter = (current_parameter + 1) % 13;
+    current_parameter = (current_parameter + 1) % NUM_PARAMETERS;
 }
 
 void sis_encoder_impl::write_station_slogan()

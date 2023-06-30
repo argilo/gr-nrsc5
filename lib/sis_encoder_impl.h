@@ -56,6 +56,8 @@ enum class parameter_type {
     IMPORTER_CONFIGURATION_NUMBER
 };
 
+constexpr int NUM_PARAMETERS = 13;
+
 enum class icb {
     IMPORTER_NOT_CONNECTED,
     IMPORTER_CONNECTED
