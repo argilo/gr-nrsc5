@@ -109,7 +109,12 @@ outputs:
     dtype: byte
     vlen: 80
 asserts:
-- ${ len(short_name) == 4 }
+-   ${ len(slogan) <= 95 }
+-   ${ len(message) <= 190 }
+-   ${ 1 <= num_programs <= 8 }
+-   ${ -90 <= latitude <= 90 }
+-   ${ -180 <= longitude <= 180 }
+-   ${ len(country_code) == 2 }
 
 templates:
     imports: import nrsc5

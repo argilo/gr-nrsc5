@@ -55,6 +55,10 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
+    if (country_code.length() != 2) {
+        throw std::invalid_argument("country code must be two characters");
+    }
+
     set_output_multiple(BLOCKS_PER_FRAME);
     alfn = 800000000;
     this->country_code = country_code;
@@ -254,7 +258,11 @@ void sis_encoder_impl::write_station_name_short()
 {
     write_int(static_cast<int>(msg_id::STATION_NAME_SHORT), 4);
     for (int i = 0; i < 4; i++) {
-        write_char5(short_name[i]);
+        if (i < short_name.length()) {
+            write_char5(short_name[i]);
+        } else {
+            write_char5(' ');
+        }
     }
     write_int(static_cast<int>(name_extension::FM), 2);
 }
