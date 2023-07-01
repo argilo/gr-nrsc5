@@ -61,6 +61,8 @@ constexpr int NUM_PARAMETERS = 13;
 
 enum class icb { IMPORTER_NOT_CONNECTED, IMPORTER_CONNECTED };
 
+enum class dst_schedule { NONE, US_CANADA, EUROPE };
+
 enum class priority { NORMAL, HIGH };
 
 enum class encoding { ISO_8859_1 = 0, UCS_2 = 4 };
@@ -96,7 +98,7 @@ private:
     unsigned int current_leap_second_offset;
     unsigned int leap_second_alfn;
     int utc_offset;
-    unsigned int dst_schedule;
+    dst_schedule dst_sched;
     bool dst_local;
     bool dst_regional;
     std::string exciter_manufacturer_id;

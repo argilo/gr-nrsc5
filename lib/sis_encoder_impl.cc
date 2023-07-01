@@ -45,7 +45,7 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
     current_leap_second_offset = 18;
     leap_second_alfn = 0;
     utc_offset = -360;
-    dst_schedule = 1;
+    dst_sched = dst_schedule::US_CANADA;
     dst_local = true;
     dst_regional = true;
     exciter_manufacturer_id = "CS";
@@ -346,7 +346,7 @@ void sis_encoder_impl::write_sis_parameter_message()
         break;
     case parameter_type::LOCAL_TIME_DATA:
         write_int(utc_offset, 11);
-        write_int(dst_schedule, 3);
+        write_int(static_cast<int>(dst_sched), 3);
         write_bit(dst_local);
         write_bit(dst_regional);
         break;
