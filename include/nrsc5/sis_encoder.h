@@ -70,9 +70,9 @@ public:
     static sptr make(const std::string& short_name = "ABCD",
                      const std::string& slogan = "",
                      const std::string& message = "",
-                     float latitude = 40.6892,
-                     float longitude = -74.0445,
-                     float altitude = 93.0,
+                     const float latitude = 40.6892,
+                     const float longitude = -74.0445,
+                     const float altitude = 93.0,
                      const std::string& country_code = "US",
                      const unsigned int fcc_facility_id = 0);
 };
