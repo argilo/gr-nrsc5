@@ -20,13 +20,22 @@ namespace nrsc5 {
 sis_encoder::sptr sis_encoder::make(const std::string& short_name,
                                     const std::string& slogan,
                                     const std::string& message,
+                                    const std::vector<program_type> program_types,
                                     float latitude,
                                     float longitude,
                                     float altitude,
                                     const std::string& country_code,
                                     const unsigned int fcc_facility_id)
 {
-    return gnuradio::get_initial_sptr(new sis_encoder_impl(short_name));
+    return gnuradio::get_initial_sptr(new sis_encoder_impl(short_name,
+                                                           slogan,
+                                                           message,
+                                                           program_types,
+                                                           latitude,
+                                                           longitude,
+                                                           altitude,
+                                                           country_code,
+                                                           fcc_facility_id));
 }
 
 
@@ -36,6 +45,7 @@ sis_encoder::sptr sis_encoder::make(const std::string& short_name,
 sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
                                    const std::string& slogan,
                                    const std::string& message,
+                                   const std::vector<program_type> program_types,
                                    const float latitude,
                                    const float longitude,
                                    const float altitude,
@@ -50,6 +60,7 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
     this->country_code = country_code;
     this->fcc_facility_id = fcc_facility_id;
     this->short_name = short_name;
+    this->program_types = program_types;
     this->slogan = slogan;
     this->message = message;
     this->latitude = latitude;
@@ -82,7 +93,6 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
     message_current_frame = 0;
     message_seq = 0;
 
-    program_types = { program_type::CLASSICAL, program_type::TALK };
     current_program = 0;
 
     current_parameter = 0;

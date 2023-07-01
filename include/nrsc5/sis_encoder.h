@@ -67,14 +67,16 @@ public:
      * class. nrsc5::sis_encoder::make is the public interface for
      * creating new instances.
      */
-    static sptr make(const std::string& short_name = "ABCD",
-                     const std::string& slogan = "",
-                     const std::string& message = "",
-                     const float latitude = 40.6892,
-                     const float longitude = -74.0445,
-                     const float altitude = 93.0,
-                     const std::string& country_code = "US",
-                     const unsigned int fcc_facility_id = 0);
+    static sptr
+    make(const std::string& short_name = "ABCD",
+         const std::string& slogan = "",
+         const std::string& message = "",
+         const std::vector<program_type> program_types = { program_type::UNDEFINED },
+         const float latitude = 40.6892,
+         const float longitude = -74.0445,
+         const float altitude = 93.0,
+         const std::string& country_code = "US",
+         const unsigned int fcc_facility_id = 0);
 };
 
 } // namespace nrsc5
