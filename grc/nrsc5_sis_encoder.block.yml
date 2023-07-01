@@ -9,6 +9,26 @@ parameters:
     label: Station name
     dtype: string
     default: ABCD
+-   id: slogan
+    label: Slogan
+    dtype: string
+    default: ""
+-   id: message
+    label: Message
+    dtype: string
+    default: ""
+-   id: latitude
+    label: Latitude
+    dtype: real
+    default: 40.6892
+-   id: longitude
+    label: Longitude
+    dtype: real
+    default: -74.0445
+-   id: altitude
+    label: Altitude
+    dtype: real
+    default: 93.0
 
 outputs:
 -   domain: stream
@@ -19,6 +39,6 @@ asserts:
 
 templates:
     imports: import nrsc5
-    make: nrsc5.sis_encoder(${short_name})
+    make: nrsc5.sis_encoder(short_name=${short_name}, slogan=${slogan}, message=${message}, latitude=${latitude}, longitude=${longitude}, altitude=${altitude})
 
 file_format: 1
