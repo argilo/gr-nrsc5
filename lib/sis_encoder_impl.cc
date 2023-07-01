@@ -17,7 +17,14 @@
 namespace gr {
 namespace nrsc5 {
 
-sis_encoder::sptr sis_encoder::make(const std::string& short_name)
+sis_encoder::sptr sis_encoder::make(const std::string& short_name,
+                                    const std::string& slogan,
+                                    const std::string& message,
+                                    float latitude,
+                                    float longitude,
+                                    float altitude,
+                                    const std::string& country_code,
+                                    const unsigned int fcc_facility_id)
 {
     return gnuradio::get_initial_sptr(new sis_encoder_impl(short_name));
 }
@@ -26,21 +33,28 @@ sis_encoder::sptr sis_encoder::make(const std::string& short_name)
 /*
  * The private constructor
  */
-sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
+sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
+                                   const std::string& slogan,
+                                   const std::string& message,
+                                   float latitude,
+                                   float longitude,
+                                   float altitude,
+                                   const std::string& country_code,
+                                   const unsigned int fcc_facility_id)
     : gr::sync_block("sis_encoder",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
     set_output_multiple(BLOCKS_PER_FRAME);
     alfn = 800000000;
-    country_code = "US";
-    fcc_facility_id = 1337;
+    this->country_code = country_code;
+    this->fcc_facility_id = fcc_facility_id;
     this->short_name = short_name;
-    slogan = "foo bar baz";
-    message = "This is a test message.";
-    latitude = 47;
-    longitude = -105;
-    altitude = 2000;
+    this->slogan = slogan;
+    this->message = message;
+    this->latitude = latitude;
+    this->longitude = longitude;
+    this->altitude = altitude;
     pending_leap_second_offset = 18;
     current_leap_second_offset = 18;
     leap_second_alfn = 0;
@@ -240,7 +254,7 @@ void sis_encoder_impl::write_station_name_long()
     write_int(static_cast<int>(msg_id::STATION_NAME_LONG), 4);
 
     unsigned int name_length = std::min((unsigned int)slogan.length(), 56u);
-    unsigned int num_frames = (name_length + 6) / 7;
+    unsigned int num_frames = std::max((name_length + 6) / 7, 1u);
 
     write_int(num_frames - 1, 3);
     write_int(long_name_current_frame, 3);

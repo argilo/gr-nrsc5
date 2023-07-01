@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(sis_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(373f72d39be913081e5f68fc294cbf5e)                     */
+/* BINDTOOL_HEADER_FILE_HASH(c81e968ecd7e7c25a3a28f3bc1dcf80f)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -38,6 +38,13 @@ void bind_sis_encoder(py::module& m)
 
         .def(py::init(&sis_encoder::make),
            py::arg("short_name") = "ABCD",
+           py::arg("slogan") = "",
+           py::arg("message") = "",
+           py::arg("latitude") = 40.6892,
+           py::arg("longitude") = -74.0445,
+           py::arg("altitude") = 93.0,
+           py::arg("country_code") = "US",
+           py::arg("fcc_facility_id") = 0,
            D(sis_encoder,make)
         )
         
