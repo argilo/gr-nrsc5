@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(sis_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(0f6394f6759fc8f175519f428ce61183)                     */
+/* BINDTOOL_HEADER_FILE_HASH(ca3ef8089c739409c05b53bff022e3dd)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -31,6 +31,11 @@ void bind_sis_encoder(py::module& m)
 {
 
     using sis_encoder    = ::gr::nrsc5::sis_encoder;
+
+    py::enum_<::gr::nrsc5::pids_mode>(m, "pids_mode")
+        .value("FM", ::gr::nrsc5::pids_mode::FM)
+        .value("AM", ::gr::nrsc5::pids_mode::AM)
+        .export_values();
 
     py::enum_<::gr::nrsc5::program_type>(m, "program_type")
         .value("UNDEFINED", ::gr::nrsc5::program_type::UNDEFINED)
@@ -71,6 +76,7 @@ void bind_sis_encoder(py::module& m)
         std::shared_ptr<sis_encoder>>(m, "sis_encoder", D(sis_encoder))
 
         .def(py::init(&sis_encoder::make),
+           py::arg("mode") = ::gr::nrsc5::pids_mode::FM,
            py::arg("short_name") = "ABCD",
            py::arg("slogan") = "",
            py::arg("message") = "",

@@ -14,6 +14,8 @@
 namespace gr {
 namespace nrsc5 {
 
+enum class pids_mode { FM, AM };
+
 enum class program_type {
     UNDEFINED = 0,
     NEWS = 1,
@@ -68,7 +70,8 @@ public:
      * creating new instances.
      */
     static sptr
-    make(const std::string& short_name = "ABCD",
+    make(const pids_mode mode = pids_mode::FM,
+         const std::string& short_name = "ABCD",
          const std::string& slogan = "",
          const std::string& message = "",
          const std::vector<program_type> program_types = { program_type::UNDEFINED },

@@ -17,7 +17,8 @@
 namespace gr {
 namespace nrsc5 {
 
-sis_encoder::sptr sis_encoder::make(const std::string& short_name,
+sis_encoder::sptr sis_encoder::make(const pids_mode mode,
+                                    const std::string& short_name,
                                     const std::string& slogan,
                                     const std::string& message,
                                     const std::vector<program_type> program_types,
@@ -27,7 +28,8 @@ sis_encoder::sptr sis_encoder::make(const std::string& short_name,
                                     const std::string& country_code,
                                     const unsigned int fcc_facility_id)
 {
-    return gnuradio::get_initial_sptr(new sis_encoder_impl(short_name,
+    return gnuradio::get_initial_sptr(new sis_encoder_impl(mode,
+                                                           short_name,
                                                            slogan,
                                                            message,
                                                            program_types,
@@ -42,7 +44,8 @@ sis_encoder::sptr sis_encoder::make(const std::string& short_name,
 /*
  * The private constructor
  */
-sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
+sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
+                                   const std::string& short_name,
                                    const std::string& slogan,
                                    const std::string& message,
                                    const std::vector<program_type> program_types,
@@ -59,7 +62,17 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
         throw std::invalid_argument("country code must be two characters");
     }
 
-    set_output_multiple(BLOCKS_PER_FRAME);
+    this->mode = mode;
+    if (this->mode == pids_mode::FM) {
+        blocks_per_frame = BLOCKS_PER_FRAME_FM;
+        schedule = &schedule_fm;
+    } else {
+        blocks_per_frame = BLOCKS_PER_FRAME_AM;
+        schedule = &schedule_am;
+    }
+
+    set_output_multiple(blocks_per_frame);
+
     alfn = 800000000;
     this->country_code = country_code;
     this->fcc_facility_id = fcc_facility_id;
@@ -100,6 +113,8 @@ sis_encoder_impl::sis_encoder_impl(const std::string& short_name,
     current_program = 0;
 
     current_parameter = 0;
+
+    location_high = true;
 }
 
 /*
@@ -115,53 +130,46 @@ int sis_encoder_impl::work(int noutput_items,
 
     bit = out;
     while (bit < out + (noutput_items * SIS_BITS)) {
-        for (int block = 0; block < BLOCKS_PER_FRAME; block++) {
+        for (int block = 0; block < blocks_per_frame; block++) {
             unsigned char* start = bit;
 
             write_bit(static_cast<int>(pdu_type::PIDS_FORMATTED));
 
-            switch (block) {
-            case 0:
-            case 2:
-            case 4:
-            case 6:
-            case 9:
-            case 14:
-                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
-                write_station_name_short();
-                write_station_id();
-                break;
-            case 1:
-            case 5:
-            case 10:
-            case 15:
-                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
-                write_service_information_message();
-                write_service_information_message();
-                break;
-            case 3:
+            std::vector<sched_item> payloads = (*schedule)[block];
+
+            if (payloads.size() == 1) {
                 write_bit(static_cast<int>(extension::NO_EXTENSION));
-                write_station_slogan();
-                break;
-            case 7:
+            } else {
                 write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
-                write_station_location(true);
-                write_station_location(false);
-                break;
-            case 8:
-            case 13:
-                write_bit(static_cast<int>(extension::NO_EXTENSION));
-                write_station_message();
-                break;
-            case 11:
-                write_bit(static_cast<int>(extension::NO_EXTENSION));
-                write_station_name_long();
-                break;
-            case 12:
-                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
-                write_sis_parameter_message();
-                write_station_id();
-                break;
+            }
+
+            for (sched_item payload : payloads) {
+                switch (payload) {
+                case sched_item::STATION_ID:
+                    write_station_id();
+                    break;
+                case sched_item::SHORT_STATION_NAME:
+                    write_station_name_short();
+                    break;
+                case sched_item::LONG_STATION_NAME:
+                    write_station_name_long();
+                    break;
+                case sched_item::STATION_LOCATION:
+                    write_station_location();
+                    break;
+                case sched_item::STATION_MESSAGE:
+                    write_station_message();
+                    break;
+                case sched_item::SERVICE_INFO_MESSAGE:
+                    write_service_information_message();
+                    break;
+                case sched_item::SIS_PARAMETER_MESSAGE:
+                    write_sis_parameter_message();
+                    break;
+                case sched_item::STATION_SLOGAN:
+                    write_station_slogan();
+                    break;
+                }
             }
 
             while (bit < start + 64) {
@@ -169,7 +177,17 @@ int sis_encoder_impl::work(int noutput_items,
             }
             write_bit(0); // reserved
             write_bit(static_cast<int>(time_status::NOT_LOCKED));
-            write_int((alfn >> (block * 2)) & 0x3, 2);
+            if (mode == pids_mode::FM) {
+                write_int((alfn >> (block * 2)) & 0x3, 2);
+            } else {
+                if ((alfn & 0x3) == 0) {
+                    // write most significant bits once every four blocks
+                    write_int((alfn >> (16 + block * 2)) & 0x3, 2);
+                } else {
+                    // write least significant bits in the remaining three blocks
+                    write_int((alfn >> (block * 2)) & 0x3, 2);
+                }
+            }
             write_int(crc12(start), 12);
         }
         alfn++;
@@ -288,20 +306,22 @@ void sis_encoder_impl::write_station_name_long()
     long_name_current_frame = (long_name_current_frame + 1) % num_frames;
 }
 
-void sis_encoder_impl::write_station_location(bool high)
+void sis_encoder_impl::write_station_location()
 {
     int altitude_int = static_cast<int>(std::round(altitude / 16));
     altitude_int = std::max(std::min(altitude_int, 255), 0);
 
     write_int(static_cast<int>(msg_id::STATION_LOCATION), 4);
-    write_bit(high);
-    if (high) {
+    write_bit(location_high);
+    if (location_high) {
         write_int(std::round(latitude * 8192), 22);
         write_int(altitude_int >> 4, 4);
     } else {
         write_int(std::round(longitude * 8192), 22);
         write_int(altitude_int & 0xf, 4);
     }
+
+    location_high = !location_high;
 }
 
 void sis_encoder_impl::write_station_message()

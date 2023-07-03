@@ -15,7 +15,8 @@ namespace gr {
 namespace nrsc5 {
 
 constexpr size_t SIS_BITS = 80;
-constexpr int BLOCKS_PER_FRAME = 16;
+constexpr int BLOCKS_PER_FRAME_FM = 16;
+constexpr int BLOCKS_PER_FRAME_AM = 8;
 
 enum class pdu_type { PIDS_FORMATTED, LOW_LATENCY_DATA_SERVICE };
 
@@ -33,6 +34,49 @@ enum class msg_id {
     UNIVERSAL_SHORT_STATION_NAME,
     ACTIVE_RADIO_MESSAGE,
     ADVANCED_SERVICE_INFORMATION_MESSAGE
+};
+
+enum class sched_item {
+    STATION_ID,
+    SHORT_STATION_NAME,
+    LONG_STATION_NAME,
+    STATION_LOCATION,
+    STATION_MESSAGE,
+    SERVICE_INFO_MESSAGE,
+    SIS_PARAMETER_MESSAGE,
+    UNIVERSAL_SHORT_STATION_NAME,
+    STATION_SLOGAN,
+    EA_MESSAGE
+};
+
+std::vector<std::vector<sched_item>> schedule_fm = {
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::STATION_SLOGAN },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::STATION_LOCATION, sched_item::STATION_LOCATION },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::LONG_STATION_NAME },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE }
+};
+
+std::vector<std::vector<sched_item>> schedule_am = {
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SHORT_STATION_NAME },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_LOCATION },
+    { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
+    { sched_item::STATION_SLOGAN },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SHORT_STATION_NAME },
+    { sched_item::LONG_STATION_NAME }
 };
 
 enum class name_type { UNIVERSAL_SHORT_STATION_NAME, SLOGAN };
@@ -85,6 +129,9 @@ enum class sound_experience {
 class sis_encoder_impl : public sis_encoder
 {
 private:
+    pids_mode mode;
+    int blocks_per_frame;
+    std::vector<std::vector<sched_item>>* schedule;
     unsigned int alfn;
     std::string country_code;
     unsigned int fcc_facility_id;
@@ -128,6 +175,8 @@ private:
 
     unsigned int current_parameter;
 
+    bool location_high;
+
     int crc12(unsigned char* sis);
     void write_bit(int b);
     void write_int(int n, int len);
@@ -135,7 +184,7 @@ private:
     void write_station_id();
     void write_station_name_short();
     void write_station_name_long();
-    void write_station_location(bool high);
+    void write_station_location();
     void write_station_message();
     void write_service_information_message();
     void write_sis_parameter_message();
@@ -143,6 +192,7 @@ private:
 
 public:
     sis_encoder_impl(
+        const pids_mode mode = pids_mode::FM,
         const std::string& short_name = "ABCD",
         const std::string& slogan = "",
         const std::string& message = "",
