@@ -49,7 +49,7 @@ enum class sched_item {
     EA_MESSAGE
 };
 
-std::vector<std::vector<sched_item>> schedule_fm = {
+std::vector<std::vector<sched_item>> schedule_fm_short_no_ea = {
     { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
     { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
     { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
@@ -68,7 +68,26 @@ std::vector<std::vector<sched_item>> schedule_fm = {
     { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE }
 };
 
-std::vector<std::vector<sched_item>> schedule_am = {
+std::vector<std::vector<sched_item>> schedule_fm_long_no_ea = {
+    { sched_item::UNIVERSAL_SHORT_STATION_NAME },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::STATION_SLOGAN },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::UNIVERSAL_SHORT_STATION_NAME },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::STATION_LOCATION, sched_item::STATION_LOCATION },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::UNIVERSAL_SHORT_STATION_NAME },
+    { sched_item::STATION_SLOGAN },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID }
+};
+
+std::vector<std::vector<sched_item>> schedule_am_short_no_ea = {
     { sched_item::SHORT_STATION_NAME, sched_item::STATION_ID },
     { sched_item::STATION_MESSAGE },
     { sched_item::SERVICE_INFO_MESSAGE, sched_item::SHORT_STATION_NAME },
@@ -77,6 +96,17 @@ std::vector<std::vector<sched_item>> schedule_am = {
     { sched_item::STATION_SLOGAN },
     { sched_item::SERVICE_INFO_MESSAGE, sched_item::SHORT_STATION_NAME },
     { sched_item::LONG_STATION_NAME }
+};
+
+std::vector<std::vector<sched_item>> schedule_am_long_no_ea = {
+    { sched_item::UNIVERSAL_SHORT_STATION_NAME },
+    { sched_item::STATION_MESSAGE },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::STATION_LOCATION },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE },
+    { sched_item::STATION_SLOGAN },
+    { sched_item::SIS_PARAMETER_MESSAGE, sched_item::STATION_ID },
+    { sched_item::SERVICE_INFO_MESSAGE, sched_item::SERVICE_INFO_MESSAGE }
 };
 
 enum class name_type { UNIVERSAL_SHORT_STATION_NAME, SLOGAN };
@@ -166,6 +196,7 @@ private:
     unsigned int long_name_current_frame;
     unsigned int long_name_seq;
 
+    unsigned int ussn_current_frame;
     unsigned int slogan_current_frame;
 
     unsigned int message_current_frame;
@@ -189,6 +220,7 @@ private:
     void write_station_message();
     void write_service_information_message();
     void write_sis_parameter_message();
+    void write_universal_short_station_name();
     void write_station_slogan();
 
 public:

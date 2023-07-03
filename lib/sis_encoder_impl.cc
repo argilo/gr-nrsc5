@@ -62,17 +62,6 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
         throw std::invalid_argument("country code must be two characters");
     }
 
-    this->mode = mode;
-    if (this->mode == pids_mode::FM) {
-        blocks_per_frame = BLOCKS_PER_FRAME_FM;
-        schedule = &schedule_fm;
-    } else {
-        blocks_per_frame = BLOCKS_PER_FRAME_AM;
-        schedule = &schedule_am;
-    }
-
-    set_output_multiple(blocks_per_frame);
-
     alfn = 800000000;
     this->country_code = country_code;
     this->fcc_facility_id = fcc_facility_id;
@@ -84,6 +73,24 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
         this->short_name = short_name;
         fm_suffix = false;
     }
+
+    this->mode = mode;
+    if (this->mode == pids_mode::FM) {
+        blocks_per_frame = BLOCKS_PER_FRAME_FM;
+        if (this->short_name.length() <= 4) {
+            schedule = &schedule_fm_short_no_ea;
+        } else {
+            schedule = &schedule_fm_long_no_ea;
+        }
+    } else {
+        blocks_per_frame = BLOCKS_PER_FRAME_AM;
+        if (this->short_name.length() <= 4) {
+            schedule = &schedule_am_short_no_ea;
+        } else {
+            schedule = &schedule_am_long_no_ea;
+        }
+    }
+    set_output_multiple(blocks_per_frame);
 
     this->program_types = program_types;
     this->slogan = slogan;
@@ -173,6 +180,9 @@ int sis_encoder_impl::work(int noutput_items,
                     break;
                 case sched_item::SIS_PARAMETER_MESSAGE:
                     write_sis_parameter_message();
+                    break;
+                case sched_item::UNIVERSAL_SHORT_STATION_NAME:
+                    write_universal_short_station_name();
                     break;
                 case sched_item::STATION_SLOGAN:
                     write_station_slogan();
@@ -466,6 +476,36 @@ void sis_encoder_impl::write_sis_parameter_message()
         write_int(importer_configuration_number, 16);
     }
     current_parameter = (current_parameter + 1) % NUM_PARAMETERS;
+}
+
+void sis_encoder_impl::write_universal_short_station_name()
+{
+    write_int(static_cast<int>(msg_id::UNIVERSAL_SHORT_STATION_NAME), 4);
+
+    unsigned int short_name_length = std::min((unsigned int)short_name.length(), 12u);
+    unsigned int num_frames = std::max((short_name_length + 5) / 6, 1u);
+
+    write_int(ussn_current_frame, 4);
+    write_bit(static_cast<int>(name_type::UNIVERSAL_SHORT_STATION_NAME));
+
+    if (ussn_current_frame == 0) {
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
+        write_bit(fm_suffix);
+        write_bit(num_frames - 1);
+    } else {
+        write_int(0, 5); // reserved
+    }
+
+    for (int i = ussn_current_frame * 6; i < ussn_current_frame * 6 + 6;
+            i++) {
+        if (i < short_name_length) {
+            write_int(short_name.at(i), 8);
+        } else {
+            write_int(0, 8);
+        }
+    }
+
+    ussn_current_frame = (ussn_current_frame + 1) % num_frames;
 }
 
 void sis_encoder_impl::write_station_slogan()
