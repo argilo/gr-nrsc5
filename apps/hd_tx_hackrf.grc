@@ -440,7 +440,7 @@ blocks:
     program5: nrsc5.program_type.NEWS
     program6: nrsc5.program_type.NEWS
     program7: nrsc5.program_type.NEWS
-    short_name: ABCD
+    short_name: ABCD-FM
     slogan: This is ABCD-FM
   states:
     bus_sink: false

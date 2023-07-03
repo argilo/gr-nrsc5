@@ -76,7 +76,15 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     alfn = 800000000;
     this->country_code = country_code;
     this->fcc_facility_id = fcc_facility_id;
-    this->short_name = short_name;
+
+    if ((short_name.length() >= 3) && (short_name.compare(short_name.length() - 3, 3, "-FM") == 0)) {
+        this->short_name = short_name.substr(0, short_name.length() - 3);
+        fm_suffix = true;
+    } else {
+        this->short_name = short_name;
+        fm_suffix = false;
+    }
+
     this->program_types = program_types;
     this->slogan = slogan;
     this->message = message;
@@ -282,7 +290,11 @@ void sis_encoder_impl::write_station_name_short()
             write_char5(' ');
         }
     }
-    write_int(static_cast<int>(name_extension::FM), 2);
+    if (fm_suffix) {
+        write_int(static_cast<int>(name_extension::FM), 2);
+    } else {
+        write_int(static_cast<int>(name_extension::NONE), 2);
+    }
 }
 
 void sis_encoder_impl::write_station_name_long()

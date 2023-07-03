@@ -136,6 +136,7 @@ private:
     std::string country_code;
     unsigned int fcc_facility_id;
     std::string short_name;
+    bool fm_suffix;
     std::string slogan;
     std::string message;
     float latitude;
