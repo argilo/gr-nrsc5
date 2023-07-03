@@ -67,6 +67,7 @@ Several sample flowgraphs are available in the apps folder:
 
 * hd_tx_am_hackrf.grc, hd_tx_am_hackrf.py: Hybrid mode, tested on a HackRF One
 * hd_tx_am_ma3_hackrf.grc, hd_tx_am_ma3_hackrf.py: All Digital mode, tested on a HackRF One
+* hd_tx_am_soundcard.grc, hd_tx_am_soundcard.py: outputs I/Q samples as stereo audio, suitable for use with a soundcard-based direct conversion transmitter
 
 These flowgraphs read a WAV file named sample.wav, which must be encoded at 44,100 samples per second. The license for the supplied sample.wav file is as follows:
 
