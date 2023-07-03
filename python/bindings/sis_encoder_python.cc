@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(sis_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(ce49e377ae6990b0fd45e625582d918d)                     */
+/* BINDTOOL_HEADER_FILE_HASH(ca3ef8089c739409c05b53bff022e3dd)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -32,12 +32,60 @@ void bind_sis_encoder(py::module& m)
 
     using sis_encoder    = ::gr::nrsc5::sis_encoder;
 
+    py::enum_<::gr::nrsc5::pids_mode>(m, "pids_mode")
+        .value("FM", ::gr::nrsc5::pids_mode::FM)
+        .value("AM", ::gr::nrsc5::pids_mode::AM)
+        .export_values();
+
+    py::enum_<::gr::nrsc5::program_type>(m, "program_type")
+        .value("UNDEFINED", ::gr::nrsc5::program_type::UNDEFINED)
+        .value("NEWS", ::gr::nrsc5::program_type::NEWS)
+        .value("INFORMATION", ::gr::nrsc5::program_type::INFORMATION)
+        .value("SPORTS", ::gr::nrsc5::program_type::SPORTS)
+        .value("TALK", ::gr::nrsc5::program_type::TALK)
+        .value("ROCK", ::gr::nrsc5::program_type::ROCK)
+        .value("CLASSIC_ROCK", ::gr::nrsc5::program_type::CLASSIC_ROCK)
+        .value("ADULT_HITS", ::gr::nrsc5::program_type::ADULT_HITS)
+        .value("SOFT_ROCK", ::gr::nrsc5::program_type::SOFT_ROCK)
+        .value("TOP_40", ::gr::nrsc5::program_type::TOP_40)
+        .value("COUNTRY", ::gr::nrsc5::program_type::COUNTRY)
+        .value("OLDIES", ::gr::nrsc5::program_type::OLDIES)
+        .value("SOFT", ::gr::nrsc5::program_type::SOFT)
+        .value("NOSTALGIA", ::gr::nrsc5::program_type::NOSTALGIA)
+        .value("JAZZ", ::gr::nrsc5::program_type::JAZZ)
+        .value("CLASSICAL", ::gr::nrsc5::program_type::CLASSICAL)
+        .value("RHYTHM_AND_BLUES", ::gr::nrsc5::program_type::RHYTHM_AND_BLUES)
+        .value("SOFT_RHYTHM_AND_BLUES", ::gr::nrsc5::program_type::SOFT_RHYTHM_AND_BLUES)
+        .value("FOREIGN_LANGUAGE", ::gr::nrsc5::program_type::FOREIGN_LANGUAGE)
+        .value("RELIGIOUS_MUSIC", ::gr::nrsc5::program_type::RELIGIOUS_MUSIC)
+        .value("RELIGIOUS_TALK", ::gr::nrsc5::program_type::RELIGIOUS_TALK)
+        .value("PERSONALITY", ::gr::nrsc5::program_type::PERSONALITY)
+        .value("PUBLIC", ::gr::nrsc5::program_type::PUBLIC)
+        .value("COLLEGE", ::gr::nrsc5::program_type::COLLEGE)
+        .value("SPANISH_TALK", ::gr::nrsc5::program_type::SPANISH_TALK)
+        .value("SPANISH_MUSIC", ::gr::nrsc5::program_type::SPANISH_MUSIC)
+        .value("HIP_HOP", ::gr::nrsc5::program_type::HIP_HOP)
+        .value("WEATHER", ::gr::nrsc5::program_type::WEATHER)
+        .value("EMERGENCY_TEST", ::gr::nrsc5::program_type::EMERGENCY_TEST)
+        .value("EMERGENCY", ::gr::nrsc5::program_type::EMERGENCY)
+        .value("TRAFFIC", ::gr::nrsc5::program_type::TRAFFIC)
+        .value("SPECIAL_READING_SERVICES", ::gr::nrsc5::program_type::SPECIAL_READING_SERVICES)
+        .export_values();
 
     py::class_<sis_encoder, gr::sync_block, gr::block, gr::basic_block,
         std::shared_ptr<sis_encoder>>(m, "sis_encoder", D(sis_encoder))
 
         .def(py::init(&sis_encoder::make),
+           py::arg("mode") = ::gr::nrsc5::pids_mode::FM,
            py::arg("short_name") = "ABCD",
+           py::arg("slogan") = "",
+           py::arg("message") = "",
+           py::arg("program_types") = std::vector<::gr::nrsc5::program_type>({ ::gr::nrsc5::program_type::UNDEFINED }),
+           py::arg("latitude") = 40.6892,
+           py::arg("longitude") = -74.0445,
+           py::arg("altitude") = 93.0,
+           py::arg("country_code") = "US",
+           py::arg("fcc_facility_id") = 0,
            D(sis_encoder,make)
         )
         

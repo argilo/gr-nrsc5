@@ -39,7 +39,7 @@ This block encodes Program Service Data PDUs, as described in https://www.nrscst
 
 ### SIS encoder
 
-This block encodes Station Information Service PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station. Currently only the short station name (i.e. call sign) is encoded.
+This block encodes Station Information Service PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station. All message types are implemented, except for Emergency Alerts.
 
 ### Layer 2 encoder
 

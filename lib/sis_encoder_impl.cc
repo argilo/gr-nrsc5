@@ -1,6 +1,7 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017 Clayton Smith.
+ * Copyright 2017, 2023 Clayton Smith.
+ * Copyright 2023 Vladislav Fomitchev.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -11,27 +12,126 @@
 
 #include "sis_encoder_impl.h"
 #include <gnuradio/io_signature.h>
+#include <cmath>
 
 namespace gr {
 namespace nrsc5 {
 
-sis_encoder::sptr sis_encoder::make(const std::string& short_name)
+sis_encoder::sptr sis_encoder::make(const pids_mode mode,
+                                    const std::string& short_name,
+                                    const std::string& slogan,
+                                    const std::string& message,
+                                    const std::vector<program_type> program_types,
+                                    float latitude,
+                                    float longitude,
+                                    float altitude,
+                                    const std::string& country_code,
+                                    const unsigned int fcc_facility_id)
 {
-    return gnuradio::get_initial_sptr(new sis_encoder_impl(short_name));
+    return gnuradio::get_initial_sptr(new sis_encoder_impl(mode,
+                                                           short_name,
+                                                           slogan,
+                                                           message,
+                                                           program_types,
+                                                           latitude,
+                                                           longitude,
+                                                           altitude,
+                                                           country_code,
+                                                           fcc_facility_id));
 }
 
 
 /*
  * The private constructor
  */
-sis_encoder_impl::sis_encoder_impl(const std::string& short_name)
+sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
+                                   const std::string& short_name,
+                                   const std::string& slogan,
+                                   const std::string& message,
+                                   const std::vector<program_type> program_types,
+                                   const float latitude,
+                                   const float longitude,
+                                   const float altitude,
+                                   const std::string& country_code,
+                                   const unsigned int fcc_facility_id)
     : gr::sync_block("sis_encoder",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
-    set_output_multiple(BLOCKS_PER_FRAME);
-    this->short_name = short_name;
+    if (country_code.length() != 2) {
+        throw std::invalid_argument("country code must be two characters");
+    }
+
     alfn = 800000000;
+    this->country_code = country_code;
+    this->fcc_facility_id = fcc_facility_id;
+
+    if ((short_name.length() >= 3) &&
+        (short_name.compare(short_name.length() - 3, 3, "-FM") == 0)) {
+        this->short_name = short_name.substr(0, short_name.length() - 3);
+        fm_suffix = true;
+    } else {
+        this->short_name = short_name;
+        fm_suffix = false;
+    }
+
+    this->mode = mode;
+    if (this->mode == pids_mode::FM) {
+        blocks_per_frame = BLOCKS_PER_FRAME_FM;
+        if (this->short_name.length() <= 4) {
+            schedule = &schedule_fm_short_no_ea;
+        } else {
+            schedule = &schedule_fm_long_no_ea;
+        }
+    } else {
+        blocks_per_frame = BLOCKS_PER_FRAME_AM;
+        if (this->short_name.length() <= 4) {
+            schedule = &schedule_am_short_no_ea;
+        } else {
+            schedule = &schedule_am_long_no_ea;
+        }
+    }
+    set_output_multiple(blocks_per_frame);
+
+    this->program_types = program_types;
+    this->slogan = slogan;
+    this->message = message;
+    this->latitude = latitude;
+    this->longitude = longitude;
+    this->altitude = altitude;
+    pending_leap_second_offset = 18;
+    current_leap_second_offset = 18;
+    leap_second_alfn = 0;
+    utc_offset = -360;
+    dst_sched = dst_schedule::US_CANADA;
+    dst_local = true;
+    dst_regional = true;
+    exciter_manufacturer_id = "CS";
+    exciter_core_version = { 1, 0, 0, 0 };
+    exciter_core_status = 0;
+    exciter_manufacturer_version = { 1, 0, 0, 0 };
+    exciter_manufacturer_status = 0;
+    importer_manufacturer_id = "CS";
+    importer_core_version = { 1, 0, 0, 0 };
+    importer_core_status = 0;
+    importer_manufacturer_version = { 1, 0, 0, 0 };
+    importer_manufacturer_status = 0;
+    importer_configuration_number = 0;
+
+    long_name_current_frame = 0;
+    long_name_seq = 0;
+
+    ussn_current_frame = 0;
+    slogan_current_frame = 0;
+
+    message_current_frame = 0;
+    message_seq = 0;
+
+    current_program = 0;
+
+    current_parameter = 0;
+
+    location_high = true;
 }
 
 /*
@@ -47,19 +147,67 @@ int sis_encoder_impl::work(int noutput_items,
 
     bit = out;
     while (bit < out + (noutput_items * SIS_BITS)) {
-        for (int block = 0; block < BLOCKS_PER_FRAME; block++) {
+        for (int block = 0; block < blocks_per_frame; block++) {
             unsigned char* start = bit;
 
-            write_bit(PIDS_FORMATTED);
-            write_bit(NO_EXTENSION);
-            write_station_name_short();
+            write_bit(static_cast<int>(pdu_type::PIDS_FORMATTED));
+
+            std::vector<sched_item> payloads = (*schedule)[block];
+
+            if (payloads.size() == 1) {
+                write_bit(static_cast<int>(extension::NO_EXTENSION));
+            } else {
+                write_bit(static_cast<int>(extension::EXTENDED_FORMAT));
+            }
+
+            for (sched_item payload : payloads) {
+                switch (payload) {
+                case sched_item::STATION_ID:
+                    write_station_id();
+                    break;
+                case sched_item::SHORT_STATION_NAME:
+                    write_station_name_short();
+                    break;
+                case sched_item::LONG_STATION_NAME:
+                    write_station_name_long();
+                    break;
+                case sched_item::STATION_LOCATION:
+                    write_station_location();
+                    break;
+                case sched_item::STATION_MESSAGE:
+                    write_station_message();
+                    break;
+                case sched_item::SERVICE_INFO_MESSAGE:
+                    write_service_information_message();
+                    break;
+                case sched_item::SIS_PARAMETER_MESSAGE:
+                    write_sis_parameter_message();
+                    break;
+                case sched_item::UNIVERSAL_SHORT_STATION_NAME:
+                    write_universal_short_station_name();
+                    break;
+                case sched_item::STATION_SLOGAN:
+                    write_station_slogan();
+                    break;
+                }
+            }
 
             while (bit < start + 64) {
                 write_bit(0);
             }
-            write_bit(0); // Reserved
-            write_bit(TIME_NOT_LOCKED);
-            write_int((alfn >> (block * 2)) & 0x3, 2);
+            write_bit(0); // reserved
+            write_bit(static_cast<int>(time_status::NOT_LOCKED));
+            if (mode == pids_mode::FM) {
+                write_int((alfn >> (block * 2)) & 0x3, 2);
+            } else {
+                if ((alfn & 0x3) == 0) {
+                    // write most significant bits once every four blocks
+                    write_int((alfn >> (16 + block * 2)) & 0x3, 2);
+                } else {
+                    // write least significant bits in the remaining three blocks
+                    write_int((alfn >> (block * 2)) & 0x3, 2);
+                }
+            }
             write_int(crc12(start), 12);
         }
         alfn++;
@@ -98,6 +246,9 @@ void sis_encoder_impl::write_bit(int b) { *(bit++) = b; }
 
 void sis_encoder_impl::write_int(int n, int len)
 {
+    if (n < 0)
+        n += (1 << len);
+
     for (int i = 0; i < len; i++) {
         write_bit((n >> (len - i - 1)) & 1);
     }
@@ -131,13 +282,267 @@ void sis_encoder_impl::write_char5(char c)
     write_int(n, 5);
 }
 
+void sis_encoder_impl::write_station_id()
+{
+    write_int(static_cast<int>(msg_id::STATION_ID_NUMBER), 4);
+    for (int i = 0; i < 2; i++) {
+        write_char5(country_code[i]);
+    }
+    write_int(0, 3); // reserved
+    write_int(fcc_facility_id, 19);
+}
+
 void sis_encoder_impl::write_station_name_short()
 {
-    write_int(STATION_NAME_SHORT, 4);
+    write_int(static_cast<int>(msg_id::STATION_NAME_SHORT), 4);
     for (int i = 0; i < 4; i++) {
-        write_char5(short_name[i]);
+        if (i < short_name.length()) {
+            write_char5(short_name[i]);
+        } else {
+            write_char5(' ');
+        }
     }
-    write_int(EXTENSION_FM, 2);
+    if (fm_suffix) {
+        write_int(static_cast<int>(name_extension::FM), 2);
+    } else {
+        write_int(static_cast<int>(name_extension::NONE), 2);
+    }
+}
+
+void sis_encoder_impl::write_station_name_long()
+{
+    write_int(static_cast<int>(msg_id::STATION_NAME_LONG), 4);
+
+    unsigned int name_length = std::min((unsigned int)slogan.length(), 56u);
+    unsigned int num_frames = std::max((name_length + 6) / 7, 1u);
+
+    write_int(num_frames - 1, 3);
+    write_int(long_name_current_frame, 3);
+    for (int i = long_name_current_frame * 7; i < long_name_current_frame * 7 + 7; i++) {
+        if (i < name_length) {
+            write_int(slogan.at(i), 7);
+        } else {
+            write_int(0, 7);
+        }
+    }
+    write_int(long_name_seq, 3);
+
+    long_name_current_frame = (long_name_current_frame + 1) % num_frames;
+}
+
+void sis_encoder_impl::write_station_location()
+{
+    int altitude_int = static_cast<int>(std::round(altitude / 16));
+    altitude_int = std::max(std::min(altitude_int, 255), 0);
+
+    write_int(static_cast<int>(msg_id::STATION_LOCATION), 4);
+    write_bit(location_high);
+    if (location_high) {
+        write_int(std::round(latitude * 8192), 22);
+        write_int(altitude_int >> 4, 4);
+    } else {
+        write_int(std::round(longitude * 8192), 22);
+        write_int(altitude_int & 0xf, 4);
+    }
+
+    location_high = !location_high;
+}
+
+void sis_encoder_impl::write_station_message()
+{
+    write_int(static_cast<int>(msg_id::STATION_MESSAGE), 4);
+
+    unsigned int message_length = std::min((unsigned int)message.length(), 190u);
+    unsigned int num_frames = (message_length + 7) / 6;
+
+    write_int(message_current_frame, 5);
+    write_int(message_seq, 2);
+
+    if (message_current_frame == 0) {
+        unsigned int checksum = 0;
+        for (int j = 0; j < message_length; j++)
+            checksum += (unsigned char)message.at(j);
+        checksum = (((checksum >> 8) & 0x7f) + (checksum & 0xff)) & 0x7f;
+
+        write_bit(static_cast<int>(priority::NORMAL));
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
+        write_int(message_length, 8);
+        write_int(checksum, 7);
+        for (int i = 0; i < 4; i++) {
+            if (i < message_length) {
+                write_int(message.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    } else {
+        write_int(0, 3); // reserved
+        for (int i = message_current_frame * 6 - 2; i < message_current_frame * 6 + 4;
+             i++) {
+            if (i < message_length) {
+                write_int(message.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    }
+
+    message_current_frame = (message_current_frame + 1) % num_frames;
+}
+
+void sis_encoder_impl::write_service_information_message()
+{
+    write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
+
+    write_int(static_cast<int>(service_category::AUDIO), 2);
+    write_bit(static_cast<int>(access::PUBLIC));
+    write_int(current_program, 6);
+    write_int(static_cast<int>(program_types[current_program]), 8);
+    write_int(0, 5); // reserved
+    write_int(static_cast<int>(sound_experience::NONE), 5);
+
+    current_program = (current_program + 1) % program_types.size();
+}
+
+void sis_encoder_impl::write_sis_parameter_message()
+{
+    write_int(static_cast<int>(msg_id::SIS_PARAMETER_MESSAGE), 4);
+    write_int(current_parameter, 6);
+
+    switch (static_cast<parameter_type>(current_parameter)) {
+    case parameter_type::LEAP_SECOND_OFFSET:
+        write_int(pending_leap_second_offset, 8);
+        write_int(current_leap_second_offset, 8);
+        break;
+    case parameter_type::LEAP_SECOND_ALFN_LSB:
+        write_int(leap_second_alfn & 0xffff, 16);
+        break;
+    case parameter_type::LEAP_SECOND_ALFN_MSB:
+        write_int(leap_second_alfn >> 16, 16);
+        break;
+    case parameter_type::LOCAL_TIME_DATA:
+        write_int(utc_offset, 11);
+        write_int(static_cast<int>(dst_sched), 3);
+        write_bit(dst_local);
+        write_bit(dst_regional);
+        break;
+    case parameter_type::EXCITER_MANUFACTURER_ID:
+        write_bit(0); // reserved
+        write_int(exciter_manufacturer_id[0], 7);
+        write_bit(static_cast<int>(icb::IMPORTER_CONNECTED));
+        write_int(exciter_manufacturer_id[1], 7);
+        break;
+    case parameter_type::EXCITER_CORE_VERSION_NUMBER_1_2_3:
+        write_int(exciter_core_version[0], 5);
+        write_int(exciter_core_version[1], 5);
+        write_int(exciter_core_version[2], 5);
+        write_bit(0); // reserved
+        break;
+    case parameter_type::EXCITER_MANUFACTURER_VERSION_NUMBER_1_2_3:
+        write_int(exciter_manufacturer_version[0], 5);
+        write_int(exciter_manufacturer_version[1], 5);
+        write_int(exciter_manufacturer_version[2], 5);
+        write_bit(0); // reserved
+        break;
+    case parameter_type::EXCITER_VERSION_NUMBER_4_AND_STATUS:
+        write_int(exciter_core_version[3], 5);
+        write_int(exciter_manufacturer_version[3], 5);
+        write_int(exciter_core_status, 3);
+        write_int(exciter_manufacturer_status, 3);
+        break;
+    case parameter_type::IMPORTER_MANUFACTURER_ID:
+        write_bit(0); // reserved
+        write_int(importer_manufacturer_id[0], 7);
+        write_bit(0); // reserved
+        write_int(importer_manufacturer_id[1], 7);
+        break;
+    case parameter_type::IMPORTER_CORE_VERSION_NUMBER_1_2_3:
+        write_int(importer_core_version[0], 5);
+        write_int(importer_core_version[1], 5);
+        write_int(importer_core_version[2], 5);
+        write_bit(0); // reserved
+        break;
+    case parameter_type::IMPORTER_MANUFACTURER_VERSION_NUMBER_1_2_3:
+        write_int(importer_manufacturer_version[0], 5);
+        write_int(importer_manufacturer_version[1], 5);
+        write_int(importer_manufacturer_version[2], 5);
+        write_bit(0); // reserved
+        break;
+    case parameter_type::IMPORTER_VERSION_NUMBER_4_AND_STATUS:
+        write_int(importer_core_version[3], 5);
+        write_int(importer_manufacturer_version[3], 5);
+        write_int(importer_core_status, 3);
+        write_int(importer_manufacturer_status, 3);
+        break;
+    case parameter_type::IMPORTER_CONFIGURATION_NUMBER:
+        write_int(importer_configuration_number, 16);
+    }
+    current_parameter = (current_parameter + 1) % NUM_PARAMETERS;
+}
+
+void sis_encoder_impl::write_universal_short_station_name()
+{
+    write_int(static_cast<int>(msg_id::UNIVERSAL_SHORT_STATION_NAME), 4);
+
+    unsigned int short_name_length = std::min((unsigned int)short_name.length(), 12u);
+    unsigned int num_frames = std::max((short_name_length + 5) / 6, 1u);
+
+    write_int(ussn_current_frame, 4);
+    write_bit(static_cast<int>(name_type::UNIVERSAL_SHORT_STATION_NAME));
+
+    if (ussn_current_frame == 0) {
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
+        write_bit(fm_suffix);
+        write_bit(num_frames - 1);
+    } else {
+        write_int(0, 5); // reserved
+    }
+
+    for (int i = ussn_current_frame * 6; i < ussn_current_frame * 6 + 6; i++) {
+        if (i < short_name_length) {
+            write_int(short_name.at(i), 8);
+        } else {
+            write_int(0, 8);
+        }
+    }
+
+    ussn_current_frame = (ussn_current_frame + 1) % num_frames;
+}
+
+void sis_encoder_impl::write_station_slogan()
+{
+    write_int(static_cast<int>(msg_id::UNIVERSAL_SHORT_STATION_NAME), 4);
+
+    unsigned int slogan_length = std::min((unsigned int)slogan.length(), 95u);
+    unsigned int num_frames = (slogan_length + 6) / 6;
+
+    write_int(slogan_current_frame, 4);
+    write_bit(static_cast<int>(name_type::SLOGAN));
+
+    if (slogan_current_frame == 0) {
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
+        write_int(0, 3); // reserved
+        write_int(slogan_length, 7);
+        for (int i = 0; i < 5; i++) {
+            if (i < slogan_length) {
+                write_int(slogan.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    } else {
+        write_int(0, 5); // reserved
+        for (int i = slogan_current_frame * 6 - 1; i < slogan_current_frame * 6 + 5;
+             i++) {
+            if (i < slogan_length) {
+                write_int(slogan.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    }
+
+    slogan_current_frame = (slogan_current_frame + 1) % num_frames;
 }
 
 } /* namespace nrsc5 */
