@@ -121,6 +121,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     long_name_current_frame = 0;
     long_name_seq = 0;
 
+    ussn_current_frame = 0;
     slogan_current_frame = 0;
 
     message_current_frame = 0;
