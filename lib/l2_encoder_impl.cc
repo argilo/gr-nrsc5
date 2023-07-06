@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017 Clayton Smith.
+ * Copyright 2017, 2023 Clayton Smith.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -219,7 +219,7 @@ int l2_encoder_impl::general_work(int noutput_items,
             }
         }
 
-        header_spread(out_buf, out + out_off, CW0);
+        header_spread(out_buf, out + out_off, CW0_AUDIO);
 
         pdu_seq_no = (pdu_seq_no + 1) % pdu_seq_len;
     }
@@ -286,7 +286,7 @@ void l2_encoder_impl::write_locator(unsigned char* out, int i, int locator)
 /* 1014s.pdf figure 5-2 */
 void l2_encoder_impl::header_spread(const unsigned char* in,
                                     unsigned char* out,
-                                    unsigned char* pci)
+                                    const unsigned char* pci)
 {
     int n_start, n_offset, header_bits;
 

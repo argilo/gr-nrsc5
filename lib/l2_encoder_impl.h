@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017 Clayton Smith.
+ * Copyright 2017, 2023 Clayton Smith.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -12,9 +12,19 @@
 
 namespace gr {
 namespace nrsc5 {
-unsigned char CW0[] = { 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1,
-                        1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1 };
-unsigned char CRC8_TABLE[] = {
+
+constexpr unsigned char CW0_AUDIO[] = { 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1,
+                                        1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1 };
+constexpr unsigned char CW1_AUDIO_OPP[] = { 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1,
+                                            0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0 };
+constexpr unsigned char CW2_AUDIO_FIXED[] = { 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0,
+                                              0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0 };
+constexpr unsigned char CW3_AUDIO_FIXED_OPP[] = { 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0,
+                                                  1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1 };
+constexpr unsigned char CW4_FIXED[] = { 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1,
+                                        0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0 };
+
+constexpr unsigned char CRC8_TABLE[] = {
     0x00, 0x31, 0x62, 0x53, 0xc4, 0xf5, 0xa6, 0x97, 0xb9, 0x88, 0xdb, 0xea, 0x7d, 0x4c,
     0x1f, 0x2e, 0x43, 0x72, 0x21, 0x10, 0x87, 0xb6, 0xe5, 0xd4, 0xfa, 0xcb, 0x98, 0xa9,
     0x3e, 0x0f, 0x5c, 0x6d, 0x86, 0xb7, 0xe4, 0xd5, 0x42, 0x73, 0x20, 0x11, 0x3f, 0x0e,
@@ -72,7 +82,8 @@ private:
                             int la_loc);
     void write_hef(unsigned char* out, int program_number, int access, int program_type);
     void write_locator(unsigned char* out, int i, int locator);
-    void header_spread(const unsigned char* in, unsigned char* out, unsigned char* pci);
+    void
+    header_spread(const unsigned char* in, unsigned char* out, const unsigned char* pci);
     int adts_length(const unsigned char* header);
     int len_locators(int nop);
 
