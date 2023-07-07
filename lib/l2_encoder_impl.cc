@@ -112,7 +112,7 @@ int l2_encoder_impl::general_work(int noutput_items,
         unsigned char* out_program = out_buf;
         target_seq_no += target_nop;
         for (int p = 0; p < num_progs; p++) {
-
+            int program_number = first_prog + p;
             int bytes_left = (out_buf + payload_bytes) - out_program;
             int nop = 0;
             int off = hdc_off[p];
@@ -157,9 +157,9 @@ int l2_encoder_impl::general_work(int noutput_items,
                                codec_mode,
                                /*stream_id*/ 0,
                                pdu_seq_no,
-                               /*blend_control*/ 2,
+                               /*blend_control*/ program_number == 0 ? 2 : 0,
                                /*per_stream_delay*/ 0,
-                               /*common_delay*/ 0,
+                               /*common_delay*/ program_number == 0 ? 24 : 0,
                                /*latency*/ 4,
                                partial_bytes[p] ? 1 : 0,
                                begin_bytes ? 1 : 0,
@@ -194,7 +194,7 @@ int l2_encoder_impl::general_work(int noutput_items,
             partial_bytes[p] = end_bytes;
 
             write_hef(out_program + 14 + len_locators(nop),
-                      first_prog + p,
+                      program_number,
                       /*access*/ 0,
                       /*program_type*/ 0);
 
