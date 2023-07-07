@@ -158,7 +158,7 @@ int l2_encoder_impl::general_work(int noutput_items,
                                /*stream_id*/ 0,
                                pdu_seq_no,
                                /*blend_control*/ program_number == 0 ? 2 : 0,
-                               /*per_stream_delay*/ 0,
+                               /*digital_gain_or_per_stream_delay*/ 0,
                                /*common_delay*/ program_number == 0 ? 24 : 0,
                                /*latency*/ 4,
                                partial_bytes[p] ? 1 : 0,
@@ -237,7 +237,7 @@ void l2_encoder_impl::write_control_word(unsigned char* out,
                                          int stream_id,
                                          int pdu_seq_no,
                                          int blend_control,
-                                         int per_stream_delay,
+                                         int digital_gain_or_per_stream_delay,
                                          int common_delay,
                                          int latency,
                                          int p_first,
@@ -248,7 +248,8 @@ void l2_encoder_impl::write_control_word(unsigned char* out,
                                          int la_loc)
 {
     out[0] = ((pdu_seq_no & 0x3) << 6) | (stream_id << 4) | codec_mode;
-    out[1] = (per_stream_delay << 3) | (blend_control << 1) | (pdu_seq_no >> 2);
+    out[1] = (digital_gain_or_per_stream_delay << 3) | (blend_control << 1) |
+             (pdu_seq_no >> 2);
     out[2] = ((latency & 0x3) << 6) | common_delay;
     out[3] =
         ((start_seq_no & 0x1f) << 3) | (p_last << 2) | (p_first << 1) | (latency >> 2);

@@ -71,7 +71,7 @@ private:
                             int stream_id,
                             int pdu_seq_no,
                             int blend_control,
-                            int per_stream_delay,
+                            int digital_gain_or_per_stream_delay,
                             int common_delay,
                             int latency,
                             int p_first,
