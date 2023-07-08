@@ -348,7 +348,7 @@ int l2_encoder_impl::adts_length(const unsigned char* header)
 
 int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
 
-uint16_t l2_encoder_impl::fcs16(std::vector<unsigned char> &in)
+uint16_t l2_encoder_impl::fcs16(std::vector<unsigned char>& in)
 {
     uint16_t crc = 0xffff;
     for (auto c : in)
