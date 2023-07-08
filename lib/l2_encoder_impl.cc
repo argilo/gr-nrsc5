@@ -348,5 +348,13 @@ int l2_encoder_impl::adts_length(const unsigned char* header)
 
 int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
 
+uint16_t l2_encoder_impl::fcs16(const unsigned char* in, int len)
+{
+    uint16_t crc = 0xFFFF;
+    while (len--)
+        crc = (crc >> 8) ^ FCS16_TABLE[(crc ^ *in++) & 0xFF];
+    return crc ^ 0xFFFF;
+}
+
 } /* namespace nrsc5 */
 } /* namespace gr */
