@@ -121,7 +121,8 @@ private:
     header_spread(const unsigned char* in, unsigned char* out, const unsigned char* pci);
     int adts_length(const unsigned char* header);
     int len_locators(int nop);
-    uint16_t fcs16(const unsigned char* in, int len);
+    uint16_t fcs16(std::vector<unsigned char> &in);
+    std::vector<unsigned char> hdlc_encode(std::vector<unsigned char> in);
 
 public:
     l2_encoder_impl(const int num_progs, const int first_prog, const int size);
