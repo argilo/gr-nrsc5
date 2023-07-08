@@ -9,6 +9,8 @@
 #define INCLUDED_NRSC5_L2_ENCODER_IMPL_H
 
 #include <nrsc5/l2_encoder.h>
+#include <mutex>
+#include <queue>
 
 namespace gr {
 namespace nrsc5 {
@@ -75,6 +77,8 @@ constexpr uint16_t FCS16_TABLE[] = {
     0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
 };
 
+constexpr unsigned char BBM[] = { 0x7d, 0x3a, 0xe2, 0x42 };
+
 class l2_encoder_impl : public l2_encoder
 {
 private:
@@ -99,6 +103,10 @@ private:
     std::vector<unsigned char> ccc;
     int ccc_offset;
     int total_data_width;
+    std::queue<unsigned char> aas_queue;
+    std::mutex aas_queue_mutex;
+    int aas_block_offset;
+
     unsigned char* out_buf;
 
     void write_control_word(unsigned char* out,
@@ -123,6 +131,7 @@ private:
     int len_locators(int nop);
     uint16_t fcs16(std::vector<unsigned char>& in);
     std::vector<unsigned char> hdlc_encode(std::vector<unsigned char> in);
+    void handle_aas_pdu(pmt::pmt_t msg);
 
 public:
     l2_encoder_impl(const int num_progs,

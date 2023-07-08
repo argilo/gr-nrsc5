@@ -42,6 +42,10 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
                 gr::io_signature::make(2, 16, sizeof(unsigned char)),
                 gr::io_signature::make(1, 1, sizeof(unsigned char) * size))
 {
+    message_port_register_in(pmt::intern("aas"));
+    set_msg_handler(pmt::intern("aas"),
+                    [this](pmt::pmt_t msg) { this->handle_aas_pdu(msg); });
+
     this->num_progs = num_progs;
     this->first_prog = first_prog;
     this->size = size;
@@ -63,6 +67,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
                         (unsigned char)(this->data_bytes >> 8) });
     ccc_offset = ccc.size() - 1;
     total_data_width = (this->data_bytes > 0) ? (this->data_bytes + ccc_width + 1) : 0;
+    aas_block_offset = 0;
 
     switch (size) {
     case 146176:
@@ -251,6 +256,27 @@ int l2_encoder_impl::general_work(int noutput_items,
                 out_buf[i] = ccc[ccc_offset];
                 ccc_offset = (ccc_offset + 1) % ccc.size();
             }
+
+            // Fixed data subchannel
+            {
+                std::lock_guard<std::mutex> lock(aas_queue_mutex);
+
+                for (int i = payload_bytes - 1 - ccc_width - data_bytes;
+                     i < payload_bytes - 1 - ccc_width;
+                     i++) {
+                    if (aas_block_offset < 4) {
+                        out_buf[i] = BBM[aas_block_offset];
+                    } else {
+                        if (aas_queue.empty()) {
+                            out_buf[i] = 0x7e;
+                        } else {
+                            out_buf[i] = aas_queue.front();
+                            aas_queue.pop();
+                        }
+                    }
+                    aas_block_offset = (aas_block_offset + 1) % (255 + 4);
+                }
+            }
         }
 
         header_spread(
@@ -410,6 +436,18 @@ std::vector<unsigned char> l2_encoder_impl::hdlc_encode(std::vector<unsigned cha
     }
     out.push_back(0x7e);
     return out;
+}
+
+void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
+{
+    std::lock_guard<std::mutex> lock(aas_queue_mutex);
+
+    std::vector<unsigned char> pdu_bytes = pmt::u8vector_elements(pmt::cdr(msg));
+    std::vector<unsigned char> pdu_encoded = hdlc_encode(pdu_bytes);
+
+    for (auto c : pdu_encoded) {
+        aas_queue.push(c);
+    }
 }
 
 } /* namespace nrsc5 */

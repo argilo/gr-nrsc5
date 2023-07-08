@@ -32,6 +32,9 @@ inputs:
     domain: stream
     dtype: byte
     multiplicity: ${ num_progs }
+-   domain: message
+    id: aas
+    optional: true
 
 outputs:
 -   domain: stream
