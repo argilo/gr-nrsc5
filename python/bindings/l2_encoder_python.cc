@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(l2_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(481e208e94103d87992b37a31c7af444)                     */
+/* BINDTOOL_HEADER_FILE_HASH(d6f145c63e30984ee71936e67494addc)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -40,6 +40,7 @@ void bind_l2_encoder(py::module& m)
            py::arg("num_progs"),
            py::arg("first_prog"),
            py::arg("size"),
+           py::arg("data_bytes") = 0,
            D(l2_encoder,make)
         )
         

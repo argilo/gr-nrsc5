@@ -21,10 +21,13 @@ extern "C" {
 namespace gr {
 namespace nrsc5 {
 
-l2_encoder::sptr
-l2_encoder::make(const int num_progs, const int first_prog, const int size)
+l2_encoder::sptr l2_encoder::make(const int num_progs,
+                                  const int first_prog,
+                                  const int size,
+                                  const int data_bytes)
 {
-    return gnuradio::get_initial_sptr(new l2_encoder_impl(num_progs, first_prog, size));
+    return gnuradio::get_initial_sptr(
+        new l2_encoder_impl(num_progs, first_prog, size, data_bytes));
 }
 
 
@@ -33,7 +36,8 @@ l2_encoder::make(const int num_progs, const int first_prog, const int size)
  */
 l2_encoder_impl::l2_encoder_impl(const int num_progs,
                                  const int first_prog,
-                                 const int size)
+                                 const int size,
+                                 const int data_bytes)
     : gr::block("l2_encoder",
                 gr::io_signature::make(2, 16, sizeof(unsigned char)),
                 gr::io_signature::make(1, 1, sizeof(unsigned char) * size))
@@ -41,6 +45,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     this->num_progs = num_progs;
     this->first_prog = first_prog;
     this->size = size;
+    this->data_bytes = data_bytes;
     payload_bytes = (size - 22) / 8;
     out_buf = (unsigned char*)malloc(payload_bytes);
     rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
@@ -49,6 +54,15 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     memset(start_seq_no, 0, sizeof(start_seq_no));
     target_seq_no = 0;
     memset(partial_bytes, 0, sizeof(partial_bytes));
+    ccc_width = 24;
+    ccc_count = 0;
+    ccc = hdlc_encode({ 0x00,
+                        0x00,
+                        0x00,
+                        (unsigned char)(this->data_bytes & 0xff),
+                        (unsigned char)(this->data_bytes >> 8) });
+    ccc_offset = ccc.size() - 1;
+    total_data_width = (this->data_bytes > 0) ? (this->data_bytes + ccc_width + 1) : 0;
 
     switch (size) {
     case 146176:
@@ -113,7 +127,7 @@ int l2_encoder_impl::general_work(int noutput_items,
         target_seq_no += target_nop;
         for (int p = 0; p < num_progs; p++) {
             int program_number = first_prog + p;
-            int bytes_left = (out_buf + payload_bytes) - out_program;
+            int bytes_left = (out_buf + payload_bytes - total_data_width) - out_program;
             int nop = 0;
             int off = hdc_off[p];
             int audio_length = 0;
@@ -219,7 +233,28 @@ int l2_encoder_impl::general_work(int noutput_items,
             }
         }
 
-        header_spread(out_buf, out + out_off, CW0_AUDIO);
+        if (data_bytes > 0) {
+            // Synchronization channel
+            if ((ccc_count & 0x03) == 0) {
+                out_buf[payload_bytes - 1] = ccc_count;
+            } else {
+                if (ccc_width == 1) {
+                    out_buf[payload_bytes - 1] = 0x00;
+                } else {
+                    out_buf[payload_bytes - 1] = ((ccc_width / 2) << 4) | (ccc_width / 2);
+                }
+            }
+            ccc_count++;
+
+            // Configuration control channel
+            for (int i = payload_bytes - 1 - ccc_width; i < payload_bytes - 1; i++) {
+                out_buf[i] = ccc[ccc_offset];
+                ccc_offset = (ccc_offset + 1) % ccc.size();
+            }
+        }
+
+        header_spread(
+            out_buf, out + out_off, (data_bytes > 0) ? CW2_AUDIO_FIXED : CW0_AUDIO);
 
         pdu_seq_no = (pdu_seq_no + 1) % pdu_seq_len;
     }

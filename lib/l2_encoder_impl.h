@@ -81,6 +81,7 @@ private:
     int num_progs;
     int first_prog;
     int size;
+    int data_bytes;
     int payload_bytes;
     unsigned char rs_buf[255];
     void* rs_enc;
@@ -93,6 +94,11 @@ private:
     int start_seq_no[8];
     int target_seq_no;
     int partial_bytes[8];
+    int ccc_width;
+    unsigned char ccc_count;
+    std::vector<unsigned char> ccc;
+    int ccc_offset;
+    int total_data_width;
     unsigned char* out_buf;
 
     void write_control_word(unsigned char* out,
@@ -119,7 +125,10 @@ private:
     std::vector<unsigned char> hdlc_encode(std::vector<unsigned char> in);
 
 public:
-    l2_encoder_impl(const int num_progs, const int first_prog, const int size);
+    l2_encoder_impl(const int num_progs,
+                    const int first_prog,
+                    const int size,
+                    const int data_bytes = 0);
     ~l2_encoder_impl();
 
     // Where all the action really happens

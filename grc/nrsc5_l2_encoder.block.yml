@@ -18,6 +18,10 @@ parameters:
     dtype: int
     default: 146176
     options: [146176, 109312, 72448, 30000, 24000, 18272, 9216, 4608, 3750, 2304]
+-   id: data_bytes
+    label: Data bytes
+    dtype: int
+    default: 0
 
 inputs:
 -   label: hdc
@@ -36,9 +40,10 @@ outputs:
 asserts:
 - ${ 0 <= first_prog <= 7 }
 - ${ 1 <= num_progs <= 8 - first_prog }
+- ${ data_bytes < (size - 22) // 8 }
 
 templates:
     imports: import nrsc5
-    make: nrsc5.l2_encoder(${num_progs}, ${first_prog}, ${size})
+    make: nrsc5.l2_encoder(${num_progs}, ${first_prog}, ${size}, ${data_bytes})
 
 file_format: 1
