@@ -353,8 +353,9 @@ blocks:
       )\n        for part in self.parts:\n            aas_pdu = struct.pack(\"<BHH\"\
       , 0x21, self.port, self.aas_seq) + part\n            msg = pmt.cons(pmt.make_dict(),\
       \ pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))\n            self.message_port_pub(pmt.intern(\"\
-      aas\"), msg)\n        \n        self.timer = threading.Timer(self.INTERVAL,\
-      \ self.send)\n        self.timer.start()\n"
+      aas\"), msg)\n            self.aas_seq = (self.aas_seq + 1) & 0xffff\n     \
+      \   \n        self.timer = threading.Timer(self.INTERVAL, self.send)\n     \
+      \   self.timer.start()\n"
     affinity: ''
     alias: ''
     comment: ''

@@ -60,6 +60,7 @@ class blk(gr.basic_block):
             aas_pdu = struct.pack("<BHH", 0x21, self.port, self.aas_seq) + part
             msg = pmt.cons(pmt.make_dict(), pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))
             self.message_port_pub(pmt.intern("aas"), msg)
+            self.aas_seq = (self.aas_seq + 1) & 0xffff
         
         self.timer = threading.Timer(self.INTERVAL, self.send)
         self.timer.start()
