@@ -56,7 +56,8 @@ private:
 
     std::string encode_psd_packet(int dtpf, int port, int seq);
     std::string encode_id3();
-    std::string encode_frame(std::string& id, std::string& data);
+    std::string encode_text_frame(std::string& id, std::string& data);
+    std::string encode_xhdr_frame(uint32_t mime, int lot);
     std::string encode_ppp(std::string packet);
     int compute_fcs(std::string& packet);
 

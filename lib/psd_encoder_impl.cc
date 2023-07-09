@@ -81,7 +81,9 @@ std::string psd_encoder_impl::encode_id3()
 {
     std::string tit2("TIT2");
     std::string tpe1("TPE1");
-    std::string payload = encode_frame(tit2, title) + encode_frame(tpe1, artist);
+    std::string payload = encode_text_frame(tit2, title) +
+                          encode_text_frame(tpe1, artist) +
+                          encode_xhdr_frame(0xBE4B7536, -1);
     int len = payload.length();
     std::string out;
 
@@ -98,12 +100,29 @@ std::string psd_encoder_impl::encode_id3()
     return out;
 }
 
-std::string psd_encoder_impl::encode_frame(std::string& id, std::string& data)
+std::string psd_encoder_impl::encode_text_frame(std::string& id, std::string& data)
 {
     int len = data.length() + 1;
     return id + (char)((len >> 24) & 0xff) + (char)((len >> 16) & 0xff) +
            (char)((len >> 8) & 0xff) + (char)(len & 0xff) + (char)0 + (char)0 + (char)0 +
            data;
+}
+
+std::string psd_encoder_impl::encode_xhdr_frame(uint32_t mime, int lot)
+{
+    int param = (lot >= 0) ? 0 : 1;
+    int extlen = (lot >= 0) ? 2 : 0;
+    int len = 6 + extlen;
+    std::string payload = std::string("XHDR") + (char)((len >> 24) & 0xff) +
+                          (char)((len >> 16) & 0xff) + (char)((len >> 8) & 0xff) +
+                          (char)(len & 0xff) + (char)0 + (char)0 + (char)(mime & 0xff) +
+                          (char)((mime >> 8) & 0xff) + (char)((mime >> 16) & 0xff) +
+                          (char)((mime >> 24) & 0xff) + (char)param + (char)extlen;
+    if (lot >= 0) {
+        payload += (char)(lot & 0xff);
+        payload += (char)((lot >> 8) & 0xff);
+    }
+    return payload;
 }
 
 std::string psd_encoder_impl::encode_ppp(std::string packet)
