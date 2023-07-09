@@ -33,6 +33,23 @@ options:
     state: enabled
 
 blocks:
+- name: sig
+  id: variable
+  parameters:
+    comment: ''
+    value: '[0x40, 0x01, 0x00, 0x02, 0x69, 0x05, 0x00, 0x48, 0x44, 0x31, 0x66, 0x0c,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5a, 0x6c, 0xc6, 0x4d, 0x67, 0x0d,
+      0x01, 0x00, 0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x75, 0x4b, 0xbe, 0x60,
+      0x09, 0x53, 0x45, 0x4c, 0x46, 0x28, 0x00, 0x00, 0x00, 0x67, 0x0d, 0x02, 0x01,
+      0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x25, 0xc7, 0xd9, 0x60, 0x09, 0x53,
+      0x45, 0x4c, 0x46, 0x32, 0x00, 0x00, 0x00]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 100.0]
+    rotation: 0
+    state: true
 - name: blocks_add_const_vxx_0_0
   id: blocks_add_const_vxx
   parameters:
@@ -153,6 +170,24 @@ blocks:
     coordinate: [952, 420.0]
     rotation: 180
     state: enabled
+- name: blocks_message_strobe_0
+  id: blocks_message_strobe
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    msg: pmt.cons(pmt.make_dict(), pmt.init_u8vector(5 + len(sig), [0x21, 0x20, 0x00,
+      0x00, 0x00] + sig))
+    period: '1000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 212.0]
+    rotation: 180
+    state: true
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -264,6 +299,54 @@ blocks:
     coordinate: [896, 56.0]
     rotation: 180
     state: enabled
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "import pmt\nimport struct\nimport threading\nfrom gnuradio import\
+      \ gr\n\n\nclass blk(gr.basic_block):\n    \"\"\"Read a file and encode it as\
+      \ LOT packets\"\"\"\n    INTERVAL = 10.0\n\n    def __init__(self, filename=\"\
+      \", lot_id = 0, port=0):  # only default arguments here\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='LOT encoder',\n            in_sig=[],\n\
+      \            out_sig=[]\n        )\n        self.message_port_register_out(pmt.intern(\"\
+      aas\"))\n\n        self.filename = filename\n        self.port = port\n    \
+      \    self.lot_id = lot_id\n\n    def start(self):\n        self.parts = []\n\
+      \        with open(self.filename, \"rb\") as f:\n            data = f.read()\n\
+      \        \n        for offset in range(0, len(data), 256):\n            chunk\
+      \ = data[offset:offset+256]\n            seq = offset // 256\n\n           \
+      \ if seq == 0:\n                header_len = 24 + len(self.filename.encode())\n\
+      \            else:\n                header_len = 8\n            \n         \
+      \   repeat = 1\n            \n            header = struct.pack(\"<BBHI\", header_len,\
+      \ repeat, self.lot_id, seq)\n            if seq == 0:\n                version\
+      \ = 1\n                expiry = 0x7eb4a59e\n                size = len(data)\n\
+      \                mime = 0x4f328ca0  # PNG\n                header += struct.pack(\"\
+      <IIII\", version, expiry, size, mime) + self.filename.encode()\n           \
+      \ \n            self.parts.append(header + chunk)\n        \n        self.aas_seq\
+      \ = 0\n        self.timer = threading.Timer(self.INTERVAL, self.send)\n    \
+      \    self.timer.start()\n    \n    def stop(self):\n        self.timer.cancel()\n\
+      \        \n    def send(self):\n        print(f\"Sending LOT file: {self.filename}\"\
+      )\n        for part in self.parts:\n            aas_pdu = struct.pack(\"<BHH\"\
+      , 0x21, self.port, self.aas_seq) + part\n            msg = pmt.cons(pmt.make_dict(),\
+      \ pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))\n            self.message_port_pub(pmt.intern(\"\
+      aas\"), msg)\n        \n        self.timer = threading.Timer(self.INTERVAL,\
+      \ self.send)\n        self.timer.start()\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    filename: '"SLABCD$$010000.png"'
+    lot_id: '666'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    port: '0x1001'
+  states:
+    _io_cache: ('LOT encoder', 'blk', [('filename', "''"), ('lot_id', '0'), ('port',
+      '0')], [], [('aas', 'message', 1)], 'Read a file and encode it as LOT packets',
+      ['filename', 'lot_id', 'port'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [792, 276.0]
+    rotation: 180
+    state: true
 - name: fft_vxx_0
   id: fft_vxx
   parameters:
@@ -327,7 +410,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 88.0]
+    coordinate: [272, 104.0]
     rotation: 180
     state: enabled
 - name: nrsc5_l2_encoder_0
@@ -336,6 +419,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    data_bytes: '2000'
     first_prog: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -345,7 +429,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 68.0]
+    coordinate: [520, 72.0]
     rotation: 180
     state: enabled
 - name: nrsc5_psd_encoder_0
@@ -396,7 +480,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 148.0]
+    coordinate: [520, 172.0]
     rotation: 180
     state: true
 - name: rational_resampler_xxx_1
@@ -428,6 +512,7 @@ connections:
 - [blocks_float_to_uchar_0, '0', blocks_file_sink_0, '0']
 - [blocks_interleave_0, '0', blocks_add_const_vxx_0_0, '0']
 - [blocks_keep_m_in_n_0, '0', blocks_multiply_xx_0, '1']
+- [blocks_message_strobe_0, strobe, nrsc5_l2_encoder_0, aas]
 - [blocks_multiply_const_vxx_0, '0', blocks_complex_to_float_0, '0']
 - [blocks_multiply_xx_0, '0', blocks_conjugate_cc_0, '0']
 - [blocks_repeat_0, '0', blocks_vector_to_stream_0, '0']
@@ -435,6 +520,7 @@ connections:
 - [blocks_vector_to_stream_0, '0', blocks_keep_m_in_n_0, '0']
 - [blocks_wavfile_source_0, '0', nrsc5_hdc_encoder_0, '0']
 - [blocks_wavfile_source_0, '1', nrsc5_hdc_encoder_0, '1']
+- [epy_block_0, aas, nrsc5_l2_encoder_0, aas]
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']
@@ -445,4 +531,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.6.0-49-g32b028be
+  grc_version: 3.10.7.0-rc1
