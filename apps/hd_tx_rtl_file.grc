@@ -33,23 +33,6 @@ options:
     state: enabled
 
 blocks:
-- name: sig
-  id: variable
-  parameters:
-    comment: ''
-    value: '[0x40, 0x01, 0x00, 0x02, 0x69, 0x05, 0x00, 0x48, 0x44, 0x31, 0x66, 0x0c,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5a, 0x6c, 0xc6, 0x4d, 0x67, 0x0d,
-      0x01, 0x00, 0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x75, 0x4b, 0xbe, 0x60,
-      0x09, 0x53, 0x45, 0x4c, 0x46, 0x28, 0x00, 0x00, 0x00, 0x67, 0x0d, 0x02, 0x01,
-      0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x25, 0xc7, 0xd9, 0x60, 0x09, 0x53,
-      0x45, 0x4c, 0x46, 0x32, 0x00, 0x00, 0x00]'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 100.0]
-    rotation: 0
-    state: true
 - name: blocks_add_const_vxx_0_0
   id: blocks_add_const_vxx
   parameters:
@@ -65,7 +48,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 548.0]
+    coordinate: [504, 628.0]
     rotation: 0
     state: enabled
 - name: blocks_complex_to_float_0
@@ -81,7 +64,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 536.0]
+    coordinate: [184, 616.0]
     rotation: 0
     state: enabled
 - name: blocks_conjugate_cc_0
@@ -96,7 +79,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 424.0]
+    coordinate: [536, 504.0]
     rotation: 180
     state: enabled
 - name: blocks_file_sink_0
@@ -114,7 +97,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [920, 532.0]
+    coordinate: [832, 612.0]
     rotation: 0
     state: enabled
 - name: blocks_float_to_uchar_0
@@ -129,7 +112,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 552.0]
+    coordinate: [664, 632.0]
     rotation: 0
     state: enabled
 - name: blocks_interleave_0
@@ -148,7 +131,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 536.0]
+    coordinate: [368, 616.0]
     rotation: 0
     state: enabled
 - name: blocks_keep_m_in_n_0
@@ -167,27 +150,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [952, 420.0]
+    coordinate: [864, 500.0]
     rotation: 180
     state: enabled
-- name: blocks_message_strobe_0
-  id: blocks_message_strobe
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    msg: pmt.cons(pmt.make_dict(), pmt.init_u8vector(5 + len(sig), [0x21, 0x20, 0x00,
-      0x00, 0x00] + sig))
-    period: '1000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [800, 212.0]
-    rotation: 180
-    state: true
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -203,7 +168,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 420.0]
+    coordinate: [176, 500.0]
     rotation: 180
     state: enabled
 - name: blocks_multiply_xx_0
@@ -221,7 +186,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 408.0]
+    coordinate: [728, 488.0]
     rotation: 180
     state: enabled
 - name: blocks_repeat_0
@@ -239,7 +204,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 244]
+    coordinate: [1016, 348.0]
     rotation: 0
     state: enabled
 - name: blocks_vector_source_x_0
@@ -260,7 +225,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [952, 340.0]
+    coordinate: [864, 420.0]
     rotation: 180
     state: enabled
 - name: blocks_vector_to_stream_0
@@ -278,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 440.0]
+    coordinate: [1016, 520.0]
     rotation: 180
     state: enabled
 - name: blocks_wavfile_source_0
@@ -296,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 56.0]
+    coordinate: [952, 16.0]
     rotation: 180
     state: enabled
 - name: epy_block_0
@@ -345,8 +310,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 276.0]
-    rotation: 180
+    coordinate: [496, 228.0]
+    rotation: 0
     state: true
 - name: fft_vxx_0
   id: fft_vxx
@@ -366,7 +331,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 220.0]
+    coordinate: [280, 324.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -396,7 +361,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [728, 56.0]
+    coordinate: [776, 16.0]
     rotation: 180
     state: enabled
 - name: nrsc5_l1_fm_encoder_mp1_0
@@ -411,7 +376,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 104.0]
+    coordinate: [280, 112.0]
     rotation: 180
     state: enabled
 - name: nrsc5_l2_encoder_0
@@ -425,12 +390,13 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_progs: '1'
+    period: '1000'
     size: '146176'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 72.0]
+    coordinate: [552, 28.0]
     rotation: 180
     state: enabled
 - name: nrsc5_psd_encoder_0
@@ -448,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 132.0]
+    coordinate: [824, 92.0]
     rotation: 180
     state: enabled
 - name: nrsc5_sis_encoder_0
@@ -481,7 +447,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 172.0]
+    coordinate: [824, 172.0]
     rotation: 180
     state: true
 - name: rational_resampler_xxx_1
@@ -501,7 +467,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 396.0]
+    coordinate: [344, 476.0]
     rotation: 180
     state: enabled
 
@@ -513,7 +479,6 @@ connections:
 - [blocks_float_to_uchar_0, '0', blocks_file_sink_0, '0']
 - [blocks_interleave_0, '0', blocks_add_const_vxx_0_0, '0']
 - [blocks_keep_m_in_n_0, '0', blocks_multiply_xx_0, '1']
-- [blocks_message_strobe_0, strobe, nrsc5_l2_encoder_0, aas]
 - [blocks_multiply_const_vxx_0, '0', blocks_complex_to_float_0, '0']
 - [blocks_multiply_xx_0, '0', blocks_conjugate_cc_0, '0']
 - [blocks_repeat_0, '0', blocks_vector_to_stream_0, '0']
@@ -528,6 +493,7 @@ connections:
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '0']
 - [nrsc5_psd_encoder_0, '0', nrsc5_l2_encoder_0, '1']
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '1']
+- [nrsc5_sis_encoder_0, aas, nrsc5_l2_encoder_0, aas]
 - [rational_resampler_xxx_1, '0', blocks_multiply_const_vxx_0, '0']
 
 metadata:

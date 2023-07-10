@@ -188,6 +188,9 @@ enum class service_data_type {
 
 enum class data_type { STREAM = 0, PACKET = 1, LOT = 3 };
 
+constexpr uint8_t AAS_PACKET_FORMAT = 0x21;
+constexpr uint16_t SIG_PORT = 0x20;
+
 class sis_encoder_impl : public sis_encoder
 {
 private:
@@ -241,6 +244,12 @@ private:
 
     bool location_high;
 
+    gr::thread::thread d_thread;
+    std::atomic<bool> d_finished;
+    long d_period_ms;
+    pmt::pmt_t d_port;
+    uint16_t d_seq;
+
     int crc12(unsigned char* sis);
     void write_bit(int b);
     void write_int(int n, int len);
@@ -268,6 +277,8 @@ private:
                                             data_type type,
                                             mime_hash mime,
                                             unsigned int vendor_id);
+    std::string generate_aas_header(uint16_t port, uint16_t seq);
+    void run();
 
 public:
     sis_encoder_impl(
@@ -287,6 +298,9 @@ public:
     int work(int noutput_items,
              gr_vector_const_void_star& input_items,
              gr_vector_void_star& output_items);
+
+    bool start() override;
+    bool stop() override;
 };
 
 } // namespace nrsc5

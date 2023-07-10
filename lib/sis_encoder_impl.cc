@@ -12,7 +12,9 @@
 
 #include "sis_encoder_impl.h"
 #include <gnuradio/io_signature.h>
+#include <chrono>
 #include <cmath>
+#include <thread>
 
 namespace gr {
 namespace nrsc5 {
@@ -132,6 +134,12 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     current_parameter = 0;
 
     location_high = true;
+
+    d_finished = false;
+    d_period_ms = 2000;
+    d_port = pmt::intern("aas");
+    message_port_register_out(d_port);
+    d_seq = 0;
 }
 
 /*
@@ -662,6 +670,52 @@ std::string sis_encoder_impl::generate_sig_data_component(unsigned int component
     return out.str();
 }
 
+std::string sis_encoder_impl::generate_aas_header(uint16_t port, uint16_t seq)
+{
+    std::stringstream out;
+
+    out << (char)AAS_PACKET_FORMAT;
+    out << (char)(port & 0xff);
+    out << (char)((port >> 8) & 0xff);
+    out << (char)(seq & 0xff);
+    out << (char)((seq >> 8) & 0xff);
+
+    return out.str();
+}
+
+bool sis_encoder_impl::start()
+{
+    d_finished = false;
+    d_thread = gr::thread::thread([this] { run(); });
+
+    return block::start();
+}
+
+bool sis_encoder_impl::stop()
+{
+    // Shut down the thread
+    d_finished = true;
+    d_thread.interrupt();
+    d_thread.join();
+
+    return block::stop();
+}
+
+void sis_encoder_impl::run()
+{
+    while (!d_finished) {
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(static_cast<long>(d_period_ms)));
+        if (d_finished) {
+            return;
+        }
+
+        std::string sig_str = generate_aas_header(SIG_PORT, d_seq++) + generate_sig();
+        pmt::pmt_t msg = pmt::cons(pmt::make_dict(), pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
+
+        message_port_pub(d_port, msg);
+    }
+}
 
 } /* namespace nrsc5 */
 } /* namespace gr */

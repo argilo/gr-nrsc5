@@ -9,7 +9,6 @@
 # GNU Radio version: 3.10.7.0-rc1
 
 from gnuradio import blocks
-import pmt
 from gnuradio import fft
 from gnuradio.fft import window
 from gnuradio import filter
@@ -33,11 +32,6 @@ class hd_tx_rtl_file(gr.top_block):
         gr.top_block.__init__(self, "Hd Tx Rtl File", catch_exceptions=True)
 
         ##################################################
-        # Variables
-        ##################################################
-        self.sig = sig = [0x40, 0x01, 0x00, 0x02, 0x69, 0x05, 0x00, 0x48, 0x44, 0x31, 0x66, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5a, 0x6c, 0xc6, 0x4d, 0x67, 0x0d, 0x01, 0x00, 0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x75, 0x4b, 0xbe, 0x60, 0x09, 0x53, 0x45, 0x4c, 0x46, 0x28, 0x00, 0x00, 0x00, 0x67, 0x0d, 0x02, 0x01, 0x10, 0x09, 0x01, 0x03, 0x00, 0x00, 0x36, 0x25, 0xc7, 0xd9, 0x60, 0x09, 0x53, 0x45, 0x4c, 0x46, 0x32, 0x00, 0x00, 0x00]
-
-        ##################################################
         # Blocks
         ##################################################
 
@@ -59,7 +53,6 @@ class hd_tx_rtl_file(gr.top_block):
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_gr_complex*2048, 2)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.5)
-        self.blocks_message_strobe_0 = blocks.message_strobe(pmt.cons(pmt.make_dict(), pmt.init_u8vector(5 + len(sig), [0x21, 0x20, 0x00, 0x00, 0x00] + sig)), 1000)
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 2160, 4096, 0)
         self.blocks_interleave_0 = blocks.interleave(gr.sizeof_float*1, 1)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar()
@@ -73,11 +66,11 @@ class hd_tx_rtl_file(gr.top_block):
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.nrsc5_l2_encoder_0, 'aas'))
         self.msg_connect((self.epy_block_0, 'aas'), (self.nrsc5_l2_encoder_0, 'aas'))
+        self.msg_connect((self.nrsc5_sis_encoder_0, 'aas'), (self.nrsc5_l2_encoder_0, 'aas'))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
-        self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_interleave_0, 0))
         self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
+        self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_interleave_0, 0))
         self.connect((self.blocks_conjugate_cc_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_interleave_0, 0), (self.blocks_add_const_vxx_0_0, 0))
@@ -97,13 +90,6 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_multiply_const_vxx_0, 0))
 
-
-    def get_sig(self):
-        return self.sig
-
-    def set_sig(self, sig):
-        self.sig = sig
-        self.blocks_message_strobe_0.set_msg(pmt.cons(pmt.make_dict(), pmt.init_u8vector(5 + len(self.sig), [0x21, 0x20, 0x00, 0x00, 0x00] + self.sig)))
 
 
 
