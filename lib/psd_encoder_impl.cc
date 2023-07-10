@@ -9,8 +9,10 @@
 #include "config.h"
 #endif
 
+#include "hdlc.h"
 #include "psd_encoder_impl.h"
 #include <gnuradio/io_signature.h>
+#include <sstream>
 
 namespace gr {
 namespace nrsc5 {
@@ -51,9 +53,12 @@ int psd_encoder_impl::work(int noutput_items,
     unsigned char* out = (unsigned char*)output_items[0];
 
     for (int off = 0; off < noutput_items; off++) {
-        if (packet_off == packet.length()) {
-            packet = encode_ppp(
-                encode_psd_packet(BASIC_PACKET_FORMAT, PORT[prog_num], seq_num++));
+        if (packet_off == packet.size()) {
+            std::string packet_str =
+                encode_psd_packet(BASIC_PACKET_FORMAT, PORT[prog_num], seq_num++);
+            std::vector<unsigned char> packet_vect(packet_str.begin(), packet_str.end());
+            packet = hdlc_encode(packet_vect);
+
             packet_off = 0;
         }
         out[off] = packet[packet_off++];
@@ -64,98 +69,89 @@ int psd_encoder_impl::work(int noutput_items,
 
 std::string psd_encoder_impl::encode_psd_packet(int dtpf, int port, int seq)
 {
-    std::string out;
+    std::stringstream out;
 
-    out += (char)(dtpf & 0xff);
-    out += (char)(port & 0xff);
-    out += (char)((port >> 8) & 0xff);
-    out += (char)(seq & 0xff);
-    out += (char)((seq >> 8) & 0xff);
-    out += encode_id3();
-    out += "UF";
+    out << (char)(dtpf & 0xff);
+    out << (char)(port & 0xff);
+    out << (char)((port >> 8) & 0xff);
+    out << (char)(seq & 0xff);
+    out << (char)((seq >> 8) & 0xff);
+    out << encode_id3();
+    out << "UF";
 
-    return out;
+    return out.str();
 }
 
 std::string psd_encoder_impl::encode_id3()
 {
-    std::string tit2("TIT2");
-    std::string tpe1("TPE1");
-    std::string payload = encode_text_frame(tit2, title) +
-                          encode_text_frame(tpe1, artist) +
+    std::stringstream out;
+
+    std::string payload = encode_text_frame("TIT2", title) +
+                          encode_text_frame("TPE1", artist) +
                           encode_xhdr_frame(0xBE4B7536, -1);
     int len = payload.length();
-    std::string out;
 
-    out += "ID3";
-    out += (char)3;
-    out += (char)0;
-    out += (char)0;
-    out += (char)((len >> 21) & 0x7f);
-    out += (char)((len >> 14) & 0x7f);
-    out += (char)((len >> 7) & 0x7f);
-    out += (char)(len & 0x7f);
-    out += payload;
+    out << "ID3";
+    out << (char)3;
+    out << (char)0;
+    out << (char)0;
+    out << (char)((len >> 21) & 0x7f);
+    out << (char)((len >> 14) & 0x7f);
+    out << (char)((len >> 7) & 0x7f);
+    out << (char)(len & 0x7f);
+    out << payload;
 
-    return out;
+    return out.str();
 }
 
-std::string psd_encoder_impl::encode_text_frame(std::string& id, std::string& data)
+std::string psd_encoder_impl::encode_text_frame(const std::string& id,
+                                                const std::string& data)
 {
+    std::stringstream out;
+
     int len = data.length() + 1;
-    return id + (char)((len >> 24) & 0xff) + (char)((len >> 16) & 0xff) +
-           (char)((len >> 8) & 0xff) + (char)(len & 0xff) + (char)0 + (char)0 + (char)0 +
-           data;
+
+    out << id;
+    out << (char)((len >> 24) & 0xff);
+    out << (char)((len >> 16) & 0xff);
+    out << (char)((len >> 8) & 0xff);
+    out << (char)(len & 0xff);
+    out << (char)0;
+    out << (char)0;
+    out << (char)0;
+    out << data;
+
+    return out.str();
 }
 
 std::string psd_encoder_impl::encode_xhdr_frame(uint32_t mime, int lot)
 {
+    std::stringstream out;
+
     int param = (lot >= 0) ? 0 : 1;
     int extlen = (lot >= 0) ? 2 : 0;
     int len = 6 + extlen;
-    std::string payload = std::string("XHDR") + (char)((len >> 24) & 0xff) +
-                          (char)((len >> 16) & 0xff) + (char)((len >> 8) & 0xff) +
-                          (char)(len & 0xff) + (char)0 + (char)0 + (char)(mime & 0xff) +
-                          (char)((mime >> 8) & 0xff) + (char)((mime >> 16) & 0xff) +
-                          (char)((mime >> 24) & 0xff) + (char)param + (char)extlen;
+
+    out << "XHDR";
+    out << (char)((len >> 24) & 0xff);
+    out << (char)((len >> 16) & 0xff);
+    out << (char)((len >> 8) & 0xff);
+    out << (char)(len & 0xff);
+    out << (char)0;
+    out << (char)0;
+    out << (char)(mime & 0xff);
+    out << (char)((mime >> 8) & 0xff);
+    out << (char)((mime >> 16) & 0xff);
+    out << (char)((mime >> 24) & 0xff);
+    out << (char)param;
+    out << (char)extlen;
+
     if (lot >= 0) {
-        payload += (char)(lot & 0xff);
-        payload += (char)((lot >> 8) & 0xff);
-    }
-    return payload;
-}
-
-std::string psd_encoder_impl::encode_ppp(std::string packet)
-{
-    int fcs = compute_fcs(packet);
-    packet += (char)(fcs & 0xff);
-    packet += (char)(fcs >> 8);
-    std::string out;
-
-    out += (char)0x7e;
-    for (int i = 0; i < packet.length(); i++) {
-        char byte = packet[i];
-        switch (byte) {
-        case 0x7d:
-        case 0x7e:
-            out += (char)0x7d;
-            out += (char)(byte ^ 0x20);
-            break;
-        default:
-            out += byte;
-        }
+        out << (char)(lot & 0xff);
+        out << (char)((lot >> 8) & 0xff);
     }
 
-    return out;
-}
-
-int psd_encoder_impl::compute_fcs(std::string& packet)
-{
-    int fcs = 0xffff;
-    for (int i = 0; i < packet.length(); i++) {
-        fcs = (fcs >> 8) ^ FCS_TABLE[(fcs ^ packet[i]) & 0xff];
-    }
-    return fcs ^ 0xffff;
+    return out.str();
 }
 
 } /* namespace nrsc5 */

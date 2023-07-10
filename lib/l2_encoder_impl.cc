@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "hdlc.h"
 #include "l2_encoder_impl.h"
 #include <gnuradio/io_signature.h>
 
@@ -408,35 +409,6 @@ int l2_encoder_impl::adts_length(const unsigned char* header)
 }
 
 int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
-
-uint16_t l2_encoder_impl::fcs16(std::vector<unsigned char>& in)
-{
-    uint16_t crc = 0xffff;
-    for (auto c : in)
-        crc = (crc >> 8) ^ FCS16_TABLE[(crc ^ c) & 0xff];
-    return crc ^ 0xffff;
-}
-
-std::vector<unsigned char> l2_encoder_impl::hdlc_encode(std::vector<unsigned char> in)
-{
-    std::vector<unsigned char> out;
-    out.reserve(in.size() + 3);
-
-    uint16_t crc = fcs16(in);
-    in.push_back(crc & 0xff);
-    in.push_back(crc >> 8);
-
-    for (auto c : in) {
-        if ((c == 0x7d) || (c == 0x7e)) {
-            out.push_back(0x7d);
-            out.push_back(c ^ 0x20);
-        } else {
-            out.push_back(c);
-        }
-    }
-    out.push_back(0x7e);
-    return out;
-}
 
 void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
 {
