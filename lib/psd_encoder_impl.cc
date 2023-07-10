@@ -88,7 +88,7 @@ std::string psd_encoder_impl::encode_id3()
 
     std::string payload = encode_text_frame("TIT2", title) +
                           encode_text_frame("TPE1", artist) +
-                          encode_xhdr_frame(0xBE4B7536, -1);
+                          encode_xhdr_frame(mime_hash::PRIMARY_IMAGE, -1);
     int len = payload.length();
 
     out << "ID3";
@@ -124,13 +124,14 @@ std::string psd_encoder_impl::encode_text_frame(const std::string& id,
     return out.str();
 }
 
-std::string psd_encoder_impl::encode_xhdr_frame(uint32_t mime, int lot)
+std::string psd_encoder_impl::encode_xhdr_frame(mime_hash mime, int lot)
 {
     std::stringstream out;
 
     int param = (lot >= 0) ? 0 : 1;
     int extlen = (lot >= 0) ? 2 : 0;
     int len = 6 + extlen;
+    uint32_t mime_int = static_cast<int>(mime);
 
     out << "XHDR";
     out << (char)((len >> 24) & 0xff);
@@ -139,10 +140,10 @@ std::string psd_encoder_impl::encode_xhdr_frame(uint32_t mime, int lot)
     out << (char)(len & 0xff);
     out << (char)0;
     out << (char)0;
-    out << (char)(mime & 0xff);
-    out << (char)((mime >> 8) & 0xff);
-    out << (char)((mime >> 16) & 0xff);
-    out << (char)((mime >> 24) & 0xff);
+    out << (char)(mime_int & 0xff);
+    out << (char)((mime_int >> 8) & 0xff);
+    out << (char)((mime_int >> 16) & 0xff);
+    out << (char)((mime_int >> 24) & 0xff);
     out << (char)param;
     out << (char)extlen;
 

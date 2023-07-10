@@ -156,6 +156,38 @@ enum class sound_experience {
     DOLBY_PRO_LOGIC_IIZ_SURROUND = 9
 };
 
+enum class sig_service_type { AUDIO = 0x40, DATA = 0x41 };
+
+enum class sig_tag {
+    DATA_INFO = 0x60,
+    AUDIO_COMPONENT = 0x66,
+    DATA_COMPONENT = 0x67,
+    SERVICE_NAME = 0x69
+};
+
+enum class service_data_type {
+    NON_SPECIFIC = 0,
+    NEWS = 1,
+    SPORTS = 3,
+    WEATHER = 29,
+    EMERGENCY = 31,
+    TRAFFIC = 65,
+    IMAGE_MAPS = 66,
+    TEXT = 80,
+    ADVERTISING = 256,
+    FINANCIAL = 257,
+    STOCK_TICKER = 258,
+    NAVIGATION = 259,
+    ELECTRONIC_PROGRAM_GUIDE = 260,
+    AUDIO = 261,
+    PRIVATE_DATA_NETWORK = 262,
+    SERVICE_MAINTENANCE = 263,
+    HD_RADIO_SYSTEM_SERVICES = 264,
+    AUDIO_RELATED_DATA = 265
+};
+
+enum class data_type { STREAM = 0, PACKET = 1, LOT = 3 };
+
 class sis_encoder_impl : public sis_encoder
 {
 private:
@@ -222,6 +254,20 @@ private:
     void write_sis_parameter_message();
     void write_universal_short_station_name();
     void write_station_slogan();
+    std::string generate_sig();
+    std::string generate_sig_service(sig_service_type type,
+                                     unsigned int number,
+                                     const std::string name);
+    std::string generate_sig_audio_component(unsigned int component_id,
+                                             unsigned int program_id,
+                                             program_type type,
+                                             mime_hash mime);
+    std::string generate_sig_data_component(unsigned int component_id,
+                                            uint16_t port,
+                                            service_data_type sdt,
+                                            data_type type,
+                                            mime_hash mime,
+                                            unsigned int vendor_id);
 
 public:
     sis_encoder_impl(

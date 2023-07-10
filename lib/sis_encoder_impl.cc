@@ -545,5 +545,123 @@ void sis_encoder_impl::write_station_slogan()
     slogan_current_frame = (slogan_current_frame + 1) % num_frames;
 }
 
+std::string sis_encoder_impl::generate_sig()
+{
+    std::stringstream out;
+    unsigned int program_id = 0;
+    unsigned int port = 0x1000;
+
+    for (auto type : program_types) {
+        std::string service_name = std::string("HD") + std::to_string(program_id + 1);
+        unsigned int component_id = 0;
+
+        out << generate_sig_service(
+            sig_service_type::AUDIO, program_id + 1, service_name);
+
+        out << generate_sig_audio_component(
+            component_id++, program_id, type, mime_hash::HDC);
+
+        out << generate_sig_data_component(component_id++,
+                                           port++,
+                                           service_data_type::AUDIO_RELATED_DATA,
+                                           data_type::LOT,
+                                           mime_hash::PRIMARY_IMAGE,
+                                           0x28 + program_id);
+
+        out << generate_sig_data_component(component_id++,
+                                           port++,
+                                           service_data_type::AUDIO_RELATED_DATA,
+                                           data_type::LOT,
+                                           mime_hash::STATION_LOGO,
+                                           0x32 + program_id);
+
+        program_id++;
+    }
+
+    return out.str();
+}
+
+std::string sis_encoder_impl::generate_sig_service(sig_service_type type,
+                                                   unsigned int number,
+                                                   const std::string name)
+{
+    std::stringstream out;
+
+    out << (char)type;
+    out << (char)number;
+    out << (char)0; // unknown
+    out << (char)2; // unknown
+
+    out << (char)sig_tag::SERVICE_NAME;
+    out << (char)(name.length() + 2);
+    out << (char)0; // encoding?
+    out << name;
+
+    return out.str();
+}
+
+std::string sis_encoder_impl::generate_sig_audio_component(unsigned int component_id,
+                                                           unsigned int program_id,
+                                                           program_type type,
+                                                           mime_hash mime)
+{
+    std::stringstream out;
+    uint32_t mime_int = static_cast<uint32_t>(mime);
+
+    out << (char)sig_tag::AUDIO_COMPONENT;
+    out << (char)12; // length
+    out << (char)component_id;
+    out << (char)program_id;
+    out << (char)type;
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+    out << (char)(mime_int & 0xff);
+    out << (char)((mime_int >> 8) & 0xff);
+    out << (char)((mime_int >> 16) & 0xff);
+    out << (char)((mime_int >> 24) & 0xff);
+
+    return out.str();
+}
+
+std::string sis_encoder_impl::generate_sig_data_component(unsigned int component_id,
+                                                          uint16_t port,
+                                                          service_data_type sdt,
+                                                          data_type type,
+                                                          mime_hash mime,
+                                                          unsigned int vendor_id)
+{
+    std::stringstream out;
+    uint32_t mime_int = static_cast<uint32_t>(mime);
+    uint16_t sdt_int = static_cast<uint16_t>(sdt);
+
+    out << (char)sig_tag::DATA_COMPONENT;
+    out << (char)13; // length
+    out << (char)component_id;
+    out << (char)(port & 0xff);
+    out << (char)((port >> 8) & 0xff);
+    out << (char)(sdt_int & 0xff);
+    out << (char)((sdt_int >> 8) & 0xff);
+    out << (char)type;
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+    out << (char)(mime_int & 0xff);
+    out << (char)((mime_int >> 8) & 0xff);
+    out << (char)((mime_int >> 16) & 0xff);
+    out << (char)((mime_int >> 24) & 0xff);
+
+    out << (char)sig_tag::DATA_INFO;
+    out << (char)9; // length
+    out << "SELF";  // vendor?
+    out << (char)vendor_id;
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+    out << (char)0; // unknown
+
+    return out.str();
+}
+
+
 } /* namespace nrsc5 */
 } /* namespace gr */

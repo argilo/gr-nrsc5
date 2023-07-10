@@ -12,11 +12,36 @@
 #define INCLUDED_NRSC5_API_H
 
 #include <gnuradio/attributes.h>
+#include <cstdint>
 
 #ifdef gnuradio_nrsc5_EXPORTS
 #define NRSC5_API __GR_ATTR_EXPORT
 #else
 #define NRSC5_API __GR_ATTR_IMPORT
 #endif
+
+namespace gr {
+namespace nrsc5 {
+
+enum class mime_hash : uint32_t {
+    PRIMARY_IMAGE = 0xBE4B7536,
+    STATION_LOGO = 0xD9C72536,
+    NAVTEQ = 0x2D42AC3E,
+    HERE_TPEG = 0x82F03DFC,
+    HERE_IMAGE = 0xB7F03DFC,
+    HD_TMC = 0xEECB55B6,
+    HDC = 0x4DC66C5A,
+    TEXT = 0xBB492AAC,
+    JPEG = 0x1E653E9C,
+    PNG = 0x4F328CA0,
+    TTN_TPEG_1 = 0xB39EBEB2,
+    TTN_TPEG_2 = 0x4EB03469,
+    TTN_TPEG_3 = 0x52103469,
+    TTN_STM_TRAFFIC = 0xFF8422D7,
+    TTN_STM_WEATHER = 0xEF042E96
+};
+
+} /* namespace nrsc5 */
+} /* namespace gr */
 
 #endif /* INCLUDED_NRSC5_API_H */

@@ -29,7 +29,7 @@ private:
     std::string encode_psd_packet(int dtpf, int port, int seq);
     std::string encode_id3();
     std::string encode_text_frame(const std::string& id, const std::string& data);
-    std::string encode_xhdr_frame(uint32_t mime, int lot);
+    std::string encode_xhdr_frame(mime_hash mime, int lot);
 
 public:
     psd_encoder_impl(const int prog_num,
