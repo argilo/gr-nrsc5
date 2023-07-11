@@ -11,9 +11,18 @@ import struct
 import threading
 from gnuradio import gr
 
+
 class lot_encoder(gr.basic_block):
     """Read a file and encode it as LOT packets"""
     INTERVAL = 10.0
+
+    PNG_START = bytes.fromhex("89504E470D0A1A0A")
+    JPEG_START = bytes.fromhex("FFD8")
+    JPEG_END = bytes.fromhex("FFD9")
+
+    MIMEHASH_PNG = 0x4F328CA0
+    MIMEHASH_JPEG = 0x1E653E9C
+    MIMEHASH_TEXT = 0xBB492AAC
 
     def __init__(self, filename="", lot_id=0, port=0x1001):
         gr.sync_block.__init__(
@@ -49,7 +58,20 @@ class lot_encoder(gr.basic_block):
                 version = 1
                 expiry = 0x7eb4a59e
                 size = len(data)
-                mime = 0x4f328ca0  # PNG
+
+                if data.startswith(self.PNG_START):
+                    mime = self.MIMEHASH_PNG
+                elif data.startswith(self.JPEG_START) and data.endswith(self.JPEG_END):
+                    mime = self.MIMEHASH_JPEG
+                elif self.filename.lower().endswith(".png"):
+                    mime = self.MIMEHASH_PNG
+                elif self.filename.lower().endswith(".jpg") or self.filename.lower().endswith(".jpeg"):
+                    mime = self.MIMEHASH_JPEG
+                elif self.filename.lower().endswith(".txt"):
+                    mime = self.MIMEHASH_TEXT
+                else:
+                    raise ValueError("Unsupported file type. Supported types: PNG, JPG, TXT.")
+
                 header += struct.pack("<IIII", version, expiry, size, mime) + self.filename.encode()
 
             self.parts.append(header + chunk)
