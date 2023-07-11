@@ -9,6 +9,7 @@
 import pmt
 import struct
 import threading
+from datetime import datetime, timedelta, timezone
 from gnuradio import gr
 
 
@@ -56,7 +57,10 @@ class lot_encoder(gr.basic_block):
             header = struct.pack("<BBHI", header_len, repeat, self.lot_id, seq)
             if seq == 0:
                 version = 1
-                expiry = 0x7eb4a59e
+
+                dt = datetime.now(timezone.utc) + timedelta(days=365)
+                expiry = (dt.year << 20) | (dt.month << 16) | (dt.day << 11) | (dt.hour << 6) | dt.minute
+
                 size = len(data)
 
                 if data.startswith(self.PNG_START):
