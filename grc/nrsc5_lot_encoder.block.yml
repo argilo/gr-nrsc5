@@ -1,0 +1,28 @@
+id: nrsc5_lot_encoder
+label: LOT encoder
+category: '[NRSC-5]'
+
+templates:
+  imports: import nrsc5
+  make: nrsc5.lot_encoder(${filename}, ${lot_id}, ${port})
+
+parameters:
+- id: filename
+  label: Filename
+  dtype: string
+  default: ''
+- id: lot_id
+  label: LOT id
+  dtype: int
+  default: 0
+- id: port
+  label: Port
+  dtype: int
+  default: '0x1001'
+
+outputs:
+- label: aas
+  domain: message
+  optional: false
+
+file_format: 1

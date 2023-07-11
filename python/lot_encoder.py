@@ -1,14 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2023 Clayton Smith.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
 import pmt
 import struct
 import threading
 from gnuradio import gr
 
-
-class blk(gr.basic_block):
+class lot_encoder(gr.basic_block):
     """Read a file and encode it as LOT packets"""
     INTERVAL = 10.0
 
-    def __init__(self, filename="", lot_id = 0, port=0):  # only default arguments here
+    def __init__(self, filename="", lot_id=0, port=0x1001):
         gr.sync_block.__init__(
             self,
             name='LOT encoder',

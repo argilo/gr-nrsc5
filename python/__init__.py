@@ -20,4 +20,5 @@ except ModuleNotFoundError:
     pass
 
 # import any pure python here
+from .lot_encoder import lot_encoder
 #

@@ -22,7 +22,7 @@ add_subdirectory(bindings)
 GR_PYTHON_INSTALL(
     FILES
     __init__.py
-    DESTINATION ${GR_PYTHON_DIR}/nrsc5
+    lot_encoder.py DESTINATION ${GR_PYTHON_DIR}/nrsc5
 )
 
 ########################################################################
@@ -37,3 +37,4 @@ GR_ADD_TEST(qa_l1_am_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa
 GR_ADD_TEST(qa_l2_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_l2_encoder.py)
 GR_ADD_TEST(qa_psd_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_psd_encoder.py)
 GR_ADD_TEST(qa_sis_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_sis_encoder.py)
+GR_ADD_TEST(qa_lot_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_lot_encoder.py)

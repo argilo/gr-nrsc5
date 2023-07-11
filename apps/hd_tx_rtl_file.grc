@@ -264,55 +264,6 @@ blocks:
     coordinate: [952, 16.0]
     rotation: 180
     state: enabled
-- name: epy_block_0
-  id: epy_block
-  parameters:
-    _source_code: "import pmt\nimport struct\nimport threading\nfrom gnuradio import\
-      \ gr\n\n\nclass blk(gr.basic_block):\n    \"\"\"Read a file and encode it as\
-      \ LOT packets\"\"\"\n    INTERVAL = 10.0\n\n    def __init__(self, filename=\"\
-      \", lot_id = 0, port=0):  # only default arguments here\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='LOT encoder',\n            in_sig=[],\n\
-      \            out_sig=[]\n        )\n        self.message_port_register_out(pmt.intern(\"\
-      aas\"))\n\n        self.filename = filename\n        self.port = port\n    \
-      \    self.lot_id = lot_id\n\n    def start(self):\n        self.parts = []\n\
-      \        with open(self.filename, \"rb\") as f:\n            data = f.read()\n\
-      \        \n        for offset in range(0, len(data), 256):\n            chunk\
-      \ = data[offset:offset+256]\n            seq = offset // 256\n\n           \
-      \ if seq == 0:\n                header_len = 24 + len(self.filename.encode())\n\
-      \            else:\n                header_len = 8\n            \n         \
-      \   repeat = 1\n            \n            header = struct.pack(\"<BBHI\", header_len,\
-      \ repeat, self.lot_id, seq)\n            if seq == 0:\n                version\
-      \ = 1\n                expiry = 0x7eb4a59e\n                size = len(data)\n\
-      \                mime = 0x4f328ca0  # PNG\n                header += struct.pack(\"\
-      <IIII\", version, expiry, size, mime) + self.filename.encode()\n           \
-      \ \n            self.parts.append(header + chunk)\n        \n        self.aas_seq\
-      \ = 0\n        self.timer = threading.Timer(self.INTERVAL, self.send)\n    \
-      \    self.timer.start()\n    \n    def stop(self):\n        self.timer.cancel()\n\
-      \        \n    def send(self):\n        print(f\"Sending LOT file: {self.filename}\"\
-      )\n        for part in self.parts:\n            aas_pdu = struct.pack(\"<BHH\"\
-      , 0x21, self.port, self.aas_seq) + part\n            msg = pmt.cons(pmt.make_dict(),\
-      \ pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))\n            self.message_port_pub(pmt.intern(\"\
-      aas\"), msg)\n            self.aas_seq = (self.aas_seq + 1) & 0xffff\n     \
-      \   \n        self.timer = threading.Timer(self.INTERVAL, self.send)\n     \
-      \   self.timer.start()\n"
-    affinity: ''
-    alias: ''
-    comment: ''
-    filename: '"SLABCD$$010000.png"'
-    lot_id: '666'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    port: '0x1001'
-  states:
-    _io_cache: ('LOT encoder', 'blk', [('filename', "''"), ('lot_id', '0'), ('port',
-      '0')], [], [('aas', 'message', 1)], 'Read a file and encode it as LOT packets',
-      ['filename', 'lot_id', 'port'])
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [496, 228.0]
-    rotation: 0
-    state: true
 - name: fft_vxx_0
   id: fft_vxx
   parameters:
@@ -390,15 +341,32 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_progs: '1'
-    period: '1000'
     size: '146176'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 28.0]
+    coordinate: [552, 32.0]
     rotation: 180
     state: enabled
+- name: nrsc5_lot_encoder_0
+  id: nrsc5_lot_encoder
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    filename: SLABCD$$010000.png
+    lot_id: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    port: '0x1001'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [496, 228.0]
+    rotation: 0
+    state: true
 - name: nrsc5_psd_encoder_0
   id: nrsc5_psd_encoder
   parameters:
@@ -486,11 +454,11 @@ connections:
 - [blocks_vector_to_stream_0, '0', blocks_keep_m_in_n_0, '0']
 - [blocks_wavfile_source_0, '0', nrsc5_hdc_encoder_0, '0']
 - [blocks_wavfile_source_0, '1', nrsc5_hdc_encoder_0, '1']
-- [epy_block_0, aas, nrsc5_l2_encoder_0, aas]
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '0']
+- [nrsc5_lot_encoder_0, aas, nrsc5_l2_encoder_0, aas]
 - [nrsc5_psd_encoder_0, '0', nrsc5_l2_encoder_0, '1']
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '1']
 - [nrsc5_sis_encoder_0, aas, nrsc5_l2_encoder_0, aas]
