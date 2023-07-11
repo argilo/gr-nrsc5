@@ -37,6 +37,7 @@ class lot_encoder(gr.basic_block):
         self.filename = filename
         self.port = port
         self.lot_id = lot_id
+        self.my_log = gr.logger(self.alias())
 
     def start(self):
         self.parts = []
@@ -88,7 +89,7 @@ class lot_encoder(gr.basic_block):
         self.timer.cancel()
 
     def send(self):
-        print(f"Sending LOT file: {self.filename}")
+        self.my_log.info(f"Sending LOT file: {self.filename}")
         for part in self.parts:
             aas_pdu = struct.pack("<BHH", 0x21, self.port, self.aas_seq) + part
             msg = pmt.cons(pmt.make_dict(), pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))
