@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2019 Clayton Smith.
+ * Copyright 2019, 2023 Clayton Smith.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -8,7 +8,7 @@
 #ifndef INCLUDED_NRSC5_L1_AM_ENCODER_H
 #define INCLUDED_NRSC5_L1_AM_ENCODER_H
 
-#include <gnuradio/block.h>
+#include <gnuradio/sync_interpolator.h>
 #include <nrsc5/api.h>
 
 #define AM_BLOCKS_PER_FRAME 8
@@ -30,7 +30,7 @@ namespace nrsc5 {
  * \ingroup nrsc5
  *
  */
-class NRSC5_API l1_am_encoder : virtual public gr::block
+class NRSC5_API l1_am_encoder : virtual public gr::sync_interpolator
 {
 public:
     typedef std::shared_ptr<l1_am_encoder> sptr;

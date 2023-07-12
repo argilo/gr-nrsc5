@@ -60,6 +60,7 @@ private:
     int payload_bytes;
     unsigned char rs_buf[255];
     void* rs_enc;
+    int frame_modulus;
     int target_nop;
     int lc_bits;
     int psd_bytes;
