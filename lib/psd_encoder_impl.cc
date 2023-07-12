@@ -39,6 +39,8 @@ psd_encoder_impl::psd_encoder_impl(const int prog_num,
     this->artist = artist;
     seq_num = 0;
     packet_off = 0;
+
+    set_max_output_buffer(0, 4096);
 }
 
 /*
