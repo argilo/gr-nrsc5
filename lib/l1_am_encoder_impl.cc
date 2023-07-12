@@ -50,6 +50,7 @@ l1_am_encoder_impl::l1_am_encoder_impl(const int sm)
                 gr::io_signature::make(1, 1, sizeof(gr_complex) * AM_FFT_SIZE))
 {
     set_output_multiple(AM_SYMBOLS_PER_FRAME);
+    set_relative_rate(AM_SYMBOLS_PER_FRAME, 1);
 
     this->sm = sm;
 

@@ -99,6 +99,7 @@ l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
                 gr::io_signature::make(1, 1, sizeof(gr_complex) * FM_FFT_SIZE))
 {
     set_output_multiple(FM_SYMBOLS_PER_FRAME);
+    set_relative_rate(FM_SYMBOLS_PER_FRAME, 1);
 
     this->psm = psm;
     this->ssm = ssm;
