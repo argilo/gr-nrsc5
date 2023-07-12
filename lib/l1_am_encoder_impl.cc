@@ -489,39 +489,39 @@ void l1_am_encoder_impl::interleaver_pids(unsigned char* in,
 void l1_am_encoder_impl::sc_data_seq(
     unsigned char* out, int pli, int hppi, int abbi, int rdbi, int bc, int smi)
 {
-    out[0] = 0; // sync
-    out[1] = 1; // sync
-    out[2] = 1; // sync
-    out[3] = 0; // sync
-    out[4] = 0; // sync
-    out[5] = 1; // sync
-    out[6] = 0; // sync
+    out[0] = 0;                            // sync
+    out[1] = 1;                            // sync
+    out[2] = 1;                            // sync
+    out[3] = 0;                            // sync
+    out[4] = 0;                            // sync
+    out[5] = 1;                            // sync
+    out[6] = 0;                            // sync
 
-    out[7] = pli;    // power level indicator
-    out[8] = out[7]; // parity
+    out[7] = pli;                          // power level indicator
+    out[8] = out[7];                       // parity
 
-    out[9] = 1; // sync
+    out[9] = 1;                            // sync
 
     out[10] = 0;                           // reserved
     out[11] = hppi;                        // high power pids indicator
     out[12] = abbi;                        // analog audio bandwidth indicator
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
-    out[14] = 0; // sync
+    out[14] = 0;                           // sync
 
-    out[15] = rdbi; // reduced digital bandwidth indicator
-    out[16] = 0;    // reserved
+    out[15] = rdbi;                        // reduced digital bandwidth indicator
+    out[16] = 0;                           // reserved
     out[17] = (bc & 0x4) >> 2;
     out[18] = (bc & 0x2) >> 1;
     out[19] = (bc & 0x1);
     out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
 
-    out[21] = 1; // sync
-    out[22] = 1; // sync
+    out[21] = 1;                                               // sync
+    out[22] = 1;                                               // sync
 
-    out[23] = 0; // reserved
-    out[24] = 0; // reserved
-    out[25] = 0; // reserved
+    out[23] = 0;                                               // reserved
+    out[24] = 0;                                               // reserved
+    out[25] = 0;                                               // reserved
     out[26] = (smi & 0x10) >> 4;
     out[27] = (smi & 0x08) >> 3;
     out[28] = (smi & 0x04) >> 2;
