@@ -116,7 +116,7 @@ outputs:
 -   label: pids
     domain: stream
     dtype: byte
-    vlen: ${ (1280 if mode == "nrsc5.pids_mode.FM" else 640) }
+    vlen: 80
 asserts:
 -   ${ len(slogan) <= 95 }
 -   ${ len(message) <= 190 }

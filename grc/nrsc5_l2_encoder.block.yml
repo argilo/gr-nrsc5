@@ -39,7 +39,7 @@ inputs:
 outputs:
 -   domain: stream
     dtype: byte
-    vlen: ${ (size if size >= 24000 else (size * 8)) }
+    vlen: ${ size }
 asserts:
 - ${ 0 <= first_prog <= 7 }
 - ${ 1 <= num_progs <= 8 - first_prog }

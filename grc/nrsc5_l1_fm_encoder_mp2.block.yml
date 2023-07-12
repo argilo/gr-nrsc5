@@ -12,11 +12,11 @@ inputs:
 -   label: p3
     domain: stream
     dtype: byte
-    vlen: 18432
+    vlen: 2304
 -   label: pids
     domain: stream
     dtype: byte
-    vlen: 1280
+    vlen: 80
 
 outputs:
 -   domain: stream

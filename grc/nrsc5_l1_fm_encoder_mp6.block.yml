@@ -8,7 +8,7 @@ inputs:
 -   label: p1
     domain: stream
     dtype: byte
-    vlen: 73728
+    vlen: 9216
 -   label: p2
     domain: stream
     dtype: byte
@@ -16,7 +16,7 @@ inputs:
 -   label: pids
     domain: stream
     dtype: byte
-    vlen: 1280
+    vlen: 80
 
 outputs:
 -   domain: stream
