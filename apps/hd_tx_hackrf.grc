@@ -414,7 +414,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 220.0]
+    coordinate: [496, 228.0]
     rotation: 0
     state: true
 - name: nrsc5_psd_encoder_0
