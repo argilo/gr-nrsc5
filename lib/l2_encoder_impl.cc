@@ -41,8 +41,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
                                  const int data_bytes)
     : gr::block("l2_encoder",
                 gr::io_signature::make(2, 16, sizeof(unsigned char)),
-                gr::io_signature::make(
-                    1, 1, sizeof(unsigned char) * (size >= 24000 ? size : size * 8)))
+                gr::io_signature::make(1, 1, sizeof(unsigned char) * size))
 {
     message_port_register_in(pmt::intern("aas"));
     set_msg_handler(pmt::intern("aas"),
@@ -77,7 +76,6 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     case 72448:
     case 30000:
     case 24000:
-        frame_modulus = 1;
         target_nop = 32;
         lc_bits = 16;
         psd_bytes = 128;
@@ -89,7 +87,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     case 4608:
     case 3750:
     case 2304:
-        frame_modulus = 8;
+        set_min_output_buffer(0, 16);
         target_nop = 4;
         lc_bits = 12;
         psd_bytes = 8;
@@ -111,8 +109,8 @@ l2_encoder_impl::~l2_encoder_impl()
 void l2_encoder_impl::forecast(int noutput_items, gr_vector_int& ninput_items_required)
 {
     for (int p = 0; p < num_progs; p++) {
-        ninput_items_required[p] = noutput_items * frame_modulus * size / 8;
-        ninput_items_required[num_progs + p] = noutput_items * frame_modulus * psd_bytes;
+        ninput_items_required[p] = noutput_items * size / 8;
+        ninput_items_required[num_progs + p] = noutput_items * psd_bytes;
     }
 }
 
@@ -128,8 +126,7 @@ int l2_encoder_impl::general_work(int noutput_items,
     int hdc_off[8] = { 0 };
     int psd_off[8] = { 0 };
 
-    for (int out_off = 0; out_off < noutput_items * frame_modulus * size;
-         out_off += size) {
+    for (int out_off = 0; out_off < noutput_items * size; out_off += size) {
         memset(out_buf, 0, payload_bytes);
 
         unsigned char* out_program = out_buf;

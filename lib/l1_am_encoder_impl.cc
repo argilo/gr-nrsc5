@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2019, 2023 Clayton Smith.
+ * Copyright 2019 Clayton Smith.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -21,14 +21,14 @@ std::vector<int> get_in_sizeofs(const int sm)
 
     switch (sm) {
     case 1:
-        in_sizeofs.push_back(3750 * 8);
+        in_sizeofs.push_back(3750);
         in_sizeofs.push_back(24000);
-        in_sizeofs.push_back(SIS_BITS * AM_BLOCKS_PER_FRAME);
+        in_sizeofs.push_back(SIS_BITS);
         break;
     case 3:
-        in_sizeofs.push_back(3750 * 8);
+        in_sizeofs.push_back(3750);
         in_sizeofs.push_back(30000);
-        in_sizeofs.push_back(SIS_BITS * AM_BLOCKS_PER_FRAME);
+        in_sizeofs.push_back(SIS_BITS);
         break;
     }
 
@@ -45,16 +45,18 @@ l1_am_encoder::sptr l1_am_encoder::make(const int sm)
  * The private constructor
  */
 l1_am_encoder_impl::l1_am_encoder_impl(const int sm)
-    : gr::sync_interpolator(
-          "l1_am_encoder",
-          gr::io_signature::makev(3, 3, get_in_sizeofs(sm)),
-          gr::io_signature::make(1, 1, sizeof(gr_complex) * AM_FFT_SIZE),
-          AM_SYMBOLS_PER_FRAME)
+    : gr::block("l1_am_encoder",
+                gr::io_signature::makev(3, 3, get_in_sizeofs(sm)),
+                gr::io_signature::make(1, 1, sizeof(gr_complex) * AM_FFT_SIZE))
 {
+    set_output_multiple(AM_SYMBOLS_PER_FRAME);
+
     this->sm = sm;
 
     p1_bits = 3750;
+    p1_mod = 8;
     p3_bits = 0;
+    p3_mod = 1;
     switch (sm) {
     case 1:
         p3_bits = 24000;
@@ -90,9 +92,19 @@ l1_am_encoder_impl::l1_am_encoder_impl(const int sm)
  */
 l1_am_encoder_impl::~l1_am_encoder_impl() {}
 
-int l1_am_encoder_impl::work(int noutput_items,
-                             gr_vector_const_void_star& input_items,
-                             gr_vector_void_star& output_items)
+void l1_am_encoder_impl::forecast(int noutput_items, gr_vector_int& ninput_items_required)
+{
+    int frames = noutput_items / AM_SYMBOLS_PER_FRAME;
+
+    ninput_items_required[0] = frames * p1_mod;
+    ninput_items_required[1] = frames * p3_mod;
+    ninput_items_required[2] = frames * AM_BLOCKS_PER_FRAME;
+}
+
+int l1_am_encoder_impl::general_work(int noutput_items,
+                                     gr_vector_int& ninput_items,
+                                     gr_vector_const_void_star& input_items,
+                                     gr_vector_void_star& output_items)
 {
     const unsigned char* p1 = (const unsigned char*)input_items[0];
     const unsigned char* p3 = (const unsigned char*)input_items[1];
@@ -185,6 +197,10 @@ int l1_am_encoder_impl::work(int noutput_items,
             out_off += AM_FFT_SIZE;
         }
     }
+
+    consume(0, frames * p1_mod);
+    consume(1, frames * p3_mod);
+    consume(2, frames * AM_BLOCKS_PER_FRAME);
 
     return noutput_items;
 }

@@ -56,14 +56,9 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                                    const float altitude,
                                    const std::string& country_code,
                                    const unsigned int fcc_facility_id)
-    : gr::sync_block(
-          "sis_encoder",
-          gr::io_signature::make(0, 0, 0),
-          gr::io_signature::make(
-              1,
-              1,
-              sizeof(unsigned char) * SIS_BITS *
-                  ((mode == pids_mode::FM) ? BLOCKS_PER_FRAME_FM : BLOCKS_PER_FRAME_AM)))
+    : gr::sync_block("sis_encoder",
+                     gr::io_signature::make(0, 0, 0),
+                     gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
     if (country_code.length() != 2) {
         throw std::invalid_argument("country code must be two characters");
@@ -98,6 +93,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
             schedule = &schedule_am_long_no_ea;
         }
     }
+    set_output_multiple(blocks_per_frame);
 
     this->program_types = program_types;
     this->slogan = slogan;
@@ -158,7 +154,7 @@ int sis_encoder_impl::work(int noutput_items,
     unsigned char* out = (unsigned char*)output_items[0];
 
     bit = out;
-    while (bit < out + (noutput_items * blocks_per_frame * SIS_BITS)) {
+    while (bit < out + (noutput_items * SIS_BITS)) {
         for (int block = 0; block < blocks_per_frame; block++) {
             unsigned char* start = bit;
 
