@@ -128,7 +128,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    delay: int(audio_rate * 3.5)
+    delay: int(audio_rate * 4.458)
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'

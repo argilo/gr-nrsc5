@@ -103,7 +103,7 @@ class hd_tx_usrp(gr.top_block):
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.001)
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 2160, 4096, 0)
-        self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, (int(audio_rate * 3.5)))
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, (int(audio_rate * 4.458)))
         self.blocks_conjugate_cc_0 = blocks.conjugate_cc()
         self.blocks_add_xx_0 = blocks.add_vcc(1)
         self.analog_wfm_tx_0_0 = analog.wfm_tx(
@@ -130,8 +130,8 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
+        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.blocks_add_xx_0, 1))
@@ -166,7 +166,7 @@ class hd_tx_usrp(gr.top_block):
 
     def set_audio_rate(self, audio_rate):
         self.audio_rate = audio_rate
-        self.blocks_delay_0.set_dly(int((int(self.audio_rate * 3.5))))
+        self.blocks_delay_0.set_dly(int((int(self.audio_rate * 4.458))))
 
 
 
