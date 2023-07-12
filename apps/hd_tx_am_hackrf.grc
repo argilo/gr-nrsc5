@@ -194,7 +194,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 116.0]
+    coordinate: [536, 148.0]
     rotation: 180
     state: enabled
 - name: blocks_repeat_0
@@ -212,7 +212,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1112, 244.0]
+    coordinate: [1128, 284.0]
     rotation: 0
     state: enabled
 - name: blocks_rotator_cc_0
@@ -325,7 +325,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 220.0]
+    coordinate: [288, 260.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -394,7 +394,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 88.0]
+    coordinate: [288, 120.0]
     rotation: 180
     state: true
 - name: nrsc5_l2_encoder_0
@@ -403,6 +403,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    data_bytes: '0'
     first_prog: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -412,7 +413,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 36.0]
+    coordinate: [536, 40.0]
     rotation: 180
     state: enabled
 - name: nrsc5_psd_encoder_0
@@ -463,7 +464,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 164.0]
+    coordinate: [536, 196.0]
     rotation: 180
     state: true
 - name: osmosdr_sink_0
@@ -836,4 +837,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: v3.10.6.0-49-g32b028be
+  grc_version: 3.10.7.0-rc1
