@@ -75,7 +75,6 @@ private:
     int ccc_offset;
     int total_data_width;
     std::queue<unsigned char> aas_queue;
-    std::mutex aas_queue_mutex;
     int aas_block_offset;
 
     unsigned char* out_buf;

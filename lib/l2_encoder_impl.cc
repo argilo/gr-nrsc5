@@ -259,24 +259,20 @@ int l2_encoder_impl::general_work(int noutput_items,
             }
 
             // Fixed data subchannel
-            {
-                std::lock_guard<std::mutex> lock(aas_queue_mutex);
-
-                for (int i = payload_bytes - 1 - ccc_width - data_bytes;
-                     i < payload_bytes - 1 - ccc_width;
-                     i++) {
-                    if (aas_block_offset < 4) {
-                        out_buf[i] = BBM[aas_block_offset];
+            for (int i = payload_bytes - 1 - ccc_width - data_bytes;
+                 i < payload_bytes - 1 - ccc_width;
+                 i++) {
+                if (aas_block_offset < 4) {
+                    out_buf[i] = BBM[aas_block_offset];
+                } else {
+                    if (aas_queue.empty()) {
+                        out_buf[i] = 0x7e;
                     } else {
-                        if (aas_queue.empty()) {
-                            out_buf[i] = 0x7e;
-                        } else {
-                            out_buf[i] = aas_queue.front();
-                            aas_queue.pop();
-                        }
+                        out_buf[i] = aas_queue.front();
+                        aas_queue.pop();
                     }
-                    aas_block_offset = (aas_block_offset + 1) % (255 + 4);
                 }
+                aas_block_offset = (aas_block_offset + 1) % (255 + 4);
             }
         }
 
@@ -412,8 +408,6 @@ int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
 
 void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
 {
-    std::lock_guard<std::mutex> lock(aas_queue_mutex);
-
     std::vector<unsigned char> pdu_bytes = pmt::u8vector_elements(pmt::cdr(msg));
     std::vector<unsigned char> pdu_encoded = hdlc_encode(pdu_bytes);
 
