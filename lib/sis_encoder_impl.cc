@@ -711,7 +711,9 @@ void sis_encoder_impl::run()
         }
 
         std::string sig_str = generate_aas_header(SIG_PORT, d_seq++) + generate_sig();
-        pmt::pmt_t msg = pmt::cons(pmt::make_dict(), pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
+        pmt::pmt_t msg = pmt::cons(
+            pmt::make_dict(),
+            pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
 
         message_port_pub(d_port, msg);
     }
