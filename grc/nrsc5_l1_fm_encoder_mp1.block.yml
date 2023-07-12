@@ -12,7 +12,7 @@ inputs:
 -   label: pids
     domain: stream
     dtype: byte
-    vlen: 80
+    vlen: 1280
 
 outputs:
 -   domain: stream

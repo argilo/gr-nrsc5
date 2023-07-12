@@ -8,7 +8,7 @@ inputs:
 -   label: p1
     domain: stream
     dtype: byte
-    vlen: 4608
+    vlen: 36864
 -   label: p2
     domain: stream
     dtype: byte
@@ -16,23 +16,23 @@ inputs:
 -   label: p3
     domain: stream
     dtype: byte
-    vlen: 4608
+    vlen: 36864
 -   label: pids
     domain: stream
     dtype: byte
-    vlen: 80
+    vlen: 1280
 -   label: s4
     domain: stream
     dtype: byte
-    vlen: 18272
+    vlen: 146176
 -   label: s5
     domain: stream
     dtype: byte
-    vlen: 512
+    vlen: 8192
 -   label: sids
     domain: stream
     dtype: byte
-    vlen: 80
+    vlen: 1280
 
 outputs:
 -   domain: stream
