@@ -42,6 +42,7 @@ psd_encoder_impl::psd_encoder_impl(const int prog_num,
     this->title = title;
     this->artist = artist;
     this->bytes_per_frame = bytes_per_frame;
+    lot = -1;
     seq_num = 0;
     packet_off = 0;
 
@@ -56,6 +57,10 @@ psd_encoder_impl::psd_encoder_impl(const int prog_num,
     message_port_register_in(pmt::intern("clock"));
     set_msg_handler(pmt::intern("clock"),
                     [this](pmt::pmt_t msg) { this->handle_clock(msg); });
+
+    message_port_register_in(pmt::mp("set_meta"));
+    set_msg_handler(pmt::mp("set_meta"),
+                    [this](const pmt::pmt_t& msg) { this->set_meta(msg); });
 }
 
 /*
@@ -107,8 +112,7 @@ std::string psd_encoder_impl::encode_id3()
     std::stringstream out;
 
     std::string payload = encode_text_frame("TIT2", title) +
-                          encode_text_frame("TPE1", artist) +
-                          encode_xhdr_frame(mime_hash::PRIMARY_IMAGE, -1);
+                          encode_text_frame("TPE1", artist) + encode_xhdr_frame();
     int len = payload.length();
 
     out << "ID3";
@@ -144,14 +148,14 @@ std::string psd_encoder_impl::encode_text_frame(const std::string& id,
     return out.str();
 }
 
-std::string psd_encoder_impl::encode_xhdr_frame(mime_hash mime, int lot)
+std::string psd_encoder_impl::encode_xhdr_frame()
 {
     std::stringstream out;
 
     int param = (lot >= 0) ? 0 : 1;
     int extlen = (lot >= 0) ? 2 : 0;
     int len = 6 + extlen;
-    uint32_t mime_int = static_cast<int>(mime);
+    uint32_t mime_int = static_cast<int>(mime_hash::PRIMARY_IMAGE);
 
     out << "XHDR";
     out << (char)((len >> 24) & 0xff);
@@ -179,6 +183,24 @@ void psd_encoder_impl::handle_clock(pmt::pmt_t msg)
 {
     if (bytes_per_frame > 0) {
         bytes_allowed += bytes_per_frame;
+    }
+}
+
+void psd_encoder_impl::set_meta(const pmt::pmt_t& msg)
+{
+    int msg_len = pmt::blob_length(pmt::cdr(msg));
+    std::string in = std::string((char*)pmt::blob_data(pmt::cdr(msg)), msg_len);
+
+    if (in.rfind("title", 0) == 0) {
+        title = in.substr(5, msg_len - 6);
+    } else if (in.rfind("artist", 0) == 0) {
+        artist = in.substr(6, msg_len - 7);
+    } else if (in.rfind("lot", 0) == 0) {
+        try {
+            lot = std::stoi(in.substr(3, msg_len - 4));
+        } catch (std::invalid_argument& err) {
+            // ignore
+        }
     }
 }
 

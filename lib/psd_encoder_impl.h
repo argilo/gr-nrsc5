@@ -22,6 +22,7 @@ private:
     int prog_num;
     std::string title;
     std::string artist;
+    int lot;
     int bytes_per_frame;
     int seq_num;
     std::vector<unsigned char> packet;
@@ -31,9 +32,10 @@ private:
     std::string encode_psd_packet(int dtpf, int port, int seq);
     std::string encode_id3();
     std::string encode_text_frame(const std::string& id, const std::string& data);
-    std::string encode_xhdr_frame(mime_hash mime, int lot);
+    std::string encode_xhdr_frame();
 
     void handle_clock(pmt::pmt_t msg);
+    void set_meta(const pmt::pmt_t& msg);
 
 public:
     psd_encoder_impl(const int prog_num,
