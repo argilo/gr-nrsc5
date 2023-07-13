@@ -17,10 +17,13 @@
 namespace gr {
 namespace nrsc5 {
 
-psd_encoder::sptr
-psd_encoder::make(const int prog_num, const std::string& title, const std::string& artist)
+psd_encoder::sptr psd_encoder::make(const int prog_num,
+                                    const std::string& title,
+                                    const std::string& artist,
+                                    const int bytes_per_frame)
 {
-    return gnuradio::get_initial_sptr(new psd_encoder_impl(prog_num, title, artist));
+    return gnuradio::get_initial_sptr(
+        new psd_encoder_impl(prog_num, title, artist, bytes_per_frame));
 }
 
 
@@ -29,7 +32,8 @@ psd_encoder::make(const int prog_num, const std::string& title, const std::strin
  */
 psd_encoder_impl::psd_encoder_impl(const int prog_num,
                                    const std::string& title,
-                                   const std::string& artist)
+                                   const std::string& artist,
+                                   const int bytes_per_frame)
     : gr::sync_block("psd_encoder",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char)))
@@ -37,10 +41,21 @@ psd_encoder_impl::psd_encoder_impl(const int prog_num,
     this->prog_num = prog_num;
     this->title = title;
     this->artist = artist;
+    this->bytes_per_frame = bytes_per_frame;
     seq_num = 0;
     packet_off = 0;
 
     set_max_output_buffer(0, 4096);
+
+    if (this->bytes_per_frame > 0) {
+        bytes_allowed = 2 * this->bytes_per_frame;
+    } else {
+        bytes_allowed = INT_MAX;
+    }
+
+    message_port_register_in(pmt::intern("clock"));
+    set_msg_handler(pmt::intern("clock"),
+                    [this](pmt::pmt_t msg) { this->handle_clock(msg); });
 }
 
 /*
@@ -54,7 +69,9 @@ int psd_encoder_impl::work(int noutput_items,
 {
     unsigned char* out = (unsigned char*)output_items[0];
 
-    for (int off = 0; off < noutput_items; off++) {
+    int noutput_items_reduced = std::min(noutput_items, bytes_allowed);
+
+    for (int off = 0; off < noutput_items_reduced; off++) {
         if (packet_off == packet.size()) {
             std::string packet_str =
                 encode_psd_packet(BASIC_PACKET_FORMAT, PORT[prog_num], seq_num++);
@@ -66,7 +83,8 @@ int psd_encoder_impl::work(int noutput_items,
         out[off] = packet[packet_off++];
     }
 
-    return noutput_items;
+    bytes_allowed -= noutput_items_reduced;
+    return noutput_items_reduced;
 }
 
 std::string psd_encoder_impl::encode_psd_packet(int dtpf, int port, int seq)
@@ -155,6 +173,13 @@ std::string psd_encoder_impl::encode_xhdr_frame(mime_hash mime, int lot)
     }
 
     return out.str();
+}
+
+void psd_encoder_impl::handle_clock(pmt::pmt_t msg)
+{
+    if (bytes_per_frame > 0) {
+        bytes_allowed += bytes_per_frame;
+    }
 }
 
 } /* namespace nrsc5 */

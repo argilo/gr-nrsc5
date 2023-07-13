@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(psd_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(5a8cf841a3a5f026ab9f8c469bb01419)                     */
+/* BINDTOOL_HEADER_FILE_HASH(b858db9ba66114cfa2952d20cd3dcc59)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -40,9 +40,10 @@ void bind_psd_encoder(py::module& m)
            py::arg("prog_num"),
            py::arg("title"),
            py::arg("artist"),
+           py::arg("bytes_per_frame") = 0,
            D(psd_encoder,make)
         )
-        
+
 
 
 

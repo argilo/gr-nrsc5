@@ -22,19 +22,24 @@ private:
     int prog_num;
     std::string title;
     std::string artist;
+    int bytes_per_frame;
     int seq_num;
     std::vector<unsigned char> packet;
     int packet_off;
+    int bytes_allowed;
 
     std::string encode_psd_packet(int dtpf, int port, int seq);
     std::string encode_id3();
     std::string encode_text_frame(const std::string& id, const std::string& data);
     std::string encode_xhdr_frame(mime_hash mime, int lot);
 
+    void handle_clock(pmt::pmt_t msg);
+
 public:
     psd_encoder_impl(const int prog_num,
                      const std::string& title,
-                     const std::string& artist);
+                     const std::string& artist,
+                     const int bytes_per_frame = 0);
     ~psd_encoder_impl();
 
     // Where all the action really happens

@@ -17,6 +17,16 @@ parameters:
     label: Artist
     dtype: string
     default: Artist
+-   id: bytes_per_frame
+    label: Bytes/frame limit
+    dtype: int
+    default: 0
+    options: [0, 64, 128]
+
+inputs:
+-   domain: message
+    id: clock
+    optional: true
 
 outputs:
 -   domain: stream
@@ -26,6 +36,6 @@ asserts:
 
 templates:
     imports: import nrsc5
-    make: nrsc5.psd_encoder(${prog_num}, ${title}, ${artist})
+    make: nrsc5.psd_encoder(${prog_num}, ${title}, ${artist}, ${bytes_per_frame})
 
 file_format: 1

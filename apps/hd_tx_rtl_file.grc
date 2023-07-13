@@ -373,6 +373,7 @@ blocks:
     affinity: ''
     alias: ''
     artist: Artist
+    bytes_per_frame: '0'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -415,7 +416,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 172.0]
+    coordinate: [824, 188.0]
     rotation: 180
     state: true
 - name: rational_resampler_xxx_1

@@ -101,6 +101,8 @@ l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
     set_output_multiple(FM_SYMBOLS_PER_FRAME);
     set_relative_rate(FM_SYMBOLS_PER_FRAME, 1);
 
+    message_port_register_out(pmt::intern("clock"));
+
     this->psm = psm;
     this->ssm = ssm;
 
@@ -507,6 +509,7 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
 
             out_off += FM_FFT_SIZE;
         }
+        message_port_pub(pmt::intern("clock"), pmt::from_long(1));
     }
 
     port = 0;
