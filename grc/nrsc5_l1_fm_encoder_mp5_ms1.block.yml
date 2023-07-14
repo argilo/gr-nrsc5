@@ -38,6 +38,9 @@ outputs:
 -   domain: stream
     dtype: complex
     vlen: 2048
+-   domain: message
+    id: clock
+    optional: true
 
 templates:
     imports: import nrsc5
