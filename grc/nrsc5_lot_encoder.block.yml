@@ -20,6 +20,14 @@ parameters:
   dtype: int
   default: '0x1001'
 
+inputs:
+- label: file
+  domain: message
+  optional: true
+- label: ready
+  domain: message
+  optional: false
+
 outputs:
 - label: aas
   domain: message

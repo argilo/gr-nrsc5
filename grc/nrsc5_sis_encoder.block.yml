@@ -109,6 +109,11 @@ parameters:
     default: 0
     hide: part
 
+inputs:
+-   domain: message
+    id: ready
+    optional: true
+
 outputs:
 -   domain: message
     id: aas

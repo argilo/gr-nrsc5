@@ -27,6 +27,9 @@ inputs:
 -   domain: message
     id: clock
     optional: true
+-   domain: message
+    id: set_meta
+    optional: true
 
 outputs:
 -   domain: stream

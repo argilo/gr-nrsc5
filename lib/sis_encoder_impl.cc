@@ -12,9 +12,7 @@
 
 #include "sis_encoder_impl.h"
 #include <gnuradio/io_signature.h>
-#include <chrono>
 #include <cmath>
-#include <thread>
 
 namespace gr {
 namespace nrsc5 {
@@ -60,6 +58,12 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
+    message_port_register_in(pmt::intern("ready"));
+    set_msg_handler(pmt::intern("ready"),
+                    [this](pmt::pmt_t msg) { this->handle_notify(msg); });
+
+    message_port_register_out(pmt::intern("aas"));
+
     if (country_code.length() != 2) {
         throw std::invalid_argument("country code must be two characters");
     }
@@ -135,10 +139,6 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
 
     location_high = true;
 
-    d_finished = false;
-    d_period_ms = 2000;
-    d_port = pmt::intern("aas");
-    message_port_register_out(d_port);
     d_seq = 0;
 }
 
@@ -685,38 +685,26 @@ std::string sis_encoder_impl::generate_aas_header(uint16_t port, uint16_t seq)
 
 bool sis_encoder_impl::start()
 {
-    d_finished = false;
-    d_thread = gr::thread::thread([this] { run(); });
-
+    send_sig();
     return block::start();
 }
 
-bool sis_encoder_impl::stop()
+void sis_encoder_impl::handle_notify(pmt::pmt_t msg)
 {
-    // Shut down the thread
-    d_finished = true;
-    d_thread.interrupt();
-    d_thread.join();
-
-    return block::stop();
+    long port = pmt::to_long(msg);
+    if (port == SIG_PORT) {
+        send_sig();
+    }
 }
 
-void sis_encoder_impl::run()
+void sis_encoder_impl::send_sig()
 {
-    while (!d_finished) {
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(static_cast<long>(d_period_ms)));
-        if (d_finished) {
-            return;
-        }
+    std::string sig_str = generate_aas_header(SIG_PORT, d_seq++) + generate_sig();
+    pmt::pmt_t msg = pmt::cons(
+        pmt::make_dict(),
+        pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
 
-        std::string sig_str = generate_aas_header(SIG_PORT, d_seq++) + generate_sig();
-        pmt::pmt_t msg = pmt::cons(
-            pmt::make_dict(),
-            pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
-
-        message_port_pub(d_port, msg);
-    }
+    message_port_pub(pmt::intern("aas"), msg);
 }
 
 } /* namespace nrsc5 */

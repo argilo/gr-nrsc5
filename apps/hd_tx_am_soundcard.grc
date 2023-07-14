@@ -432,6 +432,7 @@ blocks:
     affinity: ''
     alias: ''
     artist: Artist
+    bytes_per_frame: '0'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'

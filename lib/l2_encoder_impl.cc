@@ -47,6 +47,8 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     set_msg_handler(pmt::intern("aas"),
                     [this](pmt::pmt_t msg) { this->handle_aas_pdu(msg); });
 
+    message_port_register_out(pmt::intern("ready"));
+
     this->num_progs = num_progs;
     this->first_prog = first_prog;
     this->size = size;
@@ -68,6 +70,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
                         (unsigned char)(this->data_bytes >> 8) });
     ccc_offset = ccc.size() - 1;
     total_data_width = (this->data_bytes > 0) ? (this->data_bytes + ccc_width + 1) : 0;
+    aas_current_port = -1;
     aas_block_offset = 0;
 
     switch (size) {
@@ -259,17 +262,55 @@ int l2_encoder_impl::general_work(int noutput_items,
             }
 
             // Fixed data subchannel
+            std::vector<int> aas_ports;
+            int aas_queue_bytes = 0;
+            for (auto queue : aas_queues) {
+                aas_ports.push_back(queue.first);
+                aas_queue_bytes += queue.second.size();
+            }
+
+            if (aas_current_port == -1 && !aas_ports.empty()) {
+                aas_current_port = aas_ports[0];
+            }
+
+            int aas_current_port_index = -1; // Index for round robin
+            for (int i = 0; i < aas_ports.size(); i++) {
+                if (aas_ports[i] == aas_current_port) {
+                    aas_current_port_index = i;
+                    break;
+                }
+            }
+
             for (int i = payload_bytes - 1 - ccc_width - data_bytes;
                  i < payload_bytes - 1 - ccc_width;
                  i++) {
                 if (aas_block_offset < 4) {
                     out_buf[i] = BBM[aas_block_offset];
                 } else {
-                    if (aas_queue.empty()) {
+                    if (aas_queue_bytes == 0) { // all queues are empty
                         out_buf[i] = 0x7e;
-                    } else {
-                        out_buf[i] = aas_queue.front();
-                        aas_queue.pop();
+                    } else { // at least one queue still has data
+                        // advance to the next non-empty queue if necessary
+                        while (aas_queues[aas_current_port].empty()) {
+                            aas_current_port_index = (aas_current_port_index + 1) % aas_ports.size();
+                            aas_current_port = aas_ports[aas_current_port_index];
+                        }
+
+                        // send out a byte
+                        out_buf[i] = aas_queues[aas_current_port].front();
+                        aas_queues[aas_current_port].pop();
+                        aas_queue_bytes--;
+
+                        // move to the next port at the end of a PDU
+                        if (out_buf[i] == 0x7e) {
+                            // if we emptied the queue, ask for more
+                            if (aas_queues[aas_current_port].empty()) {
+                                message_port_pub(pmt::intern("ready"), pmt::from_long(aas_current_port));
+                            }
+
+                            aas_current_port_index = (aas_current_port_index + 1) % aas_ports.size();
+                            aas_current_port = aas_ports[aas_current_port_index];
+                        }
                     }
                 }
                 aas_block_offset = (aas_block_offset + 1) % (255 + 4);
@@ -409,10 +450,12 @@ int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
 void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
 {
     std::vector<unsigned char> pdu_bytes = pmt::u8vector_elements(pmt::cdr(msg));
+    int port = (pdu_bytes[2] << 8) | pdu_bytes[1];
+
     std::vector<unsigned char> pdu_encoded = hdlc_encode(pdu_bytes);
 
     for (auto c : pdu_encoded) {
-        aas_queue.push(c);
+        aas_queues[port].push(c);
     }
 }
 

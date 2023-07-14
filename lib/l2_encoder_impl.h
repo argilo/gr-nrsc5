@@ -74,7 +74,8 @@ private:
     std::vector<unsigned char> ccc;
     int ccc_offset;
     int total_data_width;
-    std::queue<unsigned char> aas_queue;
+    std::map<int, std::queue<unsigned char>> aas_queues;
+    int aas_current_port;
     int aas_block_offset;
 
     unsigned char* out_buf;

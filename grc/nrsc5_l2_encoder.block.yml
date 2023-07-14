@@ -40,6 +40,9 @@ outputs:
 -   domain: stream
     dtype: byte
     vlen: ${ size }
+-   domain: message
+    id: ready
+    optional: true
 asserts:
 - ${ 0 <= first_prog <= 7 }
 - ${ 1 <= num_progs <= 8 - first_prog }

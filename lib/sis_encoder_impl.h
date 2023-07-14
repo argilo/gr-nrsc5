@@ -244,10 +244,6 @@ private:
 
     bool location_high;
 
-    gr::thread::thread d_thread;
-    std::atomic<bool> d_finished;
-    long d_period_ms;
-    pmt::pmt_t d_port;
     uint16_t d_seq;
 
     int crc12(unsigned char* sis);
@@ -278,7 +274,8 @@ private:
                                             mime_hash mime,
                                             unsigned int vendor_id);
     std::string generate_aas_header(uint16_t port, uint16_t seq);
-    void run();
+    void handle_notify(pmt::pmt_t msg);
+    void send_sig();
 
 public:
     sis_encoder_impl(
@@ -297,10 +294,8 @@ public:
     // Where all the action really happens
     int work(int noutput_items,
              gr_vector_const_void_star& input_items,
-             gr_vector_void_star& output_items);
-
+             gr_vector_void_star& output_items) override;
     bool start() override;
-    bool stop() override;
 };
 
 } // namespace nrsc5

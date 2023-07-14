@@ -8,15 +8,12 @@
 
 import pmt
 import struct
-import threading
 from datetime import datetime, timedelta, timezone
 from gnuradio import gr
 
 
 class lot_encoder(gr.basic_block):
     """Read a file and encode it as LOT packets"""
-    INTERVAL = 10.0
-
     PNG_START = bytes.fromhex("89504E470D0A1A0A")
     JPEG_START = bytes.fromhex("FFD8")
     JPEG_END = bytes.fromhex("FFD9")
@@ -34,15 +31,62 @@ class lot_encoder(gr.basic_block):
         )
         self.message_port_register_out(pmt.intern("aas"))
 
+        self.message_port_register_in(pmt.intern("file"))
+        self.set_msg_handler(pmt.intern("file"), self.handle_new_file)
+
+        self.message_port_register_in(pmt.intern("ready"))
+        self.set_msg_handler(pmt.intern("ready"), self.handle_notify)
+
         self.filename = filename
         self.port = port
         self.lot_id = lot_id
         self.my_log = gr.logger(self.alias())
 
-    def start(self):
+        #params for file input
+        #status of message (idle, or expecting more segments)
+        self.inputIdle = True
+        #file size to expect in bytes
+        self.filesize = 0
+        #file bytes input via pdu
+        self.receivedFile = bytearray()
+
+    def handle_new_file(self, msg):
+        data = pmt.to_python(msg)
+        if not (isinstance(data, tuple) and len(data) == 2):
+            print('Expected tuple of (None, str)')
+            return
+        #only attempt to parse text if we are waiting for a new file
+        if self.inputIdle:
+            text = bytes(data[1]).decode()
+            startmessage = "newfile"
+            if text.startswith(startmessage):
+                fields = text[len(startmessage):].split('|')
+                self.filename = fields[0]
+                self.lot_id = int(fields[1])
+                self.filesize = int(fields[2])
+                self.inputIdle = False
+        else:
+            self.receivedFile.extend(bytes(data[1]))
+            #check if we've received enough data
+            if len(self.receivedFile) >= self.filesize:
+                self.inputIdle = True
+                self.update_file()
+                print("New album art ready to send")
+
+    def handle_notify(self, msg):
+        port = pmt.to_python(msg)
+        if port == self.port:
+            self.send()
+
+    def update_file(self):
         self.parts = []
-        with open(self.filename, "rb") as f:
-            data = f.read()
+        if self.receivedFile:
+            data = self.receivedFile
+        else:
+            with open(self.filename, "rb") as f:
+                data = f.read()
+                if "/" in self.filename:
+                    self.filename = self.filename.split("/")[-1]
 
         for offset in range(0, len(data), 256):
             chunk = data[offset:offset+256]
@@ -81,12 +125,10 @@ class lot_encoder(gr.basic_block):
 
             self.parts.append(header + chunk)
 
+    def start(self):
+        self.update_file()
         self.aas_seq = 0
-        self.timer = threading.Timer(self.INTERVAL, self.send)
-        self.timer.start()
-
-    def stop(self):
-        self.timer.cancel()
+        self.send()
 
     def send(self):
         self.my_log.info(f"Sending LOT file: {self.filename}")
@@ -95,6 +137,3 @@ class lot_encoder(gr.basic_block):
             msg = pmt.cons(pmt.make_dict(), pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))
             self.message_port_pub(pmt.intern("aas"), msg)
             self.aas_seq = (self.aas_seq + 1) & 0xffff
-
-        self.timer = threading.Timer(self.INTERVAL, self.send)
-        self.timer.start()
