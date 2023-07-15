@@ -189,17 +189,26 @@ void psd_encoder_impl::handle_clock(pmt::pmt_t msg)
 void psd_encoder_impl::set_meta(const pmt::pmt_t& msg)
 {
     int msg_len = pmt::blob_length(pmt::cdr(msg));
-    std::string in = std::string((char*)pmt::blob_data(pmt::cdr(msg)), msg_len);
+    char* msg_data = (char*)pmt::blob_data(pmt::cdr(msg));
 
-    if (in.rfind("title", 0) == 0) {
-        title = in.substr(5, msg_len - 6);
-    } else if (in.rfind("artist", 0) == 0) {
-        artist = in.substr(6, msg_len - 7);
-    } else if (in.rfind("lot", 0) == 0) {
-        try {
-            lot = std::stoi(in.substr(3, msg_len - 4));
-        } catch (std::invalid_argument& err) {
-            // ignore
+    for (int i = 0; i < msg_len; i++) {
+        if (msg_data[i] == '\n') {
+            std::string line = meta_buffer.str();
+            meta_buffer.str("");
+
+            if (line.rfind("title", 0) == 0) {
+                title = line.substr(5, msg_len - 5);
+            } else if (line.rfind("artist", 0) == 0) {
+                artist = line.substr(6, msg_len - 6);
+            } else if (line.rfind("lot", 0) == 0) {
+                try {
+                    lot = std::stoi(line.substr(3, msg_len - 3));
+                } catch (std::invalid_argument& err) {
+                    // ignore
+                }
+            }
+        } else {
+            meta_buffer << msg_data[i];
         }
     }
 }

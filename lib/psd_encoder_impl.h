@@ -28,6 +28,7 @@ private:
     std::vector<unsigned char> packet;
     int packet_off;
     int bytes_allowed;
+    std::ostringstream meta_buffer;
 
     std::string encode_psd_packet(int dtpf, int port, int seq);
     std::string encode_id3();
