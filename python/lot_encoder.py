@@ -49,6 +49,10 @@ class lot_encoder(gr.basic_block):
         self.filesize = 0
         #file bytes input via pdu
         self.receivedFile = bytearray()
+        #vars to keep track of broken up meta messages
+        self.expectMore = False
+        self.configstr = ""
+        self.expectedLen = 0
 
     def handle_new_file(self, msg):
         data = pmt.to_python(msg)
@@ -56,22 +60,43 @@ class lot_encoder(gr.basic_block):
             print('Expected tuple of (None, str)')
             return
         #only attempt to parse text if we are waiting for a new file
-        if self.inputIdle:
-            text = bytes(data[1]).decode()
+        if self.inputIdle or self.expectMore:
+            try:
+                text = bytes(data[1]).decode()
+            except:
+                print("LOT Invalid Packet received")
+                return
             startmessage = "newfile"
+            #Make sure we get the whole message first
             if text.startswith(startmessage):
-                fields = text[len(startmessage):].split('|')
-                self.filename = fields[0]
-                self.lot_id = int(fields[1])
-                self.filesize = int(fields[2])
+                lengthfield = text[len(startmessage):].split('|')[0]
+                self.expectedLen = len(lengthfield)+int(lengthfield)
+                self.configstr += text
+                if len(text) < self.expectedLen:
+                    self.expectMore = True
+                    return
+                else:
+                    self.expectMore = False
+            if self.expectMore:
+                self.configstr += text
+            if len(self.configstr) < self.expectedLen:
+                return
+            else:
+                self.expectMore = False
+            if self.configstr.startswith(startmessage):
+                fields = self.configstr[len(startmessage):].split('|')
+                self.filename = fields[1]
+                self.lot_id = int(fields[2])
+                self.filesize = int(fields[3])
                 self.inputIdle = False
+                self.configstr = ""
         else:
             self.receivedFile.extend(bytes(data[1]))
             #check if we've received enough data
             if len(self.receivedFile) >= self.filesize:
                 self.inputIdle = True
                 self.update_file()
-                print("New album art ready to send")
+                print("New file ready to send:", self.filename, " LOT:", self.lot_id)
 
     def handle_notify(self, msg):
         port = pmt.to_python(msg)
@@ -82,6 +107,7 @@ class lot_encoder(gr.basic_block):
         self.parts = []
         if self.receivedFile:
             data = self.receivedFile
+            self.receivedFile = bytearray()
         else:
             with open(self.filename, "rb") as f:
                 data = f.read()
