@@ -41,4 +41,7 @@ templates:
     imports: import nrsc5
     make: nrsc5.psd_encoder(${prog_num}, ${title}, ${artist}, ${bytes_per_frame})
 
+documentation: |-
+    Accepts messages starting with 'title', 'artist', or 'lot' to set the respective fields.
+
 file_format: 1
