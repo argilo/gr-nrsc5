@@ -12,6 +12,16 @@
 
 namespace gr {
 namespace nrsc5 {
+
+constexpr int FM_BLOCKS_PER_FRAME = 16;
+constexpr int SYMBOLS_PER_BLOCK = 32;
+constexpr int FM_SYMBOLS_PER_FRAME = 16 * 32;
+constexpr int FM_FFT_SIZE = 2048;
+constexpr int SIS_BITS = 80;
+constexpr int FM_P1_BITS = 146176;
+
+enum class conv_mode { CONV_2_5, CONV_1_2 };
+
 /* 1011s.pdf table 12-1 */
 gr_complex qpsk_fm[] = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
@@ -67,8 +77,9 @@ private:
 
     void reverse_bytes(const unsigned char* in, unsigned char* out, int len);
     void scramble(unsigned char* buf, int len);
-    void conv_enc(int mode, const unsigned char* in, unsigned char* out, int len);
-    void encode_l2_pdu(int mode, const unsigned char* in, unsigned char* out, int len);
+    void conv_enc(conv_mode mode, const unsigned char* in, unsigned char* out, int len);
+    void
+    encode_l2_pdu(conv_mode mode, const unsigned char* in, unsigned char* out, int len);
     void interleaver_i(unsigned char* in,
                        unsigned char* matrix,
                        int J,

@@ -120,19 +120,20 @@ int l1_am_encoder_impl::general_work(int noutput_items,
     int out_off = 0;
     for (int frame = 0; frame < frames; frame++) {
         for (int block = 0; block < AM_BLOCKS_PER_FRAME; block++) {
-            encode_l2_pdu(CONV_E1, p1 + p1_off, p1_g + p1_off * 12 / 5, p1_bits);
-            encode_l2_pdu(CONV_E3, pids + pids_off, pids_g, SIS_BITS);
+            encode_l2_pdu(
+                conv_mode::CONV_E1, p1 + p1_off, p1_g + p1_off * 12 / 5, p1_bits);
+            encode_l2_pdu(conv_mode::CONV_E3, pids + pids_off, pids_g, SIS_BITS);
             interleaver_pids(pids_g, pids_matrix, block);
             p1_off += p1_bits;
             pids_off += SIS_BITS;
         }
         switch (sm) {
         case 1:
-            encode_l2_pdu(CONV_E2, p3 + p3_off, p3_g, p3_bits);
+            encode_l2_pdu(conv_mode::CONV_E2, p3 + p3_off, p3_g, p3_bits);
             interleaver_ma1();
             break;
         case 3:
-            encode_l2_pdu(CONV_E1, p3 + p3_off, p3_g, p3_bits);
+            encode_l2_pdu(conv_mode::CONV_E1, p3 + p3_off, p3_g, p3_bits);
             interleaver_ma3();
             break;
         }
@@ -233,7 +234,7 @@ void l1_am_encoder_impl::scramble(unsigned char* buf, int len)
 }
 
 /* 1012s.pdf section 9.1 */
-void l1_am_encoder_impl::conv_enc(int mode,
+void l1_am_encoder_impl::conv_enc(conv_mode mode,
                                   const unsigned char* in,
                                   unsigned char* out,
                                   int len)
@@ -244,13 +245,13 @@ void l1_am_encoder_impl::conv_enc(int mode,
     unsigned int* poly;
 
     switch (mode) {
-    case CONV_E1:
+    case conv_mode::CONV_E1:
         poly = poly_e1;
         break;
-    case CONV_E2:
+    case conv_mode::CONV_E2:
         poly = poly_e2;
         break;
-    case CONV_E3:
+    case conv_mode::CONV_E3:
         poly = poly_e3;
         break;
     }
@@ -264,13 +265,13 @@ void l1_am_encoder_impl::conv_enc(int mode,
         for (int i = 0; i < 3; i++) {
             bool use;
             switch (mode) {
-            case CONV_E1:
+            case conv_mode::CONV_E1:
                 use = (i == 0) || (i == 2) || (in_off % 5 >= 3);
                 break;
-            case CONV_E2:
+            case conv_mode::CONV_E2:
                 use = (i == 0) || ((i == 2) && (in_off % 2 == 0));
                 break;
-            case CONV_E3:
+            case conv_mode::CONV_E3:
                 use = true;
                 break;
             }
@@ -281,7 +282,7 @@ void l1_am_encoder_impl::conv_enc(int mode,
     }
 }
 
-void l1_am_encoder_impl::encode_l2_pdu(int mode,
+void l1_am_encoder_impl::encode_l2_pdu(conv_mode mode,
                                        const unsigned char* in,
                                        unsigned char* out,
                                        int len)

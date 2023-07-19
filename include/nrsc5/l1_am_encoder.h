@@ -11,17 +11,6 @@
 #include <gnuradio/block.h>
 #include <nrsc5/api.h>
 
-#define AM_BLOCKS_PER_FRAME 8
-#define SYMBOLS_PER_BLOCK 32
-#define AM_SYMBOLS_PER_FRAME (8 * 32)
-#define AM_FFT_SIZE 256
-#define SIS_BITS 80
-#define DIVERSITY_DELAY (18000 * 3)
-
-#define CONV_E1 1
-#define CONV_E2 2
-#define CONV_E3 3
-
 namespace gr {
 namespace nrsc5 {
 

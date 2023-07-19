@@ -12,6 +12,16 @@
 
 namespace gr {
 namespace nrsc5 {
+
+constexpr int AM_BLOCKS_PER_FRAME = 8;
+constexpr int SYMBOLS_PER_BLOCK = 32;
+constexpr int AM_SYMBOLS_PER_FRAME = 8 * 32;
+constexpr int AM_FFT_SIZE = 256;
+constexpr int SIS_BITS = 80;
+constexpr int DIVERSITY_DELAY = 18000 * 3;
+
+enum class conv_mode { CONV_E1, CONV_E2, CONV_E3 };
+
 /* 1012s.pdf table 12-10 */
 gr_complex bpsk_am[] = { { 0, -0.5 }, { 0, 0.5 } };
 
@@ -95,8 +105,9 @@ private:
 
     void reverse_bytes(const unsigned char* in, unsigned char* out, int len);
     void scramble(unsigned char* buf, int len);
-    void conv_enc(int mode, const unsigned char* in, unsigned char* out, int len);
-    void encode_l2_pdu(int mode, const unsigned char* in, unsigned char* out, int len);
+    void conv_enc(conv_mode mode, const unsigned char* in, unsigned char* out, int len);
+    void
+    encode_l2_pdu(conv_mode mode, const unsigned char* in, unsigned char* out, int len);
     void bit_map(unsigned char matrix[25][AM_SYMBOLS_PER_FRAME], int b, int k, int bits);
     void interleaver_ma1();
     void interleaver_ma3();

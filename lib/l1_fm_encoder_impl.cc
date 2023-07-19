@@ -223,19 +223,23 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
     int out_off = 0;
     for (int frame = 0; frame < frames; frame++) {
         for (int i = 0; i < FM_BLOCKS_PER_FRAME; i++) {
-            encode_l2_pdu(
-                CONV_2_5, pids + pids_off, pids_g + (SIS_BITS * 5 / 2 * i), SIS_BITS);
+            encode_l2_pdu(conv_mode::CONV_2_5,
+                          pids + pids_off,
+                          pids_g + (SIS_BITS * 5 / 2 * i),
+                          SIS_BITS);
             pids_off += SIS_BITS;
         }
 
         if (p1_mod == 1) {
-            encode_l2_pdu(CONV_2_5, p1 + p1_off, p1_g, p1_bits);
+            encode_l2_pdu(conv_mode::CONV_2_5, p1 + p1_off, p1_g, p1_bits);
             p1_off += p1_bits;
         } else {
             for (int i = 0; i < p1_mod; i++) {
-                encode_l2_pdu(
-                    CONV_2_5, p1 + p1_off, p1_g + (p1_bits * 5 / 2 * i), p1_bits);
-                encode_l2_pdu(CONV_1_2,
+                encode_l2_pdu(conv_mode::CONV_2_5,
+                              p1 + p1_off,
+                              p1_g + (p1_bits * 5 / 2 * i),
+                              p1_bits);
+                encode_l2_pdu(conv_mode::CONV_1_2,
                               p1_prime + p1_prime_off,
                               p1_prime_g + (p1_bits * 2 * i),
                               p1_bits);
@@ -264,8 +268,10 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
                 p1_off += p1_bits;
                 p1_prime_off = (p1_prime_off + p1_bits) % (p1_bits * p1_mod * 3);
             }
-            encode_l2_pdu(
-                CONV_2_5, p2 + p2_off, p1_g + (p1_bits * 5 / 2 * p1_mod), p2_bits);
+            encode_l2_pdu(conv_mode::CONV_2_5,
+                          p2 + p2_off,
+                          p1_g + (p1_bits * 5 / 2 * p1_mod),
+                          p2_bits);
             p2_off += p2_bits;
         }
         interleaver_i(p1_g, pm_matrix, 20, 16, 36, 1, V_PM, 365440);
@@ -273,16 +279,20 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
 
         if (p3_bits) {
             for (int i = 0; i < p3_mod; i++) {
-                encode_l2_pdu(
-                    CONV_1_2, p3 + p3_off, p3_p4_g + (p3_bits * 2 * i), p3_bits);
+                encode_l2_pdu(conv_mode::CONV_1_2,
+                              p3 + p3_off,
+                              p3_p4_g + (p3_bits * 2 * i),
+                              p3_bits);
                 p3_off += p3_bits;
             }
             interleaver_iv(px1_matrix, px1_internal, internal_half);
         }
         if (p4_bits) {
             for (int i = 0; i < p4_mod; i++) {
-                encode_l2_pdu(
-                    CONV_1_2, p4 + p4_off, p3_p4_g + (p4_bits * 2 * i), p4_bits);
+                encode_l2_pdu(conv_mode::CONV_1_2,
+                              p4 + p4_off,
+                              p3_p4_g + (p4_bits * 2 * i),
+                              p4_bits);
                 p4_off += p4_bits;
             }
             interleaver_iv(px2_matrix, px2_internal, internal_half);
@@ -369,7 +379,7 @@ void l1_fm_encoder_impl::scramble(unsigned char* buf, int len)
 }
 
 /* 1011s.pdf section 9.3 */
-void l1_fm_encoder_impl::conv_enc(int mode,
+void l1_fm_encoder_impl::conv_enc(conv_mode mode,
                                   const unsigned char* in,
                                   unsigned char* out,
                                   int len)
@@ -379,10 +389,10 @@ void l1_fm_encoder_impl::conv_enc(int mode,
     unsigned char* poly;
 
     switch (mode) {
-    case CONV_2_5:
+    case conv_mode::CONV_2_5:
         poly = poly_2_5;
         break;
-    case CONV_1_2:
+    case conv_mode::CONV_1_2:
         poly = poly_1_2;
         break;
     }
@@ -398,7 +408,7 @@ void l1_fm_encoder_impl::conv_enc(int mode,
     }
 }
 
-void l1_fm_encoder_impl::encode_l2_pdu(int mode,
+void l1_fm_encoder_impl::encode_l2_pdu(conv_mode mode,
                                        const unsigned char* in,
                                        unsigned char* out,
                                        int len)

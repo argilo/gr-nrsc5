@@ -12,9 +12,11 @@
 
 namespace gr {
 namespace nrsc5 {
-unsigned short PORT[] = {
-    0x5100, 0x5201, 0x5202, 0x5203, 0x5204, 0x5205, 0x5206, 0x5207
-};
+
+constexpr unsigned short PORT[] = { 0x5100, 0x5201, 0x5202, 0x5203,
+                                    0x5204, 0x5205, 0x5206, 0x5207 };
+
+constexpr int BASIC_PACKET_FORMAT = 0x21;
 
 class psd_encoder_impl : public psd_encoder
 {

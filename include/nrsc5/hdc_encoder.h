@@ -11,9 +11,6 @@
 #include <gnuradio/block.h>
 #include <nrsc5/api.h>
 
-#define HDC_SAMPLE_RATE 44100
-#define SAMPLES_PER_FRAME 2048
-
 namespace gr {
 namespace nrsc5 {
 

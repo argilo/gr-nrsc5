@@ -11,8 +11,6 @@
 #include <gnuradio/sync_block.h>
 #include <nrsc5/api.h>
 
-#define BASIC_PACKET_FORMAT 0x21
-
 namespace gr {
 namespace nrsc5 {
 
