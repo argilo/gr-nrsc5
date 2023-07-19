@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import os
 import pmt
 import struct
 from datetime import datetime, timedelta, timezone
@@ -37,95 +38,64 @@ class lot_encoder(gr.basic_block):
         self.message_port_register_in(pmt.intern("ready"))
         self.set_msg_handler(pmt.intern("ready"), self.handle_notify)
 
-        self.filename = filename
         self.port = port
-        self.lot_id = lot_id
+        with open(filename, "rb") as f:
+            self.prepare_file(os.path.basename(filename), f.read(), lot_id)
+
+        self.command_buffer = bytes()
+
         self.my_log = gr.logger(self.alias())
 
-        #params for file input
-        #status of message (idle, or expecting more segments)
-        self.inputIdle = True
-        #file size to expect in bytes
-        self.filesize = 0
-        #file bytes input via pdu
-        self.receivedFile = bytearray()
-        #vars to keep track of broken up meta messages
-        self.expectMore = False
-        self.configstr = ""
-        self.expectedLen = 0
-
     def handle_new_file(self, msg):
-        data = pmt.to_python(msg)
-        if not (isinstance(data, tuple) and len(data) == 2):
-            print('Expected tuple of (None, str)')
-            return
-        #only attempt to parse text if we are waiting for a new file
-        if self.inputIdle or self.expectMore:
-            try:
-                text = bytes(data[1]).decode()
-            except:
-                print("LOT Invalid Packet received")
-                return
-            startmessage = "newfile"
-            #Make sure we get the whole message first
-            if text.startswith(startmessage):
-                lengthfield = text[len(startmessage):].split('|')[0]
-                self.expectedLen = len(lengthfield)+int(lengthfield)
-                self.configstr += text
-                if len(text) < self.expectedLen:
-                    self.expectMore = True
-                    return
-                else:
-                    self.expectMore = False
-            if self.expectMore:
-                self.configstr += text
-            if len(self.configstr) < self.expectedLen:
-                return
+        data = bytes(pmt.to_python(msg)[1])
+        self.command_buffer += data
+
+        command_end = self.command_buffer.find(b"\n")
+        if command_end >= 0:
+            command = self.command_buffer[:command_end]
+            parts = command.split(b"|")
+
+            if (parts[0] == b"streamfile") and (len(parts) == 4):
+                lot_id = int(parts[1])
+                size = int(parts[2])
+                filename = parts[3]
+                if len(self.command_buffer) >= command_end + 1 + size:
+                    filedata = self.command_buffer[command_end + 1:command_end + 1 + size]
+                    self.prepare_file(filename, filedata, lot_id)
+                    self.command_buffer = self.command_buffer[command_end + 1 + size:]
+            elif (parts[0] == b"file") and (len(parts) == 3):
+                lot_id = int(parts[1])
+                filename = parts[2]
+                with open(filename, "rb") as f:
+                    self.prepare_file(os.path.basename(filename), f.read(), lot_id)
+                self.command_buffer = self.command_buffer[command_end + 1:]
             else:
-                self.expectMore = False
-            if self.configstr.startswith(startmessage):
-                fields = self.configstr[len(startmessage):].split('|')
-                self.filename = fields[1]
-                self.lot_id = int(fields[2])
-                self.filesize = int(fields[3])
-                self.inputIdle = False
-                self.configstr = ""
-        else:
-            self.receivedFile.extend(bytes(data[1]))
-            #check if we've received enough data
-            if len(self.receivedFile) >= self.filesize:
-                self.inputIdle = True
-                self.update_file()
-                print("New file ready to send:", self.filename, " LOT:", self.lot_id)
+                self.my_log.warn(f"Invalid command: {command}")
+                self.command_buffer = self.command_buffer[command_end + 1:]
 
     def handle_notify(self, msg):
         port = pmt.to_python(msg)
         if port == self.port:
             self.send()
 
-    def update_file(self):
-        self.parts = []
-        if self.receivedFile:
-            data = self.receivedFile
-            self.receivedFile = bytearray()
-        else:
-            with open(self.filename, "rb") as f:
-                data = f.read()
-                if "/" in self.filename:
-                    self.filename = self.filename.split("/")[-1]
+    def prepare_file(self, filename, data, lot_id):
+        if isinstance(filename, str):
+            filename = filename.encode()
+
+        parts = []
 
         for offset in range(0, len(data), 256):
             chunk = data[offset:offset+256]
             seq = offset // 256
 
             if seq == 0:
-                header_len = 24 + len(self.filename.encode())
+                header_len = 24 + len(filename)
             else:
                 header_len = 8
 
             repeat = 1
 
-            header = struct.pack("<BBHI", header_len, repeat, self.lot_id, seq)
+            header = struct.pack("<BBHI", header_len, repeat, lot_id, seq)
             if seq == 0:
                 version = 1
 
@@ -138,26 +108,29 @@ class lot_encoder(gr.basic_block):
                     mime = self.MIMEHASH_PNG
                 elif data.startswith(self.JPEG_START) and data.endswith(self.JPEG_END):
                     mime = self.MIMEHASH_JPEG
-                elif self.filename.lower().endswith(".png"):
+                elif filename.lower().endswith(b".png"):
                     mime = self.MIMEHASH_PNG
-                elif self.filename.lower().endswith(".jpg") or self.filename.lower().endswith(".jpeg"):
+                elif filename.lower().endswith(b".jpg") or filename.lower().endswith(b".jpeg"):
                     mime = self.MIMEHASH_JPEG
-                elif self.filename.lower().endswith(".txt"):
+                elif filename.lower().endswith(b".txt"):
                     mime = self.MIMEHASH_TEXT
                 else:
                     raise ValueError("Unsupported file type. Supported types: PNG, JPG, TXT.")
 
-                header += struct.pack("<IIII", version, expiry, size, mime) + self.filename.encode()
+                header += struct.pack("<IIII", version, expiry, size, mime) + filename
 
-            self.parts.append(header + chunk)
+            parts.append(header + chunk)
+
+        self.filename = filename
+        self.lot_id = lot_id
+        self.parts = parts
 
     def start(self):
-        self.update_file()
         self.aas_seq = 0
         self.send()
 
     def send(self):
-        self.my_log.info(f"Sending LOT file: {self.filename}")
+        self.my_log.info(f"Sending LOT file {self.lot_id}: {self.filename}")
         for part in self.parts:
             aas_pdu = struct.pack("<BHH", 0x21, self.port, self.aas_seq) + part
             msg = pmt.cons(pmt.make_dict(), pmt.init_u8vector(len(aas_pdu), list(aas_pdu)))
