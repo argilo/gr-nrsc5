@@ -52,6 +52,8 @@ l1_am_encoder_impl::l1_am_encoder_impl(const int sm)
     set_output_multiple(AM_SYMBOLS_PER_FRAME);
     set_relative_rate(AM_SYMBOLS_PER_FRAME, 1);
 
+    message_port_register_out(pmt::intern("clock"));
+
     this->sm = sm;
 
     p1_bits = 3750;
@@ -197,6 +199,7 @@ int l1_am_encoder_impl::general_work(int noutput_items,
 
             out_off += AM_FFT_SIZE;
         }
+        message_port_pub(pmt::intern("clock"), pmt::from_long(1));
     }
 
     consume(0, frames * p1_mod);

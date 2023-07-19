@@ -257,6 +257,26 @@ blocks:
     coordinate: [8, 236]
     rotation: 0
     state: enabled
+- name: network_socket_pdu_1
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '52002'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1008, 116.0]
+    rotation: 180
+    state: true
 - name: nrsc5_hdc_encoder_0
   id: nrsc5_hdc_encoder
   parameters:
@@ -314,7 +334,7 @@ blocks:
     affinity: ''
     alias: ''
     artist: Artist
-    bytes_per_frame: '0'
+    bytes_per_frame: '64'
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -673,8 +693,10 @@ connections:
 - [blocks_vector_to_stream_0, '0', blocks_keep_m_in_n_0, '0']
 - [blocks_wavfile_source_0, '0', nrsc5_hdc_encoder_0, '0']
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
+- [network_socket_pdu_1, pdus, nrsc5_psd_encoder_0, set_meta]
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_am_encoder_ma3_0, '0', fft_vxx_0, '0']
+- [nrsc5_l1_am_encoder_ma3_0, clock, nrsc5_psd_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_am_encoder_ma3_0, '0']
 - [nrsc5_psd_encoder_0, '0', nrsc5_l2_encoder_0, '1']
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_am_encoder_ma3_0, '2']
