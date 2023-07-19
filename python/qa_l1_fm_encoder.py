@@ -31,15 +31,9 @@ class qa_l1_fm_encoder(gr_unittest.TestCase):
         instance = l1_fm_encoder(psm=3)
         instance = l1_fm_encoder(psm=11)
         instance = l1_fm_encoder(psm=5)
-        instance = l1_fm_encoder(psm=5, ssm=1)
-        instance = l1_fm_encoder(psm=5, ssm=2)
-        instance = l1_fm_encoder(psm=5, ssm=3)
-        instance = l1_fm_encoder(psm=5, ssm=4)
+        instance = l1_fm_encoder(psm=5, ssm=5)
         instance = l1_fm_encoder(psm=6)
-        instance = l1_fm_encoder(psm=6, ssm=1)
-        instance = l1_fm_encoder(psm=6, ssm=2)
-        instance = l1_fm_encoder(psm=6, ssm=3)
-        instance = l1_fm_encoder(psm=6, ssm=4)
+        instance = l1_fm_encoder(psm=6, ssm=5)
 
     def test_001_descriptive_test_name(self):
         # set up fg

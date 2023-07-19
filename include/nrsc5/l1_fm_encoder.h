@@ -18,10 +18,8 @@
 #define SIS_BITS 80
 #define FM_P1_BITS 146176
 
-#define CONV_1_3 1
-#define CONV_2_5 2
-#define CONV_1_2 3
-#define CONV_2_7 4
+#define CONV_2_5 1
+#define CONV_1_2 2
 
 namespace gr {
 namespace nrsc5 {

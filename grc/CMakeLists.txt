@@ -13,9 +13,7 @@ install(FILES
     nrsc5_l1_fm_encoder_mp3.block.yml
     nrsc5_l1_fm_encoder_mp11.block.yml
     nrsc5_l1_fm_encoder_mp5.block.yml
-    nrsc5_l1_fm_encoder_mp5_ms1.block.yml
     nrsc5_l1_fm_encoder_mp6.block.yml
-    nrsc5_l1_fm_encoder_mp6_ms1.block.yml
     nrsc5_l1_am_encoder_ma1.block.yml
     nrsc5_l1_am_encoder_ma3.block.yml
     nrsc5_l2_encoder.block.yml

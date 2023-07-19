@@ -47,11 +47,6 @@ private:
     int p4_bits, p4_mod;
 
     int ssm;
-    int s1_bits, s1_mod;
-    int s2_bits, s2_mod;
-    int s3_bits, s3_mod;
-    int s4_bits, s4_mod;
-    int s5_bits, s5_mod;
 
     unsigned char buf[FM_P1_BITS];
     unsigned char pids_g[SIS_BITS * 5 / 2 * FM_BLOCKS_PER_FRAME];
@@ -60,16 +55,11 @@ private:
     int p1_prime_off;
     unsigned char* p1_prime;
     unsigned char* p1_prime_g;
-    unsigned char* sids_g;
-    unsigned char* s4_g;
-    unsigned char* s5_g;
     unsigned char pm_matrix[FM_SYMBOLS_PER_FRAME * 20 * 36];
     unsigned char* px1_matrix;
     unsigned char* px2_matrix;
     unsigned char* px1_internal;
     unsigned char* px2_internal;
-    unsigned char* sb_matrix;
-    unsigned char* sp_matrix;
     int internal_half;
     unsigned char parity[128];
     unsigned char primary_sc_symbols[4][FM_SYMBOLS_PER_FRAME];

@@ -31,7 +31,6 @@ class qa_l2_encoder(gr_unittest.TestCase):
         instance = l2_encoder(num_progs=1, first_prog=0, size=72448)
         instance = l2_encoder(num_progs=1, first_prog=0, size=30000)
         instance = l2_encoder(num_progs=1, first_prog=0, size=24000)
-        instance = l2_encoder(num_progs=1, first_prog=0, size=18272)
         instance = l2_encoder(num_progs=1, first_prog=0, size=9216)
         instance = l2_encoder(num_progs=1, first_prog=0, size=4608)
         instance = l2_encoder(num_progs=1, first_prog=0, size=3750)

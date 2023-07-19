@@ -85,7 +85,6 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
         pdu_seq_len = 2;
         codec_mode = 0;
         break;
-    case 18272:
     case 9216:
     case 4608:
     case 3750:

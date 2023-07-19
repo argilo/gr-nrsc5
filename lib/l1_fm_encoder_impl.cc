@@ -53,34 +53,6 @@ std::vector<int> get_in_sizeofs(const int psm, const int ssm)
         break;
     }
 
-    switch (ssm) {
-    case 1:
-        in_sizeofs.push_back(18272);
-        in_sizeofs.push_back(512);
-        in_sizeofs.push_back(SIS_BITS);
-        break;
-    case 2:
-        in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(109312);
-        in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(512);
-        in_sizeofs.push_back(SIS_BITS);
-        break;
-    case 3:
-        in_sizeofs.push_back(9216);
-        in_sizeofs.push_back(72448);
-        in_sizeofs.push_back(512);
-        in_sizeofs.push_back(SIS_BITS);
-        break;
-    case 4:
-        in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(146176);
-        in_sizeofs.push_back(4608);
-        in_sizeofs.push_back(512);
-        in_sizeofs.push_back(SIS_BITS);
-        break;
-    }
-
     return in_sizeofs;
 }
 
@@ -144,40 +116,6 @@ l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
         break;
     }
 
-    s1_bits = 0;
-    s2_bits = 0;
-    s3_bits = 0;
-    s4_bits = 0;
-    s5_bits = 0;
-    s1_mod = 8;
-    s2_mod = 1;
-    s3_mod = 8;
-    s4_mod = 8;
-    s5_mod = 16;
-    switch (ssm) {
-    case 1:
-        s4_bits = 18272;
-        s5_bits = 512;
-        break;
-    case 2:
-        s1_bits = 4608;
-        s2_bits = 109312;
-        s3_bits = 4608;
-        s5_bits = 512;
-        break;
-    case 3:
-        s1_bits = 9216;
-        s2_bits = 72448;
-        s5_bits = 512;
-        break;
-    case 4:
-        s1_bits = 4608;
-        s2_bits = 146176;
-        s3_bits = 4608;
-        s5_bits = 512;
-        break;
-    }
-
     if (p1_mod == 8) {
         p1_prime_off = 0;
         p1_prime = (unsigned char*)malloc(p1_bits * p1_mod * 3);
@@ -194,18 +132,6 @@ l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
         px2_internal = (unsigned char*)malloc(p4_bits * 2 * p4_mod * 2);
     }
     internal_half = 0;
-
-    if (ssm) {
-        sids_g = (unsigned char*)malloc(SIS_BITS * 7 / 2 * FM_BLOCKS_PER_FRAME);
-    }
-    if (s4_bits) {
-        s4_g = (unsigned char*)malloc(s4_bits * 7 / 2 * s4_mod);
-        sb_matrix = (unsigned char*)malloc((63952 + 560) * s4_mod);
-    }
-    if (s5_bits) {
-        s5_g = (unsigned char*)malloc(s5_bits * 3 * s5_mod);
-        sp_matrix = (unsigned char*)malloc(1536 * s5_mod);
-    }
 
     for (int i = 0; i < 128; i++) {
         int tmp = i;
@@ -248,18 +174,6 @@ l1_fm_encoder_impl::~l1_fm_encoder_impl()
         free(px2_matrix);
         free(px2_internal);
     }
-
-    if (ssm) {
-        free(sids_g);
-    }
-    if (s4_bits) {
-        free(s4_g);
-        free(sb_matrix);
-    }
-    if (s5_bits) {
-        free(s5_g);
-        free(sp_matrix);
-    }
 }
 
 void l1_fm_encoder_impl::forecast(int noutput_items, gr_vector_int& ninput_items_required)
@@ -276,18 +190,6 @@ void l1_fm_encoder_impl::forecast(int noutput_items, gr_vector_int& ninput_items
     if (p4_bits)
         ninput_items_required[port++] = frames * p4_mod;
     if (psm)
-        ninput_items_required[port++] = frames * FM_BLOCKS_PER_FRAME;
-    if (s1_bits)
-        ninput_items_required[port++] = frames * s1_mod;
-    if (s2_bits)
-        ninput_items_required[port++] = frames * s2_mod;
-    if (s3_bits)
-        ninput_items_required[port++] = frames * s3_mod;
-    if (s4_bits)
-        ninput_items_required[port++] = frames * s4_mod;
-    if (s5_bits)
-        ninput_items_required[port++] = frames * s5_mod;
-    if (ssm)
         ninput_items_required[port++] = frames * FM_BLOCKS_PER_FRAME;
 }
 
@@ -311,18 +213,6 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
         p4 = (const unsigned char*)input_items[port++];
     if (psm)
         pids = (const unsigned char*)input_items[port++];
-    if (s1_bits)
-        s1 = (const unsigned char*)input_items[port++];
-    if (s2_bits)
-        s2 = (const unsigned char*)input_items[port++];
-    if (s3_bits)
-        s3 = (const unsigned char*)input_items[port++];
-    if (s4_bits)
-        s4 = (const unsigned char*)input_items[port++];
-    if (s5_bits)
-        s5 = (const unsigned char*)input_items[port++];
-    if (ssm)
-        sids = (const unsigned char*)input_items[port++];
 
     gr_complex* out = (gr_complex*)output_items[0];
 
@@ -399,53 +289,6 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
         }
         internal_half ^= 1;
 
-        if (ssm) {
-            for (int i = 0; i < FM_BLOCKS_PER_FRAME; i++) {
-                encode_l2_pdu(
-                    CONV_2_7, sids + sids_off, sids_g + (SIS_BITS * 7 / 2 * i), SIS_BITS);
-                sids_off += SIS_BITS;
-            }
-        }
-        if (s4_bits) {
-            for (int i = 0; i < s4_mod; i++) {
-                encode_l2_pdu(
-                    CONV_2_7, s4 + s4_off, s4_g + (s4_bits * 7 / 2 * i), s4_bits);
-                interleaver_i(s4_g + (s4_bits * 7 / 2 * i),
-                              sb_matrix + ((63952 + 560) * i),
-                              28,
-                              2,
-                              36,
-                              1,
-                              V_SB,
-                              63952);
-                interleaver_ii(sids_g + (2 * SIS_BITS * 7 / 2 * i),
-                               sb_matrix + ((63952 + 560) * i),
-                               28,
-                               2,
-                               36,
-                               1,
-                               V_SB,
-                               280,
-                               63952,
-                               560);
-                s4_off += s4_bits;
-            }
-        }
-        if (s5_bits) {
-            for (int i = 0; i < s5_mod; i++) {
-                encode_l2_pdu(CONV_1_3, s5 + s5_off, s5_g + (s5_bits * 3 * i), s5_bits);
-                interleaver_iii(s5_g + (s5_bits * 3 * i),
-                                sp_matrix + (1536 * i),
-                                2,
-                                1,
-                                24,
-                                6,
-                                V_SP,
-                                1536);
-                s5_off += s5_bits;
-            }
-        }
-
         for (int symbol = 0; symbol < FM_SYMBOLS_PER_FRAME; symbol++) {
             for (int i = 0; i < FM_FFT_SIZE; i++) {
                 out[out_off + i] = 0;
@@ -483,30 +326,6 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
                     px2_matrix + (symbol * 8 * 36), out + out_off, px2_channels, 8);
             }
 
-            if (ssm) {
-                for (int chan = 15; chan < 46; chan++) {
-                    out[out_off + REF_SC_CHAN[chan]] =
-                        bpsk_fm[secondary_sc_symbols[REF_SC_ID[chan]][symbol]];
-                }
-
-                if (ssm == 1) {
-                    int sb_channels[] = { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-                                          26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-                                          36, 37, 38, 39, 40, 41, 42, 43 };
-                    write_symbol(
-                        sb_matrix + (symbol * 28 * 36), out + out_off, sb_channels, 28);
-                }
-
-                int sp_channels[] = { 15, 44 };
-                write_symbol(
-                    sp_matrix + (symbol * 2 * 24), out + out_off, sp_channels, 2);
-
-                float secondary_scale_factor = pow(10, -5 / 20);
-                for (int i = REF_SC_CHAN[15]; i <= REF_SC_CHAN[45]; i++) {
-                    out[out_off + i] *= secondary_scale_factor;
-                }
-            }
-
             out_off += FM_FFT_SIZE;
         }
         message_port_pub(pmt::intern("clock"), pmt::from_long(1));
@@ -522,18 +341,6 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
     if (p4_bits)
         consume(port++, frames * p4_mod);
     if (psm)
-        consume(port++, frames * FM_BLOCKS_PER_FRAME);
-    if (s1_bits)
-        consume(port++, frames * s1_mod);
-    if (s2_bits)
-        consume(port++, frames * s2_mod);
-    if (s3_bits)
-        consume(port++, frames * s3_mod);
-    if (s4_bits)
-        consume(port++, frames * s4_mod);
-    if (s5_bits)
-        consume(port++, frames * s5_mod);
-    if (ssm)
         consume(port++, frames * FM_BLOCKS_PER_FRAME);
 
     return noutput_items;
@@ -567,24 +374,16 @@ void l1_fm_encoder_impl::conv_enc(int mode,
                                   unsigned char* out,
                                   int len)
 {
-    unsigned char poly_1_3[] = { 3, 3, 0133, 0171, 0165 };
     unsigned char poly_2_5[] = { 3, 2, 0133, 0171, 0165 };
     unsigned char poly_1_2[] = { 2, 2, 0133, 0165 };
-    unsigned char poly_2_7[] = { 4, 3, 0133, 0171, 0165, 0165 };
     unsigned char* poly;
 
     switch (mode) {
-    case CONV_1_3:
-        poly = poly_1_3;
-        break;
     case CONV_2_5:
         poly = poly_2_5;
         break;
     case CONV_1_2:
         poly = poly_1_2;
-        break;
-    case CONV_2_7:
-        poly = poly_2_7;
         break;
     }
 
