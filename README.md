@@ -43,7 +43,7 @@ To dynamically update title, artist, and XHDR data, connect a Socket PDU (TCP Se
 
 * `titleExample Title` — set title to `Example Title`
 * `artistExample Artist` — set artist to `Example Artist`
-* `lot123` — display album art contained in LOT file 123
+* `lot1337` — display album art contained in LOT file 1337
 * `lot-1` — display station logo
 
 ### SIS & SIG encoder
