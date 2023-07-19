@@ -19,8 +19,7 @@ class qa_lot_encoder(gr_unittest.TestCase):
         self.tb = None
 
     def test_instance(self):
-        # FIXME: Test will fail until you pass sensible arguments to the constructor
-        instance = lot_encoder()
+        instance = lot_encoder(filename="../../apps/album_art.jpg", lot_id=1337, port=0x1234)
 
     def test_001_descriptive_test_name(self):
         # set up fg
