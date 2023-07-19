@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Am Soundcard
-# GNU Radio version: 3.10.7.0-rc1
+# GNU Radio version: 3.10.7.0
 
 from gnuradio import audio
 from gnuradio import blocks
@@ -82,8 +82,8 @@ class hd_tx_am_soundcard(gr.top_block):
         ##################################################
         self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_float_to_complex_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.blocks_complex_to_float_0, 1), (self.audio_sink_0, 1))
         self.connect((self.blocks_complex_to_float_0, 0), (self.audio_sink_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.audio_sink_0, 1))
         self.connect((self.blocks_delay_0, 0), (self.low_pass_filter_1, 0))
         self.connect((self.blocks_float_to_complex_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_multiply_xx_0, 1))

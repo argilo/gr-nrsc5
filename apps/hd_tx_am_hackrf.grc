@@ -396,7 +396,7 @@ blocks:
     bus_structure: null
     coordinate: [288, 120.0]
     rotation: 180
-    state: true
+    state: enabled
 - name: nrsc5_l2_encoder_0
   id: nrsc5_l2_encoder
   parameters:
@@ -838,4 +838,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0-rc1
+  grc_version: 3.10.7.0

@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Hackrf
-# GNU Radio version: 3.10.7.0-rc1
+# GNU Radio version: 3.10.7.0
 
 from gnuradio import analog
 from gnuradio import blocks
