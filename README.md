@@ -80,6 +80,10 @@ streamfile|<lot_id>|<size>|<filename>
 
 Then send the file itself over the same network connection.
 
+The `apps/send_album_art.py` script demonstrates how to stream an album art file and request for it to be displayed by the receiver.
+
+Note: Station logo and album art files must use PNG or JPEG format, and be 200x200 pixels in size.
+
 ### Layer 2 encoder
 
 This block assembles HDC audio frames and PSD PDUs into the audio transport, producing layer 2 PDUs (as defined in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1014s.pdf and https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1017s.pdf).
