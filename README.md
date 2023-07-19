@@ -37,7 +37,7 @@ This block encodes audio into High-Definition Coding (HDC) frames. The input sam
 
 This block encodes Program Service Data PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
 
-To control latency, connect the "clock" output of the Layer 1 encoder to the "clock" input of the PSD encoder, and set "Bytes/frame limit" to 128 (for the P1 logical channel) or 64 (for other logical channels).
+To control latency, connect the "clock" output of the Layer 1 encoder to the "clock" input of the PSD encoder, and set "Bytes/frame limit" to 128 (if the L2 frame size is 24000 or larger) or 64 (if the L2 frame size is smaller than 24000).
 
 To dynamically update title, artist, and XHDR data, connect a Socket PDU (TCP Server) block to the "set_meta" input, and send any of the following commands via TCP, followed by a carriage return:
 
