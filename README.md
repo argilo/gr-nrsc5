@@ -3,8 +3,8 @@ gr-nrsc5
 
 This project implements an HD Radio transmitter in GNU Radio.
 HD Radio is standardized in NRSC-5. The latest version of the
-standard is NRSC-5-D, which can be found at
-https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/nrsc-5-d.asp.
+standard is NRSC-5-E, which can be found at
+https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-e/nrsc-5-e.asp.
 
 If you're interested in receiving HD Radio, a stand-alone receiver for RTL-SDR
 is available here: https://github.com/theori-io/nrsc5/
@@ -37,9 +37,48 @@ This block encodes audio into High-Definition Coding (HDC) frames. The input sam
 
 This block encodes Program Service Data PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
 
-### SIS encoder
+To control latency, connect the "clock" output of the Layer 1 encoder to the "clock" input of the PSD encoder, and set "Bytes/frame limit" to 128 (for the P1 logical channel) or 64 (for other logical channels).
+
+To dynamically update title, artist, and XHDR data, connect a Socket PDU (TCP Server) block to the "set_meta" input, and send any of the following commands via TCP, followed by a carriage return:
+
+* `titleExample Title` — set title to `Example Title`
+* `artistExample Artist` — set artist to `Example Artist`
+* `lot123` — display album art contained in LOT file 123
+* `lot-1` — display station logo
+
+### SIS & SIG encoder
 
 This block encodes Station Information Service PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station. All message types are implemented, except for Emergency Alerts.
+
+The block can also generate Station Information Guide (SIG) data on its "aas" output, providing the receiver with further information about audio and data services. For each audio program, it indicates that album art and station logo are present. To send SIG data, the "aas" output must be connected to the Layer 2 encoder's "aas" input, and the "ready" output of the Layer 2 encoder must be connected to the "ready" input of the SIS & SIG encoder to tell it when it should produce output.
+
+The SIG data associates the following port numbers with the audio programs:
+
+* Port 0x1000: Album art for HD1 (audio program 0)
+* Port 0x1001: Station logo for HD1 (audio program 0)
+* Port 0x1002: Album art for HD2 (audio program 1)
+* Port 0x1003: Station logo for HD2 (audio program 1)
+* Port 0x1004: Album art for HD3 (audio program 2)
+* Port 0x1005: Station logo for HD3 (audio program 2)
+* etc.
+
+### LOT encoder
+
+This block sends files to the receiver (for instance, containing album art or a station logo) by encoding them as Advanced Application Services (AAS) PDUs, according to the Large Object Transfer (LOT) protocol. The "aas" output must be connected to the Layer 2 encoder's "aas" input, and the "ready" output of the Layer 2 encoder must be connected to the "ready" input of the LOT encoder to tell it when it should produce output.
+
+To allow new files to be sent at runtime, connect a Socket PDU (TCP Server) block to the "file" input. To read a new file from disk, send the following command, followed by a carriage return:
+
+```
+file|<lot_id>|<filename>
+```
+
+To stream in a file over the network connection, send the following command, followed by a carriage return:
+
+```
+streamfile|<lot_id>|<size>|<filename>
+```
+
+Then send the file itself over the same network connection.
 
 ### Layer 2 encoder
 
