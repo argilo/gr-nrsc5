@@ -292,7 +292,8 @@ int l2_encoder_impl::general_work(int noutput_items,
                     } else { // at least one queue still has data
                         // advance to the next non-empty queue if necessary
                         while (aas_queues[aas_current_port].empty()) {
-                            aas_current_port_index = (aas_current_port_index + 1) % aas_ports.size();
+                            aas_current_port_index =
+                                (aas_current_port_index + 1) % aas_ports.size();
                             aas_current_port = aas_ports[aas_current_port_index];
                         }
 
@@ -305,10 +306,12 @@ int l2_encoder_impl::general_work(int noutput_items,
                         if (out_buf[i] == 0x7e) {
                             // if we emptied the queue, ask for more
                             if (aas_queues[aas_current_port].empty()) {
-                                message_port_pub(pmt::intern("ready"), pmt::from_long(aas_current_port));
+                                message_port_pub(pmt::intern("ready"),
+                                                 pmt::from_long(aas_current_port));
                             }
 
-                            aas_current_port_index = (aas_current_port_index + 1) % aas_ports.size();
+                            aas_current_port_index =
+                                (aas_current_port_index + 1) % aas_ports.size();
                             aas_current_port = aas_ports[aas_current_port_index];
                         }
                     }

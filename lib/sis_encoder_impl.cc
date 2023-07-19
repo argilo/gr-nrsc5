@@ -700,9 +700,9 @@ void sis_encoder_impl::handle_notify(pmt::pmt_t msg)
 void sis_encoder_impl::send_sig()
 {
     std::string sig_str = generate_aas_header(SIG_PORT, d_seq++) + generate_sig();
-    pmt::pmt_t msg = pmt::cons(
-        pmt::make_dict(),
-        pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
+    pmt::pmt_t msg =
+        pmt::cons(pmt::make_dict(),
+                  pmt::init_u8vector(sig_str.length(), (const uint8_t*)sig_str.c_str()));
 
     message_port_pub(pmt::intern("aas"), msg);
 }

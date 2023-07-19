@@ -726,38 +726,38 @@ void l1_fm_encoder_impl::write_symbol(unsigned char* matrix_row,
 void l1_fm_encoder_impl::primary_sc_data_seq(
     unsigned char* out, int scid, int sci, int bc, int psmi)
 {
-    out[0] = 0;      // sync
-    out[1] = 1;      // sync
-    out[2] = 1;      // sync
-    out[3] = 0;      // sync
-    out[4] = 0;      // sync
-    out[5] = 1;      // sync
-    out[6] = 0;      // sync
+    out[0] = 0; // sync
+    out[1] = 1; // sync
+    out[2] = 1; // sync
+    out[3] = 0; // sync
+    out[4] = 0; // sync
+    out[5] = 1; // sync
+    out[6] = 0; // sync
 
     out[7] = 0;      // reserved
     out[8] = out[7]; // parity
 
-    out[9] = 1;      // sync
+    out[9] = 1; // sync
 
     out[10] = (scid & 0x2) >> 1;
     out[11] = (scid & 0x1);
     out[12] = sci;
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
-    out[14] = 0;                           // sync
+    out[14] = 0; // sync
 
-    out[15] = 0;                           // reserved
+    out[15] = 0; // reserved
     out[16] = (bc & 0x8) >> 3;
     out[17] = (bc & 0x4) >> 2;
     out[18] = (bc & 0x2) >> 1;
     out[19] = (bc & 0x1);
     out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
 
-    out[21] = 1;                                               // sync
-    out[22] = 1;                                               // sync
+    out[21] = 1; // sync
+    out[22] = 1; // sync
 
-    out[23] = 1;                                               // P3ISI
-    out[24] = 0;                                               // reserved
+    out[23] = 1; // P3ISI
+    out[24] = 0; // reserved
     out[25] = (psmi & 0x20) >> 5;
     out[26] = (psmi & 0x10) >> 4;
     out[27] = (psmi & 0x08) >> 3;
@@ -776,39 +776,39 @@ void l1_fm_encoder_impl::secondary_sc_data_seq(unsigned char* out,
                                                int bc,
                                                int ssmi)
 {
-    out[0] = 0;      // sync
-    out[1] = 1;      // sync
-    out[2] = 1;      // sync
-    out[3] = 0;      // sync
-    out[4] = 0;      // sync
-    out[5] = 1;      // sync
-    out[6] = 0;      // sync
+    out[0] = 0; // sync
+    out[1] = 1; // sync
+    out[2] = 1; // sync
+    out[3] = 0; // sync
+    out[4] = 0; // sync
+    out[5] = 1; // sync
+    out[6] = 0; // sync
 
     out[7] = 0;      // reserved
     out[8] = out[7]; // parity
 
-    out[9] = 1;      // sync
+    out[9] = 1; // sync
 
     out[10] = (scid & 0x2) >> 1;
     out[11] = (scid & 0x1);
     out[12] = 0;                           // reserved
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
-    out[14] = 0;                           // sync
+    out[14] = 0; // sync
 
-    out[15] = 0;                           // reserved
+    out[15] = 0; // reserved
     out[16] = (bc & 0x8) >> 3;
     out[17] = (bc & 0x4) >> 2;
     out[18] = (bc & 0x2) >> 1;
     out[19] = (bc & 0x1);
     out[20] = out[15] ^ out[16] ^ out[17] ^ out[18] ^ out[19]; // parity
 
-    out[21] = 1;                                               // sync
-    out[22] = 1;                                               // sync
+    out[21] = 1; // sync
+    out[22] = 1; // sync
 
-    out[23] = 0;                                               // reserved
-    out[24] = 0;                                               // reserved
-    out[25] = 0;                                               // reserved
+    out[23] = 0; // reserved
+    out[24] = 0; // reserved
+    out[25] = 0; // reserved
     out[26] = (ssmi & 0x10) >> 4;
     out[27] = (ssmi & 0x08) >> 3;
     out[28] = (ssmi & 0x04) >> 2;
