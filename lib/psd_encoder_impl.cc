@@ -79,7 +79,7 @@ int psd_encoder_impl::work(int noutput_items,
     for (int off = 0; off < noutput_items_reduced; off++) {
         if (packet_off == packet.size()) {
             std::string packet_str =
-                encode_psd_packet(BASIC_PACKET_FORMAT, PORT[prog_num], seq_num++);
+                encode_psd_packet(AAS_PACKET_FORMAT, PORT[prog_num], seq_num++);
             std::vector<unsigned char> packet_vect(packet_str.begin(), packet_str.end());
             packet = hdlc_encode(packet_vect);
 
@@ -92,15 +92,15 @@ int psd_encoder_impl::work(int noutput_items,
     return noutput_items_reduced;
 }
 
-std::string psd_encoder_impl::encode_psd_packet(int dtpf, int port, uint16_t seq)
+std::string psd_encoder_impl::encode_psd_packet(uint8_t dtpf, uint16_t port, uint16_t seq)
 {
     std::stringstream out;
 
-    out << (char)(dtpf & 0xff);
+    out << dtpf;
     out << (char)(port & 0xff);
-    out << (char)((port >> 8) & 0xff);
+    out << (char)(port >> 8);
     out << (char)(seq & 0xff);
-    out << (char)((seq >> 8) & 0xff);
+    out << (char)(seq >> 8);
     out << encode_id3();
     out << "UF";
 

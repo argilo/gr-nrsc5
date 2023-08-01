@@ -13,10 +13,10 @@
 namespace gr {
 namespace nrsc5 {
 
-constexpr unsigned short PORT[] = { 0x5100, 0x5201, 0x5202, 0x5203,
-                                    0x5204, 0x5205, 0x5206, 0x5207 };
+constexpr uint16_t PORT[] = { 0x5100, 0x5201, 0x5202, 0x5203,
+                              0x5204, 0x5205, 0x5206, 0x5207 };
 
-constexpr int BASIC_PACKET_FORMAT = 0x21;
+constexpr uint8_t AAS_PACKET_FORMAT = 0x21;
 
 class psd_encoder_impl : public psd_encoder
 {
@@ -32,7 +32,7 @@ private:
     int bytes_allowed;
     std::ostringstream meta_buffer;
 
-    std::string encode_psd_packet(int dtpf, int port, uint16_t seq);
+    std::string encode_psd_packet(uint8_t dtpf, uint16_t port, uint16_t seq);
     std::string encode_id3();
     std::string encode_text_frame(const std::string& id, const std::string& data);
     std::string encode_xhdr_frame();
