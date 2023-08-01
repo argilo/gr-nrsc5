@@ -92,7 +92,7 @@ int psd_encoder_impl::work(int noutput_items,
     return noutput_items_reduced;
 }
 
-std::string psd_encoder_impl::encode_psd_packet(int dtpf, int port, int seq)
+std::string psd_encoder_impl::encode_psd_packet(int dtpf, int port, uint16_t seq)
 {
     std::stringstream out;
 

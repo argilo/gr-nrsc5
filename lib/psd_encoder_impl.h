@@ -26,13 +26,13 @@ private:
     std::string artist;
     int lot;
     int bytes_per_frame;
-    int seq_num;
+    uint16_t seq_num;
     std::vector<unsigned char> packet;
     int packet_off;
     int bytes_allowed;
     std::ostringstream meta_buffer;
 
-    std::string encode_psd_packet(int dtpf, int port, int seq);
+    std::string encode_psd_packet(int dtpf, int port, uint16_t seq);
     std::string encode_id3();
     std::string encode_text_frame(const std::string& id, const std::string& data);
     std::string encode_xhdr_frame();
