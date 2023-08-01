@@ -51,6 +51,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
 
     this->num_progs = num_progs;
     this->first_prog = first_prog;
+    memset(program_type, 0, sizeof(program_type));
     this->size = size;
     this->data_bytes = data_bytes;
     payload_bytes = (size - 22) / 8;
@@ -125,8 +126,8 @@ int l2_encoder_impl::general_work(int noutput_items,
     const unsigned char** psd = (const unsigned char**)&input_items[num_progs];
     unsigned char* out = (unsigned char*)output_items[0];
 
-    int hdc_off[8] = { 0 };
-    int psd_off[8] = { 0 };
+    int hdc_off[MAX_PROGRAMS] = { 0 };
+    int psd_off[MAX_PROGRAMS] = { 0 };
 
     for (int out_off = 0; out_off < noutput_items * size; out_off += size) {
         memset(out_buf, 0, payload_bytes);
@@ -218,7 +219,7 @@ int l2_encoder_impl::general_work(int noutput_items,
             write_hef(out_program + 14 + len_locators(nop),
                       program_number,
                       /*access*/ 0,
-                      /*program_type*/ 0);
+                      program_type[program_number]);
 
             memcpy(out_program + (14 + len_locators(nop) + 3),
                    psd[p] + psd_off[p],
@@ -454,10 +455,37 @@ void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
     std::vector<unsigned char> pdu_bytes = pmt::u8vector_elements(pmt::cdr(msg));
     int port = (pdu_bytes[2] << 8) | pdu_bytes[1];
 
+    if ((pdu_bytes[0] == AAS_PACKET_FORMAT) && (port == SIG_PORT)) {
+        decode_sig(pdu_bytes);
+    }
+
     std::vector<unsigned char> pdu_encoded = hdlc_encode(pdu_bytes);
 
     for (auto c : pdu_encoded) {
         aas_queues[port].push(c);
+    }
+}
+
+void l2_encoder_impl::decode_sig(std::vector<unsigned char>& pdu_bytes)
+{
+    int offset = 5;
+    while (offset < pdu_bytes.size()) {
+        unsigned char type = pdu_bytes[offset++];
+        switch (type & 0xf0) {
+        case 0x40:
+            offset += 3;
+            break;
+        case 0x60:
+            unsigned char length = pdu_bytes[offset++];
+            if (type == 0x66) {
+                unsigned char port = pdu_bytes[offset + 1];
+                unsigned char type = pdu_bytes[offset + 2];
+                if (port < MAX_PROGRAMS) {
+                    program_type[port] = type;
+                }
+            }
+            offset += length - 1;
+        }
     }
 }
 

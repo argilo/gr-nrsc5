@@ -50,11 +50,16 @@ constexpr unsigned char CRC8_TABLE[] = {
 
 constexpr unsigned char BBM[] = { 0x7d, 0x3a, 0xe2, 0x42 };
 
+constexpr int MAX_PROGRAMS = 8;
+constexpr uint8_t AAS_PACKET_FORMAT = 0x21;
+constexpr uint16_t SIG_PORT = 0x20;
+
 class l2_encoder_impl : public l2_encoder
 {
 private:
     int num_progs;
     int first_prog;
+    int program_type[MAX_PROGRAMS];
     int size;
     int data_bytes;
     int payload_bytes;
@@ -66,9 +71,9 @@ private:
     int pdu_seq_no;
     int pdu_seq_len;
     int codec_mode;
-    int start_seq_no[8];
+    int start_seq_no[MAX_PROGRAMS];
     int target_seq_no;
-    int partial_bytes[8];
+    int partial_bytes[MAX_PROGRAMS];
     int ccc_width;
     unsigned char ccc_count;
     std::vector<unsigned char> ccc;
@@ -101,6 +106,7 @@ private:
     int adts_length(const unsigned char* header);
     int len_locators(int nop);
     void handle_aas_pdu(pmt::pmt_t msg);
+    void decode_sig(std::vector<unsigned char>& pdu_bytes);
 
 public:
     l2_encoder_impl(const int num_progs,
