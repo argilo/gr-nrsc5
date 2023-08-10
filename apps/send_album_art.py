@@ -2,6 +2,7 @@
 
 import argparse
 import socket
+from socket import SHUT_RDWR
 import os
 
 parser = argparse.ArgumentParser()
@@ -21,10 +22,12 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((args.host, args.file_port))
 s.send(command)
 s.send(data)
+s.shutdown(SHUT_RDWR)
 s.close()
 
 command = f"lot{args.lot_id}\n".encode()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((args.host, args.psd_port))
 s.send(command)
+s.shutdown(SHUT_RDWR)
 s.close()
