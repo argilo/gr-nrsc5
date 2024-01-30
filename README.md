@@ -22,11 +22,6 @@ Otherwise, run the following commands:
     sudo make install
     sudo ldconfig
 
-If your GNU Radio is installed in `/usr` (rather than `/usr/local`), then
-replace the cmake line above with:
-
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-
 ## Blocks:
 
 ### HDC encoder
