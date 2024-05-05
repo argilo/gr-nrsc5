@@ -395,39 +395,36 @@ void l2_encoder_impl::header_spread(const unsigned char* in,
 
     /* 1014s.pdf table 5-4 */
     if (size >= 72000) {
+        n_start = 8 * ((size - 30000 + 7) / 8);
+
         switch (size % 8) {
         case 0:
-            n_start = size - 30000;
             n_offset = 1247;
             header_bits = 24;
             break;
         case 7:
-            n_start = 8 * (size / 8) - 29999;
             n_offset = 1303;
             header_bits = 23;
             break;
         default:
-            n_start = 8 * (size / 8) - 29999;
             n_offset = 1359;
             header_bits = 22;
         }
     } else {
+        n_start = 120;
+
         switch (size % 8) {
         case 0:
-            n_start = 120;
-            n_offset = ((size - 192) / 24) - 1;
             header_bits = 24;
             break;
         case 7:
-            n_start = 120;
-            n_offset = ((size / 8 - 14) / 23) * 8 - 1;
             header_bits = 23;
             break;
         default:
-            n_start = 120;
-            n_offset = ((size / 8 - 14) / 22) * 8 - 1;
             header_bits = 22;
         }
+
+        n_offset = 8 * (((size - 120 + 7) / 8) / header_bits) - 1;
     }
 
     int out_off = 0;
