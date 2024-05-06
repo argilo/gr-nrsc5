@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Am Ma3 Hackrf
-# GNU Radio version: 3.10.7.0
+# GNU Radio version: 3.10.10.0
 
 from gnuradio import blocks
 from gnuradio import fft
@@ -81,6 +81,7 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.1)
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 270, 512, 121)
+        self.blocks_add_const_vxx_0 = blocks.add_const_cc(1)
 
 
         ##################################################
@@ -88,9 +89,10 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         ##################################################
         self.msg_connect((self.network_socket_pdu_1, 'pdus'), (self.nrsc5_psd_encoder_0, 'set_meta'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma3_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
+        self.connect((self.blocks_add_const_vxx_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_rotator_cc_0, 0))
-        self.connect((self.blocks_multiply_xx_0, 0), (self.rational_resampler_xxx_1, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_add_const_vxx_0, 0))
         self.connect((self.blocks_null_source_0, 0), (self.nrsc5_l1_am_encoder_ma3_0, 1))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_rotator_cc_0, 0), (self.osmosdr_sink_0, 0))

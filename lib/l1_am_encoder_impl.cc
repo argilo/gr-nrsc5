@@ -166,8 +166,6 @@ int l1_am_encoder_impl::general_work(int noutput_items,
                     out[out_off + 128 - 28 - col] =
                         -std::conj(qam64[t_matrix[col][symbol]]);
                     out[out_off + 128 + 28 + col] = qam64[s_matrix[col][symbol]];
-
-                    out[out_off + 128] = 1;
                     break;
                 }
             }
@@ -578,8 +576,6 @@ void l1_am_encoder_impl::set_channel_power()
 
         channel_power[128 + 27] = -30 - 4;
         channel_power[128 - 27] = -30 - 4;
-
-        channel_power[128] = 0;
         break;
     }
 
