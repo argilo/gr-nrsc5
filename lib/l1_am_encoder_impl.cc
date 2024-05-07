@@ -15,6 +15,11 @@
 namespace gr {
 namespace nrsc5 {
 
+constexpr float qam64_power = 10.211893;
+constexpr float qam16_power = 3.979400;
+constexpr float qpsk_power = -3.010300;
+constexpr float bpsk_power = -6.020600;
+
 std::vector<int> get_in_sizeofs(const int sm)
 {
     std::vector<int> in_sizeofs;
@@ -544,38 +549,38 @@ void l1_am_encoder_impl::set_channel_power()
     switch (sm) {
     case 1:
         for (int col = 0; col < 25; col++) {
-            channel_power[128 + 57 + col] = -30 - 10;
-            channel_power[128 - 57 - col] = -30 - 10;
+            channel_power[128 + 57 + col] = -30 - qam64_power;
+            channel_power[128 - 57 - col] = -30 - qam64_power;
 
-            channel_power[128 + 28 + col] = -43 - 4;
-            channel_power[128 - 28 - col] = -43 - 4;
+            channel_power[128 + 28 + col] = -43 - qam16_power;
+            channel_power[128 - 28 - col] = -43 - qam16_power;
 
-            channel_power[128 + 2 + col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
-            channel_power[128 - 2 - col] = (col < 12 ? (-44 - 0.5 * col) : -50) + 3;
+            channel_power[128 + 2 + col] = (col < 12 ? (-44 - 0.5 * col) : -50) - qpsk_power;
+            channel_power[128 - 2 - col] = (col < 12 ? (-44 - 0.5 * col) : -50) - qpsk_power;
         }
 
-        channel_power[128 + 1] = -26 + 6;
-        channel_power[128 - 1] = -26 + 6;
+        channel_power[128 + 1] = -26 - bpsk_power;
+        channel_power[128 - 1] = -26 - bpsk_power;
 
-        channel_power[128 + 27] = -43 - 4;
-        channel_power[128 - 27] = -43 - 4;
-        channel_power[128 + 53] = -43 - 4;
-        channel_power[128 - 53] = -43 - 4;
+        channel_power[128 + 27] = -43 - qam16_power;
+        channel_power[128 - 27] = -43 - qam16_power;
+        channel_power[128 + 53] = -43 - qam16_power;
+        channel_power[128 - 53] = -43 - qam16_power;
         break;
     case 3:
         for (int col = 0; col < 25; col++) {
-            channel_power[128 + 2 + col] = -15 - 10;
-            channel_power[128 - 2 - col] = -15 - 10;
+            channel_power[128 + 2 + col] = -15 - qam64_power;
+            channel_power[128 - 2 - col] = -15 - qam64_power;
 
-            channel_power[128 + 28 + col] = -30 - 10;
-            channel_power[128 - 28 - col] = -30 - 10;
+            channel_power[128 + 28 + col] = -30 - qam64_power;
+            channel_power[128 - 28 - col] = -30 - qam64_power;
         }
 
-        channel_power[128 + 1] = -15 + 6;
-        channel_power[128 - 1] = -15 + 6;
+        channel_power[128 + 1] = -15 - bpsk_power;
+        channel_power[128 - 1] = -15 - bpsk_power;
 
-        channel_power[128 + 27] = -30 - 4;
-        channel_power[128 - 27] = -30 - 4;
+        channel_power[128 + 27] = -30 - qam16_power;
+        channel_power[128 - 27] = -30 - qam16_power;
         break;
     }
 
