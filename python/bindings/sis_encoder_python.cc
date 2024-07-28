@@ -80,6 +80,7 @@ void bind_sis_encoder(py::module& m)
            py::arg("short_name") = "ABCD",
            py::arg("slogan") = "",
            py::arg("message") = "",
+           py::arg("program_names") = std::vector<std::string>({ "HD1" }),
            py::arg("program_types") = std::vector<::gr::nrsc5::program_type>({ ::gr::nrsc5::program_type::UNDEFINED }),
            py::arg("latitude") = 40.6892,
            py::arg("longitude") = -74.0445,

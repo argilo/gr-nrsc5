@@ -21,6 +21,7 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                     const std::string& short_name,
                                     const std::string& slogan,
                                     const std::string& message,
+                                    const std::vector<std::string> program_names,
                                     const std::vector<program_type> program_types,
                                     float latitude,
                                     float longitude,
@@ -32,6 +33,7 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                                            short_name,
                                                            slogan,
                                                            message,
+                                                           program_names,
                                                            program_types,
                                                            latitude,
                                                            longitude,
@@ -48,6 +50,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                                    const std::string& short_name,
                                    const std::string& slogan,
                                    const std::string& message,
+                                   const std::vector<std::string> program_names,
                                    const std::vector<program_type> program_types,
                                    const float latitude,
                                    const float longitude,
@@ -99,6 +102,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     }
     set_output_multiple(blocks_per_frame);
 
+    this->program_names = program_names;
     this->program_types = program_types;
     this->slogan = slogan;
     this->message = message;
@@ -559,15 +563,14 @@ std::string sis_encoder_impl::generate_sig()
     unsigned int program_id = 0;
     unsigned int port = 0x1000;
 
-    for (auto type : program_types) {
-        std::string service_name = std::string("HD") + std::to_string(program_id + 1);
+    for (unsigned int program_id = 0; program_id < program_names.size(); program_id++) {
         unsigned int component_id = 0;
 
         out << generate_sig_service(
-            sig_service_type::AUDIO, program_id + 1, service_name);
+            sig_service_type::AUDIO, program_id + 1, program_names[program_id]);
 
         out << generate_sig_audio_component(
-            component_id++, program_id, type, mime_hash::HDC);
+            component_id++, program_id, program_types[program_id], mime_hash::HDC);
 
         out << generate_sig_data_component(component_id++,
                                            port++,
@@ -582,8 +585,6 @@ std::string sis_encoder_impl::generate_sig()
                                            data_type::LOT,
                                            mime_hash::STATION_LOGO,
                                            0x32 + program_id);
-
-        program_id++;
     }
 
     return out.str();

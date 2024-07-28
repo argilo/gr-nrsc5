@@ -510,14 +510,22 @@ blocks:
     minoutbuf: '0'
     mode: nrsc5.pids_mode.FM
     num_programs: '1'
-    program0: nrsc5.program_type.NEWS
-    program1: nrsc5.program_type.NEWS
-    program2: nrsc5.program_type.NEWS
-    program3: nrsc5.program_type.NEWS
-    program4: nrsc5.program_type.NEWS
-    program5: nrsc5.program_type.NEWS
-    program6: nrsc5.program_type.NEWS
-    program7: nrsc5.program_type.NEWS
+    program_name0: HD1
+    program_name1: HD2
+    program_name2: HD3
+    program_name3: HD4
+    program_name4: HD5
+    program_name5: HD6
+    program_name6: HD7
+    program_name7: HD8
+    program_type0: nrsc5.program_type.NEWS
+    program_type1: nrsc5.program_type.NEWS
+    program_type2: nrsc5.program_type.NEWS
+    program_type3: nrsc5.program_type.NEWS
+    program_type4: nrsc5.program_type.NEWS
+    program_type5: nrsc5.program_type.NEWS
+    program_type6: nrsc5.program_type.NEWS
+    program_type7: nrsc5.program_type.NEWS
     short_name: ABCD-FM
     slogan: This is ABCD-FM
   states:
@@ -922,4 +930,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
+  grc_version: 3.10.11.0

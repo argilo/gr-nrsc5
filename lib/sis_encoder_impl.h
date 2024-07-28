@@ -237,6 +237,7 @@ private:
     unsigned int message_current_frame;
     unsigned int message_seq;
 
+    std::vector<std::string> program_names;
     std::vector<program_type> program_types;
     unsigned int current_program;
 
@@ -283,6 +284,7 @@ public:
         const std::string& short_name = "ABCD",
         const std::string& slogan = "",
         const std::string& message = "",
+        const std::vector<std::string> program_names = { "HD1" },
         const std::vector<program_type> program_types = { program_type::UNDEFINED },
         const float latitude = 40.6892,
         const float longitude = -74.0445,
