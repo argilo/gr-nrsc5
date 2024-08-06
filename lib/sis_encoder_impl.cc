@@ -96,6 +96,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
 
     this->program_names = program_names;
     this->program_types = program_types;
+    this->data_types = { service_data_type::EMERGENCY };
+    this->data_mime_types = { 0x444 };
     this->slogan = slogan;
     this->message = message;
     this->emergency_alert = ""s;
@@ -135,7 +137,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     emergency_alert_current_frame = 0;
     emergency_alert_seq = 0;
 
-    current_program = 0;
+    current_service = 0;
 
     current_parameter = 0;
 
@@ -438,14 +440,24 @@ void sis_encoder_impl::write_service_information_message()
 {
     write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
 
+    if (current_service < program_types.size()) {
     write_int(static_cast<int>(service_category::AUDIO), 2);
     write_bit(static_cast<int>(access::PUBLIC));
-    write_int(current_program, 6);
-    write_int(static_cast<int>(program_types[current_program]), 8);
+        write_int(current_service, 6);
+        write_int(static_cast<int>(program_types[current_service]), 8);
     write_int(0, 5); // reserved
     write_int(static_cast<int>(sound_experience::NONE), 5);
+    } else {
+        unsigned int data_index = current_service - program_types.size();
 
-    current_program = (current_program + 1) % program_types.size();
+        write_int(static_cast<int>(service_category::DATA), 2);
+        write_bit(static_cast<int>(access::PUBLIC));
+        write_int(static_cast<int>(data_types[data_index]), 9);
+        write_int(0, 3); // reserved
+        write_int(data_mime_types[data_index], 12);
+    }
+
+    current_service = (current_service + 1) % (program_types.size() + data_types.size());
 }
 
 void sis_encoder_impl::write_sis_parameter_message()

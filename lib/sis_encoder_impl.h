@@ -304,7 +304,9 @@ private:
 
     std::vector<std::string> program_names;
     std::vector<program_type> program_types;
-    unsigned int current_program;
+    std::vector<service_data_type> data_types;
+    std::vector<unsigned int> data_mime_types;
+    unsigned int current_service;
 
     unsigned int current_parameter;
 
