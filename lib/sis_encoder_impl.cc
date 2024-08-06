@@ -14,6 +14,8 @@
 #include <gnuradio/io_signature.h>
 #include <cmath>
 
+using namespace std::string_literals;
+
 namespace gr {
 namespace nrsc5 {
 
@@ -87,18 +89,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     this->mode = mode;
     if (this->mode == pids_mode::FM) {
         blocks_per_frame = BLOCKS_PER_FRAME_FM;
-        if (this->short_name.length() <= 4) {
-            schedule = &schedule_fm_short_no_ea;
-        } else {
-            schedule = &schedule_fm_long_no_ea;
-        }
     } else {
         blocks_per_frame = BLOCKS_PER_FRAME_AM;
-        if (this->short_name.length() <= 4) {
-            schedule = &schedule_am_short_no_ea;
-        } else {
-            schedule = &schedule_am_long_no_ea;
-        }
     }
     set_output_multiple(blocks_per_frame);
 
@@ -106,6 +98,9 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     this->program_types = program_types;
     this->slogan = slogan;
     this->message = message;
+    this->emergency_alert = ""s;
+    this->emergency_alert_cnt_len = 0;
+    this->emergency_alert_crc = 0x00;
     this->latitude = latitude;
     this->longitude = longitude;
     this->altitude = altitude;
@@ -137,6 +132,9 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     message_current_frame = 0;
     message_seq = 0;
 
+    emergency_alert_current_frame = 0;
+    emergency_alert_seq = 0;
+
     current_program = 0;
 
     current_parameter = 0;
@@ -156,6 +154,37 @@ int sis_encoder_impl::work(int noutput_items,
                            gr_vector_void_star& output_items)
 {
     unsigned char* out = (unsigned char*)output_items[0];
+
+    std::vector<std::vector<sched_item>>* schedule;
+    if (this->mode == pids_mode::FM) {
+        if (this->short_name.length() <= 4) {
+            if (this->emergency_alert.length() == 0) {
+                schedule = &schedule_fm_short_no_ea;
+            } else {
+                schedule = &schedule_fm_short_ea;
+            }
+        } else {
+            if (this->emergency_alert.length() == 0) {
+                schedule = &schedule_fm_long_no_ea;
+            } else {
+                schedule = &schedule_fm_long_ea;
+            }
+        }
+    } else {
+        if (this->short_name.length() <= 4) {
+            if (this->emergency_alert.length() == 0) {
+                schedule = &schedule_am_short_no_ea;
+            } else {
+                schedule = &schedule_am_short_ea;
+            }
+        } else {
+            if (this->emergency_alert.length() == 0) {
+                schedule = &schedule_am_long_no_ea;
+            } else {
+                schedule = &schedule_am_long_ea;
+            }
+        }
+    }
 
     bit = out;
     while (bit < out + (noutput_items * SIS_BITS)) {
@@ -200,6 +229,9 @@ int sis_encoder_impl::work(int noutput_items,
                     break;
                 case sched_item::STATION_SLOGAN:
                     write_station_slogan();
+                    break;
+                case sched_item::EA_MESSAGE:
+                    write_emergency_alert();
                     break;
                 }
             }
@@ -555,6 +587,40 @@ void sis_encoder_impl::write_station_slogan()
     }
 
     slogan_current_frame = (slogan_current_frame + 1) % num_frames;
+}
+
+void sis_encoder_impl::write_emergency_alert()
+{
+    write_int(static_cast<int>(msg_id::EMERGENCY_ALERTS_MESSAGE), 4);
+
+    unsigned int emergency_alert_length = std::min((unsigned int)emergency_alert.length(), 381u);
+    unsigned int num_frames = (emergency_alert_length + 8) / 6;
+
+    write_int(emergency_alert_current_frame, 6);
+    write_int(emergency_alert_seq, 2);
+    write_int(0, 2); // reserved
+
+    if (emergency_alert_current_frame == 0) {
+        // TODO: Calculate CRC
+
+        write_int(static_cast<int>(encoding::ISO_8859_1), 3);
+        write_int(emergency_alert_length, 9);
+        write_int(emergency_alert_crc, 7);
+        write_int(emergency_alert_cnt_len, 5);
+        for (int i = 0; i < 3; i++) {
+            write_int(emergency_alert.at(i), 8);
+        }
+    } else {
+        for (int i = emergency_alert_current_frame * 6 - 3; i < emergency_alert_current_frame * 6 + 3; i++) {
+            if (i < emergency_alert_length) {
+                write_int(emergency_alert.at(i), 8);
+            } else {
+                write_int(0, 8);
+            }
+        }
+    }
+
+    emergency_alert_current_frame = (emergency_alert_current_frame + 1) % num_frames;
 }
 
 std::string sis_encoder_impl::generate_sig()

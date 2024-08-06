@@ -32,7 +32,7 @@ enum class msg_id {
     SERVICE_INFORMATION_MESSAGE,
     SIS_PARAMETER_MESSAGE,
     UNIVERSAL_SHORT_STATION_NAME,
-    ACTIVE_RADIO_MESSAGE,
+    EMERGENCY_ALERTS_MESSAGE,
     ADVANCED_SERVICE_INFORMATION_MESSAGE
 };
 
@@ -256,7 +256,6 @@ class sis_encoder_impl : public sis_encoder
 private:
     pids_mode mode;
     int blocks_per_frame;
-    std::vector<std::vector<sched_item>>* schedule;
     unsigned int alfn;
     std::string country_code;
     unsigned int fcc_facility_id;
@@ -264,6 +263,9 @@ private:
     bool fm_suffix;
     std::string slogan;
     std::string message;
+    std::string emergency_alert;
+    unsigned int emergency_alert_cnt_len;
+    unsigned int emergency_alert_crc; // TODO: Replace with CRC calculation
     float latitude;
     float longitude;
     float altitude;
@@ -297,6 +299,9 @@ private:
     unsigned int message_current_frame;
     unsigned int message_seq;
 
+    unsigned int emergency_alert_current_frame;
+    unsigned int emergency_alert_seq;
+
     std::vector<std::string> program_names;
     std::vector<program_type> program_types;
     unsigned int current_program;
@@ -320,6 +325,7 @@ private:
     void write_sis_parameter_message();
     void write_universal_short_station_name();
     void write_station_slogan();
+    void write_emergency_alert();
     std::string generate_sig();
     std::string generate_sig_service(sig_service_type type,
                                      unsigned int number,
