@@ -605,7 +605,8 @@ void sis_encoder_impl::write_emergency_alert()
 {
     write_int(static_cast<int>(msg_id::EMERGENCY_ALERTS_MESSAGE), 4);
 
-    unsigned int emergency_alert_length = std::min((unsigned int)emergency_alert.length(), 381u);
+    unsigned int emergency_alert_length =
+        std::min((unsigned int)emergency_alert.length(), 381u);
     unsigned int num_frames = (emergency_alert_length + 8) / 6;
 
     write_int(emergency_alert_current_frame, 6);
@@ -623,7 +624,9 @@ void sis_encoder_impl::write_emergency_alert()
             write_int(emergency_alert.at(i), 8);
         }
     } else {
-        for (int i = emergency_alert_current_frame * 6 - 3; i < emergency_alert_current_frame * 6 + 3; i++) {
+        for (int i = emergency_alert_current_frame * 6 - 3;
+             i < emergency_alert_current_frame * 6 + 3;
+             i++) {
             if (i < emergency_alert_length) {
                 write_int(emergency_alert.at(i), 8);
             } else {
