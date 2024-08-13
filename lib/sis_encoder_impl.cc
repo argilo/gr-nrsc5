@@ -100,9 +100,32 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     this->data_mime_types = { 0x444 };
     this->slogan = slogan;
     this->message = message;
-    this->emergency_alert = ""s;
-    this->emergency_alert_cnt_len = 0;
-    this->emergency_alert_crc = 0x00;
+
+    std::string emergency_alert_control_data = ""s;
+    std::string emergency_alert_text = "";
+
+    if (emergency_alert_control_data.length() == 0) {
+        this->emergency_alert = "";
+        this->emergency_alert_cnt_len = 0;
+    } else {
+        if ((emergency_alert_control_data.length() < 7) ||
+            (emergency_alert_control_data.length() > 63)) {
+            throw std::invalid_argument(
+                "emergency alert control data must be 7-63 bytes");
+        }
+        if (emergency_alert_control_data.length() % 2 != 1) {
+            throw std::invalid_argument(
+                "number of emergency alert control bytes must be odd");
+        }
+        if (emergency_alert_control_data.length() + emergency_alert_text.length() > 381) {
+            throw std::invalid_argument(
+                "emergency alert payload cannot exceed 381 bytes");
+        }
+
+        this->emergency_alert = emergency_alert_control_data + emergency_alert_text;
+        this->emergency_alert_cnt_len = (emergency_alert_control_data.length() - 1) / 2;
+    }
+
     this->latitude = latitude;
     this->longitude = longitude;
     this->altitude = altitude;
@@ -288,6 +311,34 @@ int sis_encoder_impl::crc12(unsigned char* sis)
     return reg ^ 0x955;
 }
 
+int sis_encoder_impl::crc7(const std::string alert)
+{
+    const unsigned char poly = 0x09;
+    unsigned char reg = 0x42;
+    int byte_index, bit_index;
+
+    for (byte_index = alert.length() - 1; byte_index >= 0; byte_index--) {
+        for (bit_index = 6; bit_index >= 0; bit_index--) {
+            unsigned char bit = ((unsigned char)alert.at(byte_index) >> bit_index) & 1;
+            if ((bit_index == 0) && (byte_index > 0))
+                bit ^= ((unsigned char)alert.at(byte_index - 1) >> 7);
+
+            reg <<= 1;
+            reg ^= bit;
+            if (reg & 0x80)
+                reg ^= (0x80 | poly);
+        }
+    }
+
+    for (bit_index = 6; bit_index >= 0; bit_index--) {
+        reg <<= 1;
+        if (reg & 0x80)
+            reg ^= (0x80 | poly);
+    }
+
+    return reg;
+}
+
 void sis_encoder_impl::write_bit(int b) { *(bit++) = b; }
 
 void sis_encoder_impl::write_int(int n, int len)
@@ -441,12 +492,12 @@ void sis_encoder_impl::write_service_information_message()
     write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
 
     if (current_service < program_types.size()) {
-    write_int(static_cast<int>(service_category::AUDIO), 2);
-    write_bit(static_cast<int>(access::PUBLIC));
+        write_int(static_cast<int>(service_category::AUDIO), 2);
+        write_bit(static_cast<int>(access::PUBLIC));
         write_int(current_service, 6);
         write_int(static_cast<int>(program_types[current_service]), 8);
-    write_int(0, 5); // reserved
-    write_int(static_cast<int>(sound_experience::NONE), 5);
+        write_int(0, 5); // reserved
+        write_int(static_cast<int>(sound_experience::NONE), 5);
     } else {
         unsigned int data_index = current_service - program_types.size();
 
@@ -605,20 +656,16 @@ void sis_encoder_impl::write_emergency_alert()
 {
     write_int(static_cast<int>(msg_id::EMERGENCY_ALERTS_MESSAGE), 4);
 
-    unsigned int emergency_alert_length =
-        std::min((unsigned int)emergency_alert.length(), 381u);
-    unsigned int num_frames = (emergency_alert_length + 8) / 6;
+    unsigned int num_frames = (emergency_alert.length() + 8) / 6;
 
     write_int(emergency_alert_current_frame, 6);
     write_int(emergency_alert_seq, 2);
     write_int(0, 2); // reserved
 
     if (emergency_alert_current_frame == 0) {
-        // TODO: Calculate CRC
-
         write_int(static_cast<int>(encoding::ISO_8859_1), 3);
-        write_int(emergency_alert_length, 9);
-        write_int(emergency_alert_crc, 7);
+        write_int(emergency_alert.length(), 9);
+        write_int(crc7(emergency_alert), 7);
         write_int(emergency_alert_cnt_len, 5);
         for (int i = 0; i < 3; i++) {
             write_int(emergency_alert.at(i), 8);
@@ -627,7 +674,7 @@ void sis_encoder_impl::write_emergency_alert()
         for (int i = emergency_alert_current_frame * 6 - 3;
              i < emergency_alert_current_frame * 6 + 3;
              i++) {
-            if (i < emergency_alert_length) {
+            if (i < emergency_alert.length()) {
                 write_int(emergency_alert.at(i), 8);
             } else {
                 write_int(0, 8);

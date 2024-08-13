@@ -265,7 +265,6 @@ private:
     std::string message;
     std::string emergency_alert;
     unsigned int emergency_alert_cnt_len;
-    unsigned int emergency_alert_crc; // TODO: Replace with CRC calculation
     float latitude;
     float longitude;
     float altitude;
@@ -315,6 +314,7 @@ private:
     uint16_t d_seq;
 
     int crc12(unsigned char* sis);
+    int crc7(const std::string alert);
     void write_bit(int b);
     void write_int(int n, int len);
     void write_char5(char c);
