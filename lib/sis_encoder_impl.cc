@@ -122,6 +122,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                 "emergency alert payload cannot exceed 381 bytes");
         }
 
+        update_control_data_crc(emergency_alert_control_data);
+
         this->emergency_alert = emergency_alert_control_data + emergency_alert_text;
         this->emergency_alert_cnt_len = (emergency_alert_control_data.length() - 1) / 2;
     }
@@ -309,6 +311,40 @@ int sis_encoder_impl::crc12(unsigned char* sis)
             reg ^= poly;
     }
     return reg ^ 0x955;
+}
+
+void sis_encoder_impl::update_control_data_crc(std::string& control_data)
+{
+    unsigned short poly = 0xD010;
+    unsigned short reg = 0x7E1B;
+    int i, lowbit;
+
+    control_data[1] &= 0x00;
+    control_data[2] &= 0xf0;
+
+    int byte_index, bit_index;
+
+    for (byte_index = control_data.length() - 1; byte_index >= 1; byte_index--) {
+        for (bit_index = 0; bit_index < 8; bit_index++) {
+            unsigned short bit =
+                ((unsigned char)control_data.at(byte_index) >> bit_index) & 1;
+            lowbit = reg & 1;
+            reg >>= 1;
+            reg ^= (bit << 15);
+            if (lowbit)
+                reg ^= poly;
+        }
+    }
+
+    for (bit_index = 0; bit_index < 16; bit_index++) {
+        lowbit = reg & 1;
+        reg >>= 1;
+        if (lowbit)
+            reg ^= poly;
+    }
+
+    control_data[1] |= (reg & 0x00ff);
+    control_data[2] |= (reg & 0x0f00) >> 8;
 }
 
 int sis_encoder_impl::crc7(const std::string alert)

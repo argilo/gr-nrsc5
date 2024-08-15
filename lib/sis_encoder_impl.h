@@ -315,6 +315,7 @@ private:
 
     int crc12(unsigned char* sis);
     int crc7(const std::string alert);
+    void update_control_data_crc(std::string& control_data);
     void write_bit(int b);
     void write_int(int n, int len);
     void write_char5(char c);
