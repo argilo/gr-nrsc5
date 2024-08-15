@@ -256,6 +256,7 @@ class sis_encoder_impl : public sis_encoder
 private:
     pids_mode mode;
     int blocks_per_frame;
+    int blocks_allowed;
     unsigned int alfn;
     std::string country_code;
     unsigned int fcc_facility_id;
@@ -265,6 +266,7 @@ private:
     std::string message;
     std::string emergency_alert;
     unsigned int emergency_alert_cnt_len;
+    std::ostringstream command_buffer;
     float latitude;
     float longitude;
     float altitude;
@@ -344,7 +346,9 @@ private:
                                             mime_hash mime,
                                             unsigned int vendor_id);
     std::string generate_aas_header(uint16_t port, uint16_t seq);
+    void handle_clock(pmt::pmt_t msg);
     void handle_notify(pmt::pmt_t msg);
+    void handle_command(pmt::pmt_t msg);
     void send_sig();
 
 public:

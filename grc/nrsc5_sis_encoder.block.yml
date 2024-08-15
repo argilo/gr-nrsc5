@@ -151,7 +151,13 @@ parameters:
 
 inputs:
 -   domain: message
+    id: clock
+    optional: false
+-   domain: message
     id: ready
+    optional: true
+-   domain: message
+    id: command
     optional: true
 
 outputs:

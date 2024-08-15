@@ -90,6 +90,7 @@ class hd_tx_usrp(gr.top_block):
         self.nrsc5_l1_fm_encoder_mp1_0 = nrsc5.l1_fm_encoder(1)
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 64000)
         self.network_socket_pdu_1 = network.socket_pdu('TCP_SERVER', '', '52002', 10000, False)
+        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', '', '52000', 10000, False)
         self.network_socket_pdu_0 = network.socket_pdu('TCP_SERVER', '', '52004', 10000, False)
         self.low_pass_filter_0_0 = filter.fir_filter_ccf(
             1,
@@ -125,8 +126,10 @@ class hd_tx_usrp(gr.top_block):
         # Connections
         ##################################################
         self.msg_connect((self.network_socket_pdu_0, 'pdus'), (self.nrsc5_lot_encoder_0_0, 'file'))
+        self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.nrsc5_sis_encoder_0, 'command'))
         self.msg_connect((self.network_socket_pdu_1, 'pdus'), (self.nrsc5_psd_encoder_0, 'set_meta'))
         self.msg_connect((self.nrsc5_l1_fm_encoder_mp1_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
+        self.msg_connect((self.nrsc5_l1_fm_encoder_mp1_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_lot_encoder_0, 'ready'))
         self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_lot_encoder_0_0, 'ready'))
         self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_sis_encoder_0, 'ready'))

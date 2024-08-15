@@ -67,13 +67,14 @@ class hd_tx_rtl_file(gr.top_block):
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.nrsc5_l1_fm_encoder_mp1_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_lot_encoder_0, 'ready'))
         self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_sis_encoder_0, 'ready'))
         self.msg_connect((self.nrsc5_lot_encoder_0, 'aas'), (self.nrsc5_l2_encoder_0, 'aas'))
         self.msg_connect((self.nrsc5_sis_encoder_0, 'aas'), (self.nrsc5_l2_encoder_0, 'aas'))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
-        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_interleave_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_conjugate_cc_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_interleave_0, 0), (self.blocks_add_const_vxx_0_0, 0))
@@ -83,8 +84,8 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
+        self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
         self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.fft_vxx_0, 0))

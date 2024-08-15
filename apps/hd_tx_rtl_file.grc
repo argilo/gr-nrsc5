@@ -469,6 +469,7 @@ connections:
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']
+- [nrsc5_l1_fm_encoder_mp1_0, clock, nrsc5_sis_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '0']
 - [nrsc5_l2_encoder_0, ready, nrsc5_lot_encoder_0, ready]
 - [nrsc5_l2_encoder_0, ready, nrsc5_sis_encoder_0, ready]

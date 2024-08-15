@@ -63,9 +63,17 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
 {
+    message_port_register_in(pmt::intern("clock"));
+    set_msg_handler(pmt::intern("clock"),
+                    [this](pmt::pmt_t msg) { this->handle_clock(msg); });
+
     message_port_register_in(pmt::intern("ready"));
     set_msg_handler(pmt::intern("ready"),
                     [this](pmt::pmt_t msg) { this->handle_notify(msg); });
+
+    message_port_register_in(pmt::intern("command"));
+    set_msg_handler(pmt::intern("command"),
+                    [this](pmt::pmt_t msg) { this->handle_command(msg); });
 
     message_port_register_out(pmt::intern("aas"));
 
@@ -93,6 +101,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
         blocks_per_frame = BLOCKS_PER_FRAME_AM;
     }
     set_output_multiple(blocks_per_frame);
+    blocks_allowed = blocks_per_frame * 2;
 
     this->program_names = program_names;
     this->program_types = program_types;
@@ -100,34 +109,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     this->data_mime_types = { 0x444 };
     this->slogan = slogan;
     this->message = message;
-
-    std::string emergency_alert_control_data = ""s;
-    std::string emergency_alert_text = "";
-
-    if (emergency_alert_control_data.length() == 0) {
-        this->emergency_alert = "";
-        this->emergency_alert_cnt_len = 0;
-    } else {
-        if ((emergency_alert_control_data.length() < 7) ||
-            (emergency_alert_control_data.length() > 63)) {
-            throw std::invalid_argument(
-                "emergency alert control data must be 7-63 bytes");
-        }
-        if (emergency_alert_control_data.length() % 2 != 1) {
-            throw std::invalid_argument(
-                "number of emergency alert control bytes must be odd");
-        }
-        if (emergency_alert_control_data.length() + emergency_alert_text.length() > 381) {
-            throw std::invalid_argument(
-                "emergency alert payload cannot exceed 381 bytes");
-        }
-
-        update_control_data_crc(emergency_alert_control_data);
-
-        this->emergency_alert = emergency_alert_control_data + emergency_alert_text;
-        this->emergency_alert_cnt_len = (emergency_alert_control_data.length() - 1) / 2;
-    }
-
+    this->emergency_alert = "";
+    this->emergency_alert_cnt_len = 0;
     this->latitude = latitude;
     this->longitude = longitude;
     this->altitude = altitude;
@@ -182,6 +165,8 @@ int sis_encoder_impl::work(int noutput_items,
 {
     unsigned char* out = (unsigned char*)output_items[0];
 
+    int noutput_items_reduced = std::min(noutput_items, blocks_allowed);
+
     std::vector<std::vector<sched_item>>* schedule;
     if (this->mode == pids_mode::FM) {
         if (this->short_name.length() <= 4) {
@@ -214,7 +199,7 @@ int sis_encoder_impl::work(int noutput_items,
     }
 
     bit = out;
-    while (bit < out + (noutput_items * SIS_BITS)) {
+    while (bit < out + (noutput_items_reduced * SIS_BITS)) {
         for (int block = 0; block < blocks_per_frame; block++) {
             unsigned char* start = bit;
 
@@ -284,8 +269,9 @@ int sis_encoder_impl::work(int noutput_items,
         alfn++;
     }
 
+    blocks_allowed -= noutput_items_reduced;
     // Tell runtime system how many output items we produced.
-    return noutput_items;
+    return noutput_items_reduced;
 }
 
 /* 1020s.pdf section 4.10
@@ -854,11 +840,87 @@ bool sis_encoder_impl::start()
     return block::start();
 }
 
+void sis_encoder_impl::handle_clock(pmt::pmt_t msg)
+{
+    blocks_allowed += blocks_per_frame;
+}
+
 void sis_encoder_impl::handle_notify(pmt::pmt_t msg)
 {
     long port = pmt::to_long(msg);
     if (port == SIG_PORT) {
         send_sig();
+    }
+}
+
+void sis_encoder_impl::handle_command(pmt::pmt_t msg)
+{
+    for (auto byte : pmt::u8vector_elements(pmt::cdr(msg))) {
+        if (byte == '\n') {
+            auto command_line = command_buffer.str();
+
+            auto command = command_line.substr(0, command_line.find('|'));
+
+            if (command == "clear_alert") {
+                this->emergency_alert = "";
+                this->emergency_alert_cnt_len = 0;
+                d_logger->info("clearing emergency alert");
+            } else if (command == "set_alert") {
+                if (command_line.size() >= 10) {
+                    auto args = command_line.substr(10, -1);
+                    auto control_bytes = args.substr(0, args.find('|'));
+                    if (args.size() >= control_bytes.size() + 1) {
+                        auto message = args.substr(control_bytes.size() + 1, -1);
+
+                        std::ostringstream cnt;
+                        for (int i = 0; i < control_bytes.size(); i += 2) {
+                            unsigned char control_byte = (unsigned char)strtol(
+                                control_bytes.substr(i, 2).c_str(), NULL, 16);
+                            cnt.put(control_byte);
+                        }
+                        auto cnt_str = cnt.str();
+
+                        bool error = false;
+                        if ((cnt_str.length() < 7) || (cnt_str.length() > 63)) {
+                            d_logger->error(
+                                "emergency alert control data must be 7-63 bytes");
+                            error = true;
+                        }
+                        if (cnt_str.length() % 2 != 1) {
+                            d_logger->error(
+                                "number of emergency alert control bytes must be odd");
+                            error = true;
+                        }
+                        if (cnt_str.length() + message.length() > 381) {
+                            d_logger->error(
+                                "emergency alert payload cannot exceed 381 bytes");
+                            error = true;
+                        }
+
+                        if (!error) {
+                            update_control_data_crc(cnt_str);
+
+                            emergency_alert = cnt_str + message;
+                            emergency_alert_cnt_len = (cnt_str.length() - 1) / 2;
+                            emergency_alert_current_frame = 0;
+                            emergency_alert_seq = (emergency_alert_seq + 1) % 4;
+
+                            d_logger->info("sending emergency alert");
+                        }
+                    } else {
+                        d_logger->error("missing emergency alert message");
+                    }
+                } else {
+                    d_logger->error("missing command data");
+                }
+            } else {
+                d_logger->error("invalid command");
+            }
+
+            command_buffer.str("");
+        } else {
+            command_buffer.put(byte);
+        }
     }
 }
 

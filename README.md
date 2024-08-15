@@ -57,6 +57,26 @@ The SIG data associates the following port numbers with the audio programs:
 * Port 0x1005: Station logo for HD3 (audio program 2)
 * etc.
 
+This block can also send emergency alerts. To enable this feature, connect a Socket PDU (TCP Server) block to the "command" input. To send an alert, connect to the TCP port and send the following command, followed by a carriage return:
+
+```
+set_alert|<control_data>|<alert text>
+```
+
+Control data is written in hexidecimal. For instance:
+
+```
+set_alert|00679c247c5b0438c70000|Example alert
+```
+
+To stop sending an alert, send the following command:
+
+```
+clear_alert
+```
+
+The "clock" output of the Layer 1 encoder must be connected to the "clock" input of the SIS & SIG encoder. This connection is used to control latency.
+
 ### LOT encoder
 
 This block sends files to the receiver (for instance, containing album art or a station logo) by encoding them as Advanced Application Services (AAS) PDUs, according to the Large Object Transfer (LOT) protocol. The "aas" output must be connected to the Layer 2 encoder's "aas" input, and the "ready" output of the Layer 2 encoder must be connected to the "ready" input of the LOT encoder to tell it when it should produce output.

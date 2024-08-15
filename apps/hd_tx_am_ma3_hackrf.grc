@@ -724,6 +724,7 @@ connections:
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_am_encoder_ma3_0, '0', fft_vxx_0, '0']
 - [nrsc5_l1_am_encoder_ma3_0, clock, nrsc5_psd_encoder_0, clock]
+- [nrsc5_l1_am_encoder_ma3_0, clock, nrsc5_sis_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_am_encoder_ma3_0, '0']
 - [nrsc5_psd_encoder_0, '0', nrsc5_l2_encoder_0, '1']
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_am_encoder_ma3_0, '2']
