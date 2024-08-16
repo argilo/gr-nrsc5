@@ -33,7 +33,6 @@ parser.add_argument("--port", type=int, default=52000)
 args = parser.parse_args()
 
 fips = sorted(args.fips)
-num_locations = min(len(fips), 3)
 
 command_bits = []
 append_int(command_bits, 0, 8)                                # unknown
@@ -42,8 +41,7 @@ append_int(command_bits, 0x49, 8)                             # unknown
 append_int(command_bits, args.category, 6)                    # category type
 append_int(command_bits, 0b1111 if args.test else 0b0000, 4)  # test indicator?
 append_int(command_bits, 0b000101101101, 12)                  # unknown
-append_int(command_bits, num_locations, 2)                    # number of locations
-append_int(command_bits, 0, 4)                                # unknown
+append_int(command_bits, num_locations, 6)                    # number of locations
 
 if num_locations >= 1:
     append_int(command_bits, fips[0], 20)
