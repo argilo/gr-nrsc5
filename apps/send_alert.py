@@ -33,6 +33,7 @@ parser.add_argument("--port", type=int, default=52000)
 args = parser.parse_args()
 
 fips = sorted(args.fips)
+num_locations = len(fips)
 
 command_bits = []
 append_int(command_bits, 0, 8)                                # unknown
