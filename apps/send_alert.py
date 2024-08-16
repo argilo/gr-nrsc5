@@ -39,8 +39,8 @@ command_bits = []
 append_int(command_bits, 0, 8)                                # unknown
 append_int(command_bits, 0, 12)                               # CRC
 append_int(command_bits, 0x49, 8)                             # unknown
-append_int(command_bits, args.category, 6)                    # category type
-append_int(command_bits, 0b1111 if args.test else 0b0000, 4)  # test indicator?
+append_int(command_bits, args.category, 5)                    # category type 1
+append_int(command_bits, 30 if args.test else 0, 5)           # category type 2
 append_int(command_bits, 0b000101101101, 12)                  # unknown
 append_int(command_bits, num_locations, 6)                    # number of locations
 
