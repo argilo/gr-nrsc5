@@ -48,7 +48,7 @@ class hd_tx_usrp(gr.top_block):
         ##################################################
 
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("", '')),
+            ",".join(("send_frame_size=8192,num_send_frames=128", '')),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',

@@ -746,7 +746,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '""'
+    dev_addr: '"send_frame_size=8192,num_send_frames=128"'
     dev_args: ''
     gain0: '70'
     gain1: '0'
@@ -909,7 +909,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 636.0]
+    coordinate: [488, 624.0]
     rotation: 0
     state: enabled
 
