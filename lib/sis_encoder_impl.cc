@@ -25,6 +25,8 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                     const std::string& message,
                                     const std::vector<std::string> program_names,
                                     const std::vector<program_type> program_types,
+                                    const std::vector<service_data_type> data_types,
+                                    const std::vector<unsigned int> data_mime_types,
                                     float latitude,
                                     float longitude,
                                     float altitude,
@@ -37,6 +39,8 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                                            message,
                                                            program_names,
                                                            program_types,
+                                                           data_types,
+                                                           data_mime_types,
                                                            latitude,
                                                            longitude,
                                                            altitude,
@@ -54,6 +58,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                                    const std::string& message,
                                    const std::vector<std::string> program_names,
                                    const std::vector<program_type> program_types,
+                                   const std::vector<service_data_type> data_types,
+                                   const std::vector<unsigned int> data_mime_types,
                                    const float latitude,
                                    const float longitude,
                                    const float altitude,
@@ -105,8 +111,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
 
     this->program_names = program_names;
     this->program_types = program_types;
-    this->data_types = { service_data_type::EMERGENCY };
-    this->data_mime_types = { 0x444 };
+    this->data_types = data_types;
+    this->data_mime_types = data_mime_types;
     this->slogan = slogan;
     this->message = message;
     this->emergency_alert = "";

@@ -522,6 +522,7 @@ blocks:
     altitude: '93.0'
     comment: ''
     country_code: US
+    emergency_alerts: 'False'
     fcc_facility_id: '0'
     latitude: '40.6892'
     longitude: '-74.0445'

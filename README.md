@@ -43,7 +43,7 @@ To dynamically update title, artist, and XHDR data, connect a Socket PDU (TCP Se
 
 ### SIS & SIG encoder
 
-This block encodes Station Information Service PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station. All message types are implemented, except for Emergency Alerts.
+This block encodes Station Information Service PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1020s.pdf, and assembles them into the PIDS and SIDS logical channels. SIS provides information about the station.
 
 The block can also generate Station Information Guide (SIG) data on its "aas" output, providing the receiver with further information about audio and data services. For each audio program, it indicates that album art and station logo are present. To send SIG data, the "aas" output must be connected to the Layer 2 encoder's "aas" input, and the "ready" output of the Layer 2 encoder must be connected to the "ready" input of the SIS & SIG encoder to tell it when it should produce output.
 
@@ -74,6 +74,8 @@ To stop sending an alert, send the following command:
 ```
 clear_alert
 ```
+
+To indicate that the station provides emergency alerts, set the "Emergency alerts" parameter to "On".
 
 The "clock" output of the Layer 1 encoder must be connected to the "clock" input of the SIS & SIG encoder. This connection is used to control latency.
 

@@ -51,6 +51,27 @@ enum class program_type {
     SPECIAL_READING_SERVICES = 76
 };
 
+enum class service_data_type {
+    NON_SPECIFIC = 0,
+    NEWS = 1,
+    SPORTS = 3,
+    WEATHER = 29,
+    EMERGENCY = 31,
+    TRAFFIC = 65,
+    IMAGE_MAPS = 66,
+    TEXT = 80,
+    ADVERTISING = 256,
+    FINANCIAL = 257,
+    STOCK_TICKER = 258,
+    NAVIGATION = 259,
+    ELECTRONIC_PROGRAM_GUIDE = 260,
+    AUDIO = 261,
+    PRIVATE_DATA_NETWORK = 262,
+    SERVICE_MAINTENANCE = 263,
+    HD_RADIO_SYSTEM_SERVICES = 264,
+    AUDIO_RELATED_DATA = 265
+};
+
 /*!
  * \brief <+description of block+>
  * \ingroup nrsc5
@@ -76,6 +97,8 @@ public:
          const std::string& message = "",
          const std::vector<std::string> program_names = { "HD1" },
          const std::vector<program_type> program_types = { program_type::UNDEFINED },
+         const std::vector<service_data_type> data_types = {},
+         const std::vector<unsigned int> data_mime_types = {},
          const float latitude = 40.6892,
          const float longitude = -74.0445,
          const float altitude = 93.0,

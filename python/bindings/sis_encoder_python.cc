@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(sis_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(f13d710492333ac6aa294bc1cb32441b)                     */
+/* BINDTOOL_HEADER_FILE_HASH(38686eef3cff9a3dab3147ef3ec3001d)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -72,6 +72,27 @@ void bind_sis_encoder(py::module& m)
         .value("SPECIAL_READING_SERVICES", ::gr::nrsc5::program_type::SPECIAL_READING_SERVICES)
         .export_values();
 
+    py::enum_<::gr::nrsc5::service_data_type>(m, "service_data_type")
+        .value("NON_SPECIFIC", ::gr::nrsc5::service_data_type::NON_SPECIFIC)
+        .value("NEWS", ::gr::nrsc5::service_data_type::NEWS)
+        .value("SPORTS", ::gr::nrsc5::service_data_type::SPORTS)
+        .value("WEATHER", ::gr::nrsc5::service_data_type::WEATHER)
+        .value("EMERGENCY", ::gr::nrsc5::service_data_type::EMERGENCY)
+        .value("TRAFFIC", ::gr::nrsc5::service_data_type::TRAFFIC)
+        .value("IMAGE_MAPS", ::gr::nrsc5::service_data_type::IMAGE_MAPS)
+        .value("TEXT", ::gr::nrsc5::service_data_type::TEXT)
+        .value("ADVERTISING", ::gr::nrsc5::service_data_type::ADVERTISING)
+        .value("FINANCIAL", ::gr::nrsc5::service_data_type::FINANCIAL)
+        .value("STOCK_TICKER", ::gr::nrsc5::service_data_type::STOCK_TICKER)
+        .value("NAVIGATION", ::gr::nrsc5::service_data_type::NAVIGATION)
+        .value("ELECTRONIC_PROGRAM_GUIDE", ::gr::nrsc5::service_data_type::ELECTRONIC_PROGRAM_GUIDE)
+        .value("AUDIO", ::gr::nrsc5::service_data_type::AUDIO)
+        .value("PRIVATE_DATA_NETWORK", ::gr::nrsc5::service_data_type::PRIVATE_DATA_NETWORK)
+        .value("SERVICE_MAINTENANCE", ::gr::nrsc5::service_data_type::SERVICE_MAINTENANCE)
+        .value("HD_RADIO_SYSTEM_SERVICES", ::gr::nrsc5::service_data_type::HD_RADIO_SYSTEM_SERVICES)
+        .value("AUDIO_RELATED_DATA", ::gr::nrsc5::service_data_type::AUDIO_RELATED_DATA)
+        .export_values();
+
     py::class_<sis_encoder, gr::sync_block, gr::block, gr::basic_block,
         std::shared_ptr<sis_encoder>>(m, "sis_encoder", D(sis_encoder))
 
@@ -82,6 +103,8 @@ void bind_sis_encoder(py::module& m)
            py::arg("message") = "",
            py::arg("program_names") = std::vector<std::string>({ "HD1" }),
            py::arg("program_types") = std::vector<::gr::nrsc5::program_type>({ ::gr::nrsc5::program_type::UNDEFINED }),
+           py::arg("data_types") = std::vector<::gr::nrsc5::service_data_type>({}),
+           py::arg("data_mime_types") = std::vector<unsigned int>({}),
            py::arg("latitude") = 40.6892,
            py::arg("longitude") = -74.0445,
            py::arg("altitude") = 93.0,

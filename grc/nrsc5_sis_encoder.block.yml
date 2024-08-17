@@ -123,6 +123,13 @@ parameters:
     option_labels: ["None", "News", "Information", "Sports", "Talk", "Rock", "Classic Rock", "Adult Hits", "Soft Rock", "Top 40", "Country", "Oldies", "Soft", "Nostalgia", "Jazz", "Classical", "Rhythm and Blues", "Soft Rhythm and Blues", "Foreign Language", "Religious Music", "Religious Talk", "Personality", "Public", "College", "Spanish Talk", "Spanish Music", "Hip-Hop", "Weather", "Emergency Test", "Emergency", "Traffic", "Special Reading Services"]
     default: nrsc5.program_type.NEWS
     hide: ${ ('part' if num_programs >= 8 else 'all') }
+-   id: emergency_alerts
+    label: Emergency alerts
+    dtype: bool
+    default: 'False'
+    options: ['False', 'True']
+    option_labels: ['Off', 'On']
+    hide: part
 -   id: latitude
     label: Latitude
     dtype: real
@@ -178,6 +185,6 @@ asserts:
 
 templates:
     imports: import nrsc5
-    make: nrsc5.sis_encoder(mode=${mode}, short_name=${short_name}, slogan=${slogan}, message=${message}, program_names=[${program_name0}${ ', '+program_name1 if int(num_programs) >= 2 else '' }${ ', '+program_name2 if int(num_programs) >= 3 else '' }${ ', '+program_name3 if int(num_programs) >= 4 else '' }${ ', '+program_name4 if int(num_programs) >= 5 else '' }${ ', '+program_name5 if int(num_programs) >= 6 else '' }${ ', '+program_name6 if int(num_programs) >= 7 else '' }${ ', '+program_name7 if int(num_programs) >= 8 else '' }], program_types=[${program_type0}${ ', '+program_type1 if int(num_programs) >= 2 else '' }${ ', '+program_type2 if int(num_programs) >= 3 else '' }${ ', '+program_type3 if int(num_programs) >= 4 else '' }${ ', '+program_type4 if int(num_programs) >= 5 else '' }${ ', '+program_type5 if int(num_programs) >= 6 else '' }${ ', '+program_type6 if int(num_programs) >= 7 else '' }${ ', '+program_type7 if int(num_programs) >= 8 else '' }], latitude=${latitude}, longitude=${longitude}, altitude=${altitude}, country_code=${country_code}, fcc_facility_id=${fcc_facility_id})
+    make: nrsc5.sis_encoder(mode=${mode}, short_name=${short_name}, slogan=${slogan}, message=${message}, program_names=[${program_name0}${ ', '+program_name1 if int(num_programs) >= 2 else '' }${ ', '+program_name2 if int(num_programs) >= 3 else '' }${ ', '+program_name3 if int(num_programs) >= 4 else '' }${ ', '+program_name4 if int(num_programs) >= 5 else '' }${ ', '+program_name5 if int(num_programs) >= 6 else '' }${ ', '+program_name6 if int(num_programs) >= 7 else '' }${ ', '+program_name7 if int(num_programs) >= 8 else '' }], program_types=[${program_type0}${ ', '+program_type1 if int(num_programs) >= 2 else '' }${ ', '+program_type2 if int(num_programs) >= 3 else '' }${ ', '+program_type3 if int(num_programs) >= 4 else '' }${ ', '+program_type4 if int(num_programs) >= 5 else '' }${ ', '+program_type5 if int(num_programs) >= 6 else '' }${ ', '+program_type6 if int(num_programs) >= 7 else '' }${ ', '+program_type7 if int(num_programs) >= 8 else '' }], data_types=[${'nrsc5.service_data_type.EMERGENCY, ' if emergency_alerts == 'True' else ''}], data_mime_types=[${'0x444, ' if emergency_alerts == 'True' else ''}], latitude=${latitude}, longitude=${longitude}, altitude=${altitude}, country_code=${country_code}, fcc_facility_id=${fcc_facility_id})
 
 file_format: 1
