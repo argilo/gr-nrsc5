@@ -81,7 +81,7 @@ The `apps/send_alert.py` script can be used to generate control data and send a 
 ./send_alert.py 3 "Example alert" --same 51000
 ```
 
-To indicate that the station provides emergency alerts, set the "Emergency alerts" parameter to "On".
+To indicate that the station provides emergency alerts, set the "Emergency alerts" parameter of the SIS & SIG encoder to "On".
 
 The "clock" output of the Layer 1 encoder must be connected to the "clock" input of the SIS & SIG encoder. This connection is used to control latency.
 
