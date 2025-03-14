@@ -14,6 +14,8 @@
 namespace gr {
 namespace nrsc5 {
 
+enum class blend { DISABLE, SELECT, ENABLE };
+
 /*!
  * \brief <+description of block+>
  * \ingroup nrsc5
@@ -35,7 +37,8 @@ public:
     static sptr make(const int num_progs,
                      const int first_prog,
                      const int size,
-                     const int data_bytes = 0);
+                     const int data_bytes = 0,
+                     const blend blend_control = blend::ENABLE);
 };
 
 } // namespace nrsc5

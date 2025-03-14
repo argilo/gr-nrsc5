@@ -445,6 +445,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    blend_control: nrsc5.blend.ENABLE
     comment: ''
     data_bytes: '2000'
     first_prog: '0'
@@ -953,4 +954,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0

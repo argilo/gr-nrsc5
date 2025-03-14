@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: Hd Tx Usrp
-# GNU Radio version: 3.10.11.0
+# GNU Radio version: 3.10.12.0
 
 from gnuradio import analog
 from gnuradio import blocks
@@ -86,7 +86,7 @@ class hd_tx_usrp(gr.top_block):
         self.nrsc5_psd_encoder_0 = nrsc5.psd_encoder(0, 'Title', 'Artist', 128)
         self.nrsc5_lot_encoder_0_0 = nrsc5.lot_encoder('album_art.jpg', 1337, 0x1000)
         self.nrsc5_lot_encoder_0 = nrsc5.lot_encoder('SLABCD$$010000.png', 42, 0x1001)
-        self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176, 2000)
+        self.nrsc5_l2_encoder_0 = nrsc5.l2_encoder(1, 0, 146176, 2000, nrsc5.blend.ENABLE)
         self.nrsc5_l1_fm_encoder_mp1_0 = nrsc5.l1_fm_encoder(1)
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(2, 64000)
         self.network_socket_pdu_1 = network.socket_pdu('TCP_SERVER', '', '52002', 10000, False)

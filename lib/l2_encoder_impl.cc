@@ -25,10 +25,11 @@ namespace nrsc5 {
 l2_encoder::sptr l2_encoder::make(const int num_progs,
                                   const int first_prog,
                                   const int size,
-                                  const int data_bytes)
+                                  const int data_bytes,
+                                  const blend blend_control)
 {
     return gnuradio::get_initial_sptr(
-        new l2_encoder_impl(num_progs, first_prog, size, data_bytes));
+        new l2_encoder_impl(num_progs, first_prog, size, data_bytes, blend_control));
 }
 
 
@@ -38,7 +39,8 @@ l2_encoder::sptr l2_encoder::make(const int num_progs,
 l2_encoder_impl::l2_encoder_impl(const int num_progs,
                                  const int first_prog,
                                  const int size,
-                                 const int data_bytes)
+                                 const int data_bytes,
+                                 const blend blend_control)
     : gr::block("l2_encoder",
                 gr::io_signature::make(2, 16, sizeof(unsigned char)),
                 gr::io_signature::make(1, 1, sizeof(unsigned char) * size))
@@ -54,6 +56,7 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     memset(program_type, 0, sizeof(program_type));
     this->size = size;
     this->data_bytes = data_bytes;
+    this->blend_control = blend_control;
     payload_bytes = (size - 22) / 8;
     out_buf = (unsigned char*)malloc(payload_bytes);
     rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
@@ -180,7 +183,7 @@ int l2_encoder_impl::general_work(int noutput_items,
                                codec_mode,
                                /*stream_id*/ 0,
                                pdu_seq_no,
-                               /*blend_control*/ program_number == 0 ? 2 : 0,
+                               program_number == 0 ? static_cast<int>(blend_control) : 0,
                                /*digital_gain_or_per_stream_delay*/ 0,
                                /*common_delay*/ program_number == 0 ? 24 : 0,
                                /*latency*/ 4,

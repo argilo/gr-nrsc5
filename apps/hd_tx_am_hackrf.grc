@@ -422,6 +422,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    blend_control: nrsc5.blend.ENABLE
     comment: ''
     data_bytes: '0'
     first_prog: '0'
@@ -433,7 +434,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 40.0]
+    coordinate: [536, 32.0]
     rotation: 180
     state: enabled
 - name: nrsc5_psd_encoder_0
@@ -870,4 +871,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.11.0
+  grc_version: 3.10.12.0

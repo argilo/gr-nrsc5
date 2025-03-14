@@ -62,6 +62,7 @@ private:
     int program_type[MAX_PROGRAMS];
     int size;
     int data_bytes;
+    blend blend_control;
     int payload_bytes;
     unsigned char rs_buf[255];
     void* rs_enc;
@@ -112,7 +113,8 @@ public:
     l2_encoder_impl(const int num_progs,
                     const int first_prog,
                     const int size,
-                    const int data_bytes = 0);
+                    const int data_bytes = 0,
+                    const blend blend_control = blend::ENABLE);
     ~l2_encoder_impl();
 
     // Where all the action really happens
