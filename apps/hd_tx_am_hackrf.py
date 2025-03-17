@@ -88,7 +88,7 @@ class hd_tx_am_hackrf(gr.top_block):
         self.low_pass_filter_1 = filter.fir_filter_fff(
             1,
             firdes.low_pass(
-                0.5,
+                1,
                 audio_rate,
                 4500,
                 1000,
@@ -99,10 +99,11 @@ class hd_tx_am_hackrf(gr.top_block):
         self.blocks_wavfile_source_0 = blocks.wavfile_source('sample_mono.wav', True)
         self.blocks_rotator_cc_0 = blocks.rotator_cc((-2 * math.pi * 100000 / samp_rate), False)
         self.blocks_null_source_0 = blocks.null_source(gr.sizeof_char*24000)
+        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.4)
         self.blocks_float_to_complex_0 = blocks.float_to_complex(1)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, (int(audio_rate * 5.5)))
         self.blocks_add_xx_0 = blocks.add_vcc(1)
-        self.blocks_add_const_vxx_0 = blocks.add_const_ff(0.5)
+        self.blocks_add_const_vxx_0 = blocks.add_const_ff(1)
 
 
         ##################################################
@@ -112,9 +113,10 @@ class hd_tx_am_hackrf(gr.top_block):
         self.msg_connect((self.nrsc5_l1_am_encoder_ma1_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma1_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.blocks_float_to_complex_0, 0))
-        self.connect((self.blocks_add_xx_0, 0), (self.blocks_rotator_cc_0, 0))
+        self.connect((self.blocks_add_xx_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.low_pass_filter_1, 0))
         self.connect((self.blocks_float_to_complex_0, 0), (self.rational_resampler_xxx_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_rotator_cc_0, 0))
         self.connect((self.blocks_null_source_0, 0), (self.nrsc5_l1_am_encoder_ma1_0, 1))
         self.connect((self.blocks_rotator_cc_0, 0), (self.osmosdr_sink_0, 0))
         self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
@@ -154,7 +156,7 @@ class hd_tx_am_hackrf(gr.top_block):
     def set_audio_rate(self, audio_rate):
         self.audio_rate = audio_rate
         self.blocks_delay_0.set_dly(int((int(self.audio_rate * 5.5))))
-        self.low_pass_filter_1.set_taps(firdes.low_pass(0.5, self.audio_rate, 4500, 1000, window.WIN_HAMMING, 6.76))
+        self.low_pass_filter_1.set_taps(firdes.low_pass(1, self.audio_rate, 4500, 1000, window.WIN_HAMMING, 6.76))
 
 
 
