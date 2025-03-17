@@ -28,6 +28,7 @@ include(GrPybind)
 # Python Bindings
 ########################################################################
 list(APPEND nrsc5_python_files
+    am_pulse_shaper_python.cc
     hdc_encoder_python.cc
     l1_am_encoder_python.cc
     l1_fm_encoder_python.cc

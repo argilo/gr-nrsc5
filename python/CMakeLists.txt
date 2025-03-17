@@ -31,6 +31,7 @@ GR_PYTHON_INSTALL(
 include(GrTest)
 
 set(GR_TEST_TARGET_DEPS gnuradio-nrsc5)
+GR_ADD_TEST(qa_am_pulse_shaper ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_am_pulse_shaper.py)
 GR_ADD_TEST(qa_hdc_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_hdc_encoder.py)
 GR_ADD_TEST(qa_l1_fm_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_l1_fm_encoder.py)
 GR_ADD_TEST(qa_l1_am_encoder ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_l1_am_encoder.py)

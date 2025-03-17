@@ -7,6 +7,7 @@
 #
 
 install(FILES
+    nrsc5_am_pulse_shaper.block.yml
     nrsc5_hdc_encoder.block.yml
     nrsc5_l1_fm_encoder_mp1.block.yml
     nrsc5_l1_fm_encoder_mp2.block.yml

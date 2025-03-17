@@ -1,0 +1,20 @@
+id: nrsc5_am_pulse_shaper
+label: AM pulse shaper
+category: '[NRSC-5]'
+
+inputs:
+- label: in
+  domain: stream
+  dtype: complex
+  vlen: 256
+
+outputs:
+- label: out
+  domain: stream
+  dtype: complex
+
+templates:
+  imports: import nrsc5
+  make: nrsc5.am_pulse_shaper()
+
+file_format: 1

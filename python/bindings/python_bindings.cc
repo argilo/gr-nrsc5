@@ -21,6 +21,7 @@ namespace py = pybind11;
 /* Please do not delete
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
+    void bind_am_pulse_shaper(py::module& m);
     void bind_hdc_encoder(py::module& m);
     void bind_l1_am_encoder(py::module& m);
     void bind_l1_fm_encoder(py::module& m);
@@ -55,6 +56,7 @@ PYBIND11_MODULE(nrsc5_python, m)
     /* Please do not delete
     /**************************************/
     // BINDING_FUNCTION_CALLS(
+    bind_am_pulse_shaper(m);
     bind_hdc_encoder(m);
     bind_l1_am_encoder(m);
     bind_l1_fm_encoder(m);

@@ -11,6 +11,7 @@
 ########################################################################
 install(FILES
     api.h
+    am_pulse_shaper.h
     hdc_encoder.h
     l1_fm_encoder.h
     l1_am_encoder.h
