@@ -309,7 +309,7 @@ void sis_encoder_impl::update_control_data_crc(std::string& control_data)
 {
     unsigned short poly = 0xD010;
     unsigned short reg = 0x7E1B;
-    int i, lowbit;
+    int lowbit;
 
     control_data[1] &= 0x00;
     control_data[2] &= 0xf0;
