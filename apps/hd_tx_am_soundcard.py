@@ -55,6 +55,7 @@ class hd_tx_am_soundcard(gr.top_block):
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(1, 17900)
         self.nrsc5_am_pulse_shaper_0 = nrsc5.am_pulse_shaper()
         self.network_socket_pdu_1 = network.socket_pdu('TCP_SERVER', '', '52002', 10000, False)
+        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', '', '52000', 10000, False)
         self.low_pass_filter_1 = filter.fir_filter_fff(
             1,
             firdes.low_pass(
@@ -80,6 +81,7 @@ class hd_tx_am_soundcard(gr.top_block):
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.nrsc5_sis_encoder_0, 'command'))
         self.msg_connect((self.network_socket_pdu_1, 'pdus'), (self.nrsc5_psd_encoder_0, 'set_meta'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma1_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma1_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))

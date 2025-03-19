@@ -181,6 +181,26 @@ blocks:
     coordinate: [8, 236]
     rotation: 0
     state: enabled
+- name: network_socket_pdu_0_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '52000'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 240.0]
+    rotation: 180
+    state: true
 - name: network_socket_pdu_1
   id: network_socket_pdu
   parameters:
@@ -638,6 +658,7 @@ connections:
 - [blocks_rotator_cc_0, '0', osmosdr_sink_0, '0']
 - [blocks_wavfile_source_0, '0', nrsc5_hdc_encoder_0, '0']
 - [fft_vxx_0, '0', nrsc5_am_pulse_shaper_0, '0']
+- [network_socket_pdu_0_0, pdus, nrsc5_sis_encoder_0, command]
 - [network_socket_pdu_1, pdus, nrsc5_psd_encoder_0, set_meta]
 - [nrsc5_am_pulse_shaper_0, '0', blocks_add_const_vxx_0, '0']
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']

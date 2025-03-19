@@ -74,6 +74,7 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         self.nrsc5_hdc_encoder_0 = nrsc5.hdc_encoder(1, 17900)
         self.nrsc5_am_pulse_shaper_0 = nrsc5.am_pulse_shaper()
         self.network_socket_pdu_1 = network.socket_pdu('TCP_SERVER', '', '52002', 10000, False)
+        self.network_socket_pdu_0_0 = network.socket_pdu('TCP_SERVER', '', '52000', 10000, False)
         self.fft_vxx_0 = fft.fft_vcc(256, False, window.rectangular(256), True, 1)
         self.blocks_wavfile_source_0 = blocks.wavfile_source('sample_mono.wav', True)
         self.blocks_rotator_cc_0 = blocks.rotator_cc((-2 * math.pi * 100000 / samp_rate), False)
@@ -85,6 +86,7 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.network_socket_pdu_0_0, 'pdus'), (self.nrsc5_sis_encoder_0, 'command'))
         self.msg_connect((self.network_socket_pdu_1, 'pdus'), (self.nrsc5_psd_encoder_0, 'set_meta'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma3_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma3_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))

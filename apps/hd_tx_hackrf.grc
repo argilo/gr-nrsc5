@@ -365,7 +365,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 236.0]
+    coordinate: [328, 272.0]
+    rotation: 0
+    state: true
+- name: network_socket_pdu_0_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '52000'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [328, 168.0]
     rotation: 0
     state: true
 - name: network_socket_pdu_1
@@ -896,6 +916,7 @@ connections:
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [low_pass_filter_0, '0', blocks_add_xx_0, '1']
 - [network_socket_pdu_0, pdus, nrsc5_lot_encoder_0_0, file]
+- [network_socket_pdu_0_0, pdus, nrsc5_sis_encoder_0, command]
 - [network_socket_pdu_1, pdus, nrsc5_psd_encoder_0, set_meta]
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']

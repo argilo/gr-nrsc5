@@ -457,7 +457,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 24.0]
+    coordinate: [592, 16.0]
     rotation: 180
     state: enabled
 - name: nrsc5_lot_encoder_0
