@@ -69,6 +69,22 @@ blocks:
     coordinate: [8, 100]
     rotation: 0
     state: enabled
+- name: sideband_power_db
+  id: variable
+  parameters:
+    comment: 'Total power in the digital
+
+      sidebands relative to the
+
+      FM carrier (-20 to -10 dB)'
+    value: '-10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 304.0]
+    rotation: 0
+    state: enabled
 - name: analog_wfm_tx_0_0
   id: analog_wfm_tx
   parameters:
@@ -141,7 +157,7 @@ blocks:
     bus_structure: null
     coordinate: [1048, 860.0]
     rotation: 180
-    state: true
+    state: enabled
 - name: blocks_keep_m_in_n_0
   id: blocks_keep_m_in_n
   parameters:
@@ -167,7 +183,7 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    const: '0.001'
+    const: 10**(sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382))
     maxoutbuf: '0'
     minoutbuf: '0'
     type: complex
@@ -176,7 +192,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 668.0]
+    coordinate: [152, 664.0]
+    rotation: 0
+    state: enabled
+- name: blocks_multiply_const_vxx_1
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '0.35'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 680.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_xx_0
@@ -289,7 +323,7 @@ blocks:
     bus_structure: null
     coordinate: [1200, 852.0]
     rotation: 180
-    state: true
+    state: enabled
 - name: fft_vxx_0
   id: fft_vxx
   parameters:
@@ -333,7 +367,7 @@ blocks:
     comment: ''
     cutoff_freq: '80000'
     decim: '1'
-    gain: '0.1'
+    gain: '1'
     interp: '1'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -345,7 +379,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 812.0]
+    coordinate: [208, 808.0]
     rotation: 180
     state: enabled
 - name: network_socket_pdu_0
@@ -911,17 +945,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 624.0]
+    coordinate: [656, 624.0]
     rotation: 0
     state: enabled
 
 connections:
 - [analog_wfm_tx_0_0, '0', rational_resampler_xxx_0_0, '0']
-- [blocks_add_xx_0, '0', uhd_usrp_sink_0, '0']
+- [blocks_add_xx_0, '0', blocks_multiply_const_vxx_1, '0']
 - [blocks_conjugate_cc_0, '0', rational_resampler_xxx_1, '0']
 - [blocks_delay_0, '0', analog_wfm_tx_0_0, '0']
 - [blocks_keep_m_in_n_0, '0', blocks_multiply_xx_0, '1']
 - [blocks_multiply_const_vxx_0, '0', blocks_add_xx_0, '0']
+- [blocks_multiply_const_vxx_1, '0', uhd_usrp_sink_0, '0']
 - [blocks_multiply_xx_0, '0', blocks_conjugate_cc_0, '0']
 - [blocks_repeat_0, '0', blocks_vector_to_stream_0, '0']
 - [blocks_vector_source_x_0, '0', blocks_multiply_xx_0, '0']
