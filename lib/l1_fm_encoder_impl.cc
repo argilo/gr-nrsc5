@@ -618,8 +618,8 @@ void l1_fm_encoder_impl::secondary_sc_data_seq(unsigned char* out,
     out[23] = 0; // reserved
     out[24] = 0; // reserved
     out[25] = 0; // reserved
-    out[26] = (ssmi & 0x10) >> 4;
-    out[27] = (ssmi & 0x08) >> 3;
+    out[26] = 0; // reserved
+    out[27] = 0; // reserved
     out[28] = (ssmi & 0x04) >> 2;
     out[29] = (ssmi & 0x02) >> 1;
     out[30] = (ssmi & 0x01);
