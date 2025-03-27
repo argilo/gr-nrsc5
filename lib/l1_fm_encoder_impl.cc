@@ -543,14 +543,14 @@ void l1_fm_encoder_impl::primary_sc_data_seq(
     out[5] = 1; // sync
     out[6] = 0; // sync
 
-    out[7] = 0;      // reserved
+    out[7] = sci;
     out[8] = out[7]; // parity
 
     out[9] = 1; // sync
 
     out[10] = (scid & 0x2) >> 1;
     out[11] = (scid & 0x1);
-    out[12] = sci;
+    out[12] = 0; // ASM1
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
     out[14] = 0; // sync
@@ -565,7 +565,7 @@ void l1_fm_encoder_impl::primary_sc_data_seq(
     out[21] = 1; // sync
     out[22] = 1; // sync
 
-    out[23] = 1; // P3ISI
+    out[23] = 1; // ASM0
     out[24] = 0; // reserved
     out[25] = (psmi & 0x20) >> 5;
     out[26] = (psmi & 0x10) >> 4;
