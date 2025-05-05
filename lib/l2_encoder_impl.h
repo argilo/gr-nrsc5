@@ -53,6 +53,10 @@ constexpr unsigned char BBM[] = { 0x7d, 0x3a, 0xe2, 0x42 };
 constexpr int MAX_PROGRAMS = 8;
 constexpr uint8_t AAS_PACKET_FORMAT = 0x21;
 constexpr uint16_t SIG_PORT = 0x20;
+constexpr int RS_CODEWORD_LEN = 96;
+constexpr int RS_PARITY_LEN = 8;
+constexpr int CONTROL_WORD_LEN = 6;
+constexpr int HEF_LEN = 3;
 
 class l2_encoder_impl : public l2_encoder
 {

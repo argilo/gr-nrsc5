@@ -160,13 +160,15 @@ int l2_encoder_impl::general_work(int noutput_items,
                     break;
                 off += length;
 
-                if (14 + len_locators(nop + 1) + 3 + psd_bytes + audio_length + 2 >
+                if (RS_PARITY_LEN + CONTROL_WORD_LEN + len_locators(nop + 1) + HEF_LEN +
+                        psd_bytes + audio_length + 2 >
                     bytes_left)
                     break;
-                if (14 + len_locators(nop + 1) + 3 + psd_bytes + audio_length + length +
-                        1 >
+                if (RS_PARITY_LEN + CONTROL_WORD_LEN + len_locators(nop + 1) + HEF_LEN +
+                        psd_bytes + audio_length + length + 1 >
                     bytes_left) {
-                    begin_bytes = bytes_left - (14 + len_locators(nop + 1) + 3 +
+                    begin_bytes = bytes_left - (RS_PARITY_LEN + CONTROL_WORD_LEN +
+                                                len_locators(nop + 1) + HEF_LEN +
                                                 psd_bytes + audio_length + 1);
                     end_bytes = length - begin_bytes;
                     nop++;
@@ -177,9 +179,10 @@ int l2_encoder_impl::general_work(int noutput_items,
                 audio_length += length + 1;
             }
 
-            int la_loc = 14 + len_locators(nop) + 3 + psd_bytes - 1;
+            int la_loc = RS_PARITY_LEN + CONTROL_WORD_LEN + len_locators(nop) + HEF_LEN +
+                         psd_bytes - 1;
 
-            write_control_word(out_program + 8,
+            write_control_word(out_program + RS_PARITY_LEN,
                                codec_mode,
                                /*stream_id*/ 0,
                                pdu_seq_no,
@@ -215,26 +218,27 @@ int l2_encoder_impl::general_work(int noutput_items,
                     out_program[++end] = hdc[p][hdc_off[p]++];
                 }
                 out_program[++end] = crc_reg;
-                write_locator(out_program + 14, i, end);
+                write_locator(out_program + RS_PARITY_LEN + CONTROL_WORD_LEN, i, end);
             }
             partial_bytes[p] = end_bytes;
 
-            write_hef(out_program + 14 + len_locators(nop),
+            write_hef(out_program + RS_PARITY_LEN + CONTROL_WORD_LEN + len_locators(nop),
                       program_number,
                       /*access*/ 0,
                       program_type[program_number]);
 
-            memcpy(out_program + (14 + len_locators(nop) + 3),
+            memcpy(out_program +
+                       (RS_PARITY_LEN + CONTROL_WORD_LEN + len_locators(nop) + HEF_LEN),
                    psd[p] + psd_off[p],
                    psd_bytes);
             psd_off[p] += psd_bytes;
 
             // Reed-Solomon encoding
-            for (int i = 95; i >= 8; i--) {
+            for (int i = RS_CODEWORD_LEN - 1; i >= RS_PARITY_LEN; i--) {
                 rs_buf[255 - i - 1] = out_program[i];
             }
-            encode_rs_char(rs_enc, rs_buf, rs_buf + 247);
-            for (int i = 7; i >= 0; i--) {
+            encode_rs_char(rs_enc, rs_buf, rs_buf + 255 - RS_PARITY_LEN);
+            for (int i = RS_PARITY_LEN - 1; i >= 0; i--) {
                 out_program[i] = rs_buf[255 - i - 1];
             }
 
