@@ -90,6 +90,8 @@ class hd_tx_am_ma3_hackrf(gr.top_block):
         self.msg_connect((self.network_socket_pdu_1, 'pdus'), (self.nrsc5_psd_encoder_0, 'set_meta'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma3_0, 'clock'), (self.nrsc5_psd_encoder_0, 'clock'))
         self.msg_connect((self.nrsc5_l1_am_encoder_ma3_0, 'clock'), (self.nrsc5_sis_encoder_0, 'clock'))
+        self.msg_connect((self.nrsc5_l2_encoder_0, 'ready'), (self.nrsc5_sis_encoder_0, 'ready'))
+        self.msg_connect((self.nrsc5_sis_encoder_0, 'aas'), (self.nrsc5_l2_encoder_0, 'aas'))
         self.connect((self.blocks_add_const_vxx_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_rotator_cc_0, 0))
         self.connect((self.blocks_null_source_0, 0), (self.nrsc5_l1_am_encoder_ma3_0, 1))

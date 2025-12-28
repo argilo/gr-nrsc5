@@ -84,7 +84,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [800, 784.0]
+    coordinate: [800, 800.0]
     rotation: 180
     state: true
 - name: blocks_add_xx_0
@@ -102,7 +102,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 568.0]
+    coordinate: [384, 616.0]
     rotation: 0
     state: enabled
 - name: blocks_delay_0
@@ -122,7 +122,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1152, 784.0]
+    coordinate: [1152, 800.0]
     rotation: 180
     state: true
 - name: blocks_float_to_complex_0
@@ -138,7 +138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [616, 792.0]
+    coordinate: [616, 808.0]
     rotation: 180
     state: true
 - name: blocks_multiply_const_vxx_0
@@ -156,7 +156,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 576.0]
+    coordinate: [488, 624.0]
     rotation: 0
     state: enabled
 - name: blocks_null_source_0
@@ -175,7 +175,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 148.0]
+    coordinate: [592, 160.0]
     rotation: 180
     state: enabled
 - name: blocks_rotator_cc_0
@@ -192,7 +192,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 584.0]
+    coordinate: [680, 632.0]
     rotation: 0
     state: enabled
 - name: blocks_wavfile_source_0
@@ -210,7 +210,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 28.0]
+    coordinate: [920, 8.0]
     rotation: 180
     state: enabled
 - name: blocks_wavfile_source_1
@@ -228,7 +228,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1312, 776.0]
+    coordinate: [1312, 792.0]
     rotation: 180
     state: true
 - name: fft_vxx_0
@@ -249,7 +249,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 260.0]
+    coordinate: [296, 368.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -286,7 +286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 744.0]
+    coordinate: [960, 760.0]
     rotation: 180
     state: true
 - name: network_socket_pdu_0_0
@@ -306,8 +306,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 240.0]
-    rotation: 180
+    coordinate: [320, 256.0]
+    rotation: 0
     state: true
 - name: network_socket_pdu_1
   id: network_socket_pdu
@@ -326,7 +326,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 116.0]
+    coordinate: [1080, 104.0]
     rotation: 180
     state: true
 - name: nrsc5_am_pulse_shaper_0
@@ -341,7 +341,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [616, 344.0]
+    coordinate: [592, 408.0]
     rotation: 0
     state: enabled
 - name: nrsc5_hdc_encoder_0
@@ -358,7 +358,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 28.0]
+    coordinate: [768, 8.0]
     rotation: 180
     state: enabled
 - name: nrsc5_l1_am_encoder_ma1_0
@@ -393,7 +393,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 32.0]
+    coordinate: [560, 16.0]
     rotation: 180
     state: enabled
 - name: nrsc5_psd_encoder_0
@@ -412,7 +412,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 100.0]
+    coordinate: [832, 88.0]
     rotation: 180
     state: enabled
 - name: nrsc5_sis_encoder_0
@@ -454,8 +454,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 200.0]
-    rotation: 180
+    coordinate: [560, 216.0]
+    rotation: 0
     state: true
 - name: osmosdr_sink_0
   id: osmosdr_sink
@@ -715,7 +715,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 508.0]
+    coordinate: [960, 556.0]
     rotation: 0
     state: enabled
 - name: rational_resampler_xxx_0
@@ -735,7 +735,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 776.0]
+    coordinate: [424, 792.0]
     rotation: 180
     state: enabled
 - name: rational_resampler_xxx_0_0
@@ -755,7 +755,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 776.0]
+    coordinate: [232, 792.0]
     rotation: 180
     state: enabled
 - name: rational_resampler_xxx_1
@@ -775,7 +775,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 396.0]
+    coordinate: [600, 496.0]
     rotation: 180
     state: enabled
 - name: rational_resampler_xxx_2
@@ -795,7 +795,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 396.0]
+    coordinate: [392, 496.0]
     rotation: 180
     state: enabled
 
@@ -819,8 +819,10 @@ connections:
 - [nrsc5_l1_am_encoder_ma1_0, clock, nrsc5_psd_encoder_0, clock]
 - [nrsc5_l1_am_encoder_ma1_0, clock, nrsc5_sis_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_am_encoder_ma1_0, '0']
+- [nrsc5_l2_encoder_0, ready, nrsc5_sis_encoder_0, ready]
 - [nrsc5_psd_encoder_0, '0', nrsc5_l2_encoder_0, '1']
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_am_encoder_ma1_0, '2']
+- [nrsc5_sis_encoder_0, aas, nrsc5_l2_encoder_0, aas]
 - [rational_resampler_xxx_0, '0', rational_resampler_xxx_0_0, '0']
 - [rational_resampler_xxx_0_0, '0', blocks_add_xx_0, '1']
 - [rational_resampler_xxx_1, '0', rational_resampler_xxx_2, '0']
