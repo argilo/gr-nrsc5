@@ -241,6 +241,7 @@ private:
     unsigned int fcc_facility_id;
     std::string short_name;
     bool fm_suffix;
+    bool use_standard_short_station_name;
     std::string slogan;
     std::string message;
     std::string emergency_alert;
@@ -310,6 +311,7 @@ private:
     void write_universal_short_station_name();
     void write_station_slogan();
     void write_emergency_alert();
+    bool can_use_standard_short_station_name();
     std::string generate_sig();
     std::string generate_sig_service(sig_service_type type,
                                      unsigned int number,

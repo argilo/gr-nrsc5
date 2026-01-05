@@ -100,6 +100,8 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
         fm_suffix = false;
     }
 
+    this->use_standard_short_station_name = can_use_standard_short_station_name();
+
     this->mode = mode;
     if (this->mode == pids_mode::FM) {
         blocks_per_frame = BLOCKS_PER_FRAME_FM;
@@ -175,7 +177,7 @@ int sis_encoder_impl::work(int noutput_items,
 
     std::vector<std::vector<sched_item>>* schedule;
     if (this->mode == pids_mode::FM) {
-        if (this->short_name.length() <= 4) {
+        if (use_standard_short_station_name) {
             if (this->emergency_alert.length() == 0) {
                 schedule = &schedule_fm_short_no_ea;
             } else {
@@ -189,7 +191,7 @@ int sis_encoder_impl::work(int noutput_items,
             }
         }
     } else {
-        if (this->short_name.length() <= 4) {
+        if (use_standard_short_station_name) {
             if (this->emergency_alert.length() == 0) {
                 schedule = &schedule_am_short_no_ea;
             } else {
@@ -415,6 +417,21 @@ void sis_encoder_impl::write_station_id()
     }
     write_int(0, 3); // reserved
     write_int(fcc_facility_id, 19);
+}
+
+bool sis_encoder_impl::can_use_standard_short_station_name()
+{
+    if (this->short_name.length() > 4) {
+        return false;
+    }
+
+    for (int i = 0; i < this->short_name.length(); i++) {
+        if (strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ ?-*$", this->short_name[i]) == nullptr) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void sis_encoder_impl::write_station_name_short()
