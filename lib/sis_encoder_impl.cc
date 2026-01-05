@@ -1,6 +1,6 @@
 /* -*- c++ -*- */
 /*
- * Copyright 2017, 2023 Clayton Smith.
+ * Copyright 2017, 2023, 2026 Clayton Smith.
  * Copyright 2023 Vladislav Fomitchev.
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -13,6 +13,7 @@
 #include "sis_encoder_impl.h"
 #include <gnuradio/io_signature.h>
 #include <cmath>
+#include <cstring>
 
 using namespace std::string_literals;
 
@@ -426,7 +427,8 @@ bool sis_encoder_impl::can_use_standard_short_station_name()
     }
 
     for (int i = 0; i < this->short_name.length(); i++) {
-        if (strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ ?-*$", this->short_name[i]) == nullptr) {
+        if (std::strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ ?-*$", this->short_name[i]) ==
+            nullptr) {
             return false;
         }
     }
