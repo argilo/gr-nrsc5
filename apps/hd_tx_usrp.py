@@ -39,8 +39,9 @@ class hd_tx_usrp(gr.top_block):
         ##################################################
         # Variables
         ##################################################
-        self.sideband_power_db = sideband_power_db = -10
+        self.usb_power_db = usb_power_db = -13
         self.samp_rate = samp_rate = 2000000
+        self.lsb_power_db = lsb_power_db = -13
         self.freq = freq = 87.5e6
         self.audio_rate = audio_rate = 44100
 
@@ -109,8 +110,8 @@ class hd_tx_usrp(gr.top_block):
         self.blocks_vector_source_x_0 = blocks.vector_source_c([math.sin(math.pi / 2 * i / 112) for i in range(112)] + [1] * (2048-112) + [math.cos(math.pi / 2 * i / 112) for i in range(112)], True, 1, [])
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_gr_complex*2048, 2)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
+        self.blocks_multiply_const_vxx_2 = blocks.multiply_const_vcc([10**(lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
         self.blocks_multiply_const_vxx_1 = blocks.multiply_const_cc(0.35)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(10**(sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382)))
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 2160, 4096, 0)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, (int(audio_rate * 4.458)))
         self.blocks_conjugate_cc_0 = blocks.conjugate_cc()
@@ -143,34 +144,34 @@ class hd_tx_usrp(gr.top_block):
         self.connect((self.blocks_conjugate_cc_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_delay_0, 0), (self.analog_wfm_tx_0_0, 0))
         self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_multiply_xx_0, 1))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_1, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_2, 0), (self.fft_vxx_0, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_conjugate_cc_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
+        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
-        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.fft_vxx_0, 0))
+        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.blocks_multiply_const_vxx_2, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 0))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.rational_resampler_xxx_0_0, 0), (self.rational_resampler_xxx_0_0_0, 0))
         self.connect((self.rational_resampler_xxx_0_0_0, 0), (self.low_pass_filter_0_0, 0))
         self.connect((self.rational_resampler_xxx_1, 0), (self.rational_resampler_xxx_2, 0))
-        self.connect((self.rational_resampler_xxx_2, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.rational_resampler_xxx_2, 0), (self.blocks_add_xx_0, 0))
 
 
-    def get_sideband_power_db(self):
-        return self.sideband_power_db
+    def get_usb_power_db(self):
+        return self.usb_power_db
 
-    def set_sideband_power_db(self, sideband_power_db):
-        self.sideband_power_db = sideband_power_db
-        self.blocks_multiply_const_vxx_0.set_k(10**(self.sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382)))
+    def set_usb_power_db(self, usb_power_db):
+        self.usb_power_db = usb_power_db
+        self.blocks_multiply_const_vxx_2.set_k([10**(self.lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(self.usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -179,6 +180,13 @@ class hd_tx_usrp(gr.top_block):
         self.samp_rate = samp_rate
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.samp_rate, 80000, 20000, window.WIN_HAMMING, 6.76))
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+
+    def get_lsb_power_db(self):
+        return self.lsb_power_db
+
+    def set_lsb_power_db(self, lsb_power_db):
+        self.lsb_power_db = lsb_power_db
+        self.blocks_multiply_const_vxx_2.set_k([10**(self.lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(self.usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
 
     def get_freq(self):
         return self.freq

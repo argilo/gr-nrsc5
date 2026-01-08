@@ -57,6 +57,22 @@ blocks:
     coordinate: [8, 164]
     rotation: 0
     state: enabled
+- name: lsb_power_db
+  id: variable
+  parameters:
+    comment: 'Total power in the lower
+
+      sideband relative to the
+
+      FM carrier (-23 to -13 dB)'
+    value: '-13'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 304.0]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -69,20 +85,20 @@ blocks:
     coordinate: [8, 100]
     rotation: 0
     state: enabled
-- name: sideband_power_db
+- name: usb_power_db
   id: variable
   parameters:
-    comment: 'Total power in the digital
+    comment: 'Total power in the upper
 
-      sidebands relative to the
+      sideband relative to the
 
-      FM carrier (-20 to -10 dB)'
-    value: '-10'
+      FM carrier (-23 to -13 dB)'
+    value: '-13'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 304.0]
+    coordinate: [8, 432.0]
     rotation: 0
     state: enabled
 - name: analog_wfm_tx_0_0
@@ -177,24 +193,6 @@ blocks:
     coordinate: [864, 548.0]
     rotation: 180
     state: enabled
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: 10**(sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382))
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [152, 664.0]
-    rotation: 0
-    state: enabled
 - name: blocks_multiply_const_vxx_1
   id: blocks_multiply_const_vxx
   parameters:
@@ -212,6 +210,25 @@ blocks:
     bus_structure: null
     coordinate: [440, 680.0]
     rotation: 0
+    state: enabled
+- name: blocks_multiply_const_vxx_2
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '[10**(lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024
+      + [10**(usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '2048'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176.0, 192]
+    rotation: 270
     state: enabled
 - name: blocks_multiply_xx_0
   id: blocks_multiply_xx
@@ -955,8 +972,8 @@ connections:
 - [blocks_conjugate_cc_0, '0', rational_resampler_xxx_1, '0']
 - [blocks_delay_0, '0', analog_wfm_tx_0_0, '0']
 - [blocks_keep_m_in_n_0, '0', blocks_multiply_xx_0, '1']
-- [blocks_multiply_const_vxx_0, '0', blocks_add_xx_0, '0']
 - [blocks_multiply_const_vxx_1, '0', uhd_usrp_sink_0, '0']
+- [blocks_multiply_const_vxx_2, '0', fft_vxx_0, '0']
 - [blocks_multiply_xx_0, '0', blocks_conjugate_cc_0, '0']
 - [blocks_repeat_0, '0', blocks_vector_to_stream_0, '0']
 - [blocks_vector_source_x_0, '0', blocks_multiply_xx_0, '0']
@@ -970,7 +987,7 @@ connections:
 - [network_socket_pdu_0_0, pdus, nrsc5_sis_encoder_0, command]
 - [network_socket_pdu_1, pdus, nrsc5_psd_encoder_0, set_meta]
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
-- [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']
+- [nrsc5_l1_fm_encoder_mp1_0, '0', blocks_multiply_const_vxx_2, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, clock, nrsc5_psd_encoder_0, clock]
 - [nrsc5_l1_fm_encoder_mp1_0, clock, nrsc5_sis_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '0']
@@ -985,7 +1002,7 @@ connections:
 - [rational_resampler_xxx_0_0, '0', rational_resampler_xxx_0_0_0, '0']
 - [rational_resampler_xxx_0_0_0, '0', low_pass_filter_0_0, '0']
 - [rational_resampler_xxx_1, '0', rational_resampler_xxx_2, '0']
-- [rational_resampler_xxx_2, '0', blocks_multiply_const_vxx_0, '0']
+- [rational_resampler_xxx_2, '0', blocks_add_xx_0, '0']
 
 metadata:
   file_format: 1

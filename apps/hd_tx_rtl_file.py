@@ -29,7 +29,7 @@ import threading
 
 class hd_tx_rtl_file(gr.top_block):
 
-    def __init__(self, filename='hd_generated.cu8', seconds=60, sideband_power_db=(-10), snr_db=30):
+    def __init__(self, filename='hd_generated.cu8', lsb_power_db=(-13), seconds=60, snr_db=20, usb_power_db=(-13)):
         gr.top_block.__init__(self, "Hd Tx Rtl File", catch_exceptions=True)
         self.flowgraph_started = threading.Event()
 
@@ -37,9 +37,10 @@ class hd_tx_rtl_file(gr.top_block):
         # Parameters
         ##################################################
         self.filename = filename
+        self.lsb_power_db = lsb_power_db
         self.seconds = seconds
-        self.sideband_power_db = sideband_power_db
         self.snr_db = snr_db
+        self.usb_power_db = usb_power_db
 
         ##################################################
         # Variables
@@ -84,8 +85,8 @@ class hd_tx_rtl_file(gr.top_block):
         self.blocks_skiphead_0 = blocks.skiphead(gr.sizeof_char*1, (samp_rate * 2 * 5))
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_gr_complex*2048, 2)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
+        self.blocks_multiply_const_vxx_2 = blocks.multiply_const_vcc([10**(lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
         self.blocks_multiply_const_vxx_1 = blocks.multiply_const_cc(0.15)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(10**(sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382)))
         self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, 2160, 4096, 0)
         self.blocks_interleave_0 = blocks.interleave(gr.sizeof_float*1, 1)
         self.blocks_head_0 = blocks.head(gr.sizeof_char*1, (samp_rate * 2 * seconds))
@@ -103,7 +104,7 @@ class hd_tx_rtl_file(gr.top_block):
         	max_dev=75e3,
         	fh=(-1.0),
         )
-        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (10**((sideband_power_db-snr_db)/20) * math.sqrt(samp_rate / (382 * (1488375/4096)))), 1)
+        self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, (10**((max(lsb_power_db, usb_power_db)-snr_db)/20) * math.sqrt(4096/191)), 1)
 
 
         ##################################################
@@ -118,33 +119,33 @@ class hd_tx_rtl_file(gr.top_block):
         self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_0, 1))
         self.connect((self.analog_wfm_tx_0_0, 0), (self.rational_resampler_xxx_0_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.blocks_multiply_const_vxx_1, 0))
-        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_complex_to_float_0, 0), (self.blocks_interleave_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.blocks_interleave_0, 1))
         self.connect((self.blocks_conjugate_cc_0, 0), (self.rational_resampler_xxx_1, 0))
         self.connect((self.blocks_delay_0, 0), (self.analog_wfm_tx_0_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_skiphead_0, 0))
         self.connect((self.blocks_head_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_interleave_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_multiply_xx_0, 1))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_1, 0), (self.blocks_complex_to_float_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_2, 0), (self.fft_vxx_0, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.blocks_conjugate_cc_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.blocks_vector_to_stream_0, 0))
         self.connect((self.blocks_skiphead_0, 0), (self.blocks_head_0, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.blocks_vector_to_stream_0, 0), (self.blocks_keep_m_in_n_0, 0))
-        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_0, 1), (self.nrsc5_hdc_encoder_0, 1))
+        self.connect((self.blocks_wavfile_source_0, 0), (self.nrsc5_hdc_encoder_0, 0))
         self.connect((self.blocks_wavfile_source_1, 0), (self.blocks_delay_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.blocks_add_xx_0, 2))
         self.connect((self.nrsc5_hdc_encoder_0, 0), (self.nrsc5_l2_encoder_0, 0))
-        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.fft_vxx_0, 0))
+        self.connect((self.nrsc5_l1_fm_encoder_mp1_0, 0), (self.blocks_multiply_const_vxx_2, 0))
         self.connect((self.nrsc5_l2_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 0))
         self.connect((self.nrsc5_psd_encoder_0, 0), (self.nrsc5_l2_encoder_0, 1))
         self.connect((self.nrsc5_sis_encoder_0, 0), (self.nrsc5_l1_fm_encoder_mp1_0, 1))
         self.connect((self.rational_resampler_xxx_0_0, 0), (self.low_pass_filter_0, 0))
-        self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.rational_resampler_xxx_1, 0), (self.blocks_add_xx_0, 0))
 
 
     def get_filename(self):
@@ -154,6 +155,14 @@ class hd_tx_rtl_file(gr.top_block):
         self.filename = filename
         self.blocks_file_sink_0.open(self.filename)
 
+    def get_lsb_power_db(self):
+        return self.lsb_power_db
+
+    def set_lsb_power_db(self, lsb_power_db):
+        self.lsb_power_db = lsb_power_db
+        self.analog_noise_source_x_0.set_amplitude((10**((max(self.lsb_power_db, self.usb_power_db)-self.snr_db)/20) * math.sqrt(4096/191)))
+        self.blocks_multiply_const_vxx_2.set_k([10**(self.lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(self.usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
+
     def get_seconds(self):
         return self.seconds
 
@@ -161,27 +170,26 @@ class hd_tx_rtl_file(gr.top_block):
         self.seconds = seconds
         self.blocks_head_0.set_length((self.samp_rate * 2 * self.seconds))
 
-    def get_sideband_power_db(self):
-        return self.sideband_power_db
-
-    def set_sideband_power_db(self, sideband_power_db):
-        self.sideband_power_db = sideband_power_db
-        self.analog_noise_source_x_0.set_amplitude((10**((self.sideband_power_db-self.snr_db)/20) * math.sqrt(self.samp_rate / (382 * (1488375/4096)))))
-        self.blocks_multiply_const_vxx_0.set_k(10**(self.sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382)))
-
     def get_snr_db(self):
         return self.snr_db
 
     def set_snr_db(self, snr_db):
         self.snr_db = snr_db
-        self.analog_noise_source_x_0.set_amplitude((10**((self.sideband_power_db-self.snr_db)/20) * math.sqrt(self.samp_rate / (382 * (1488375/4096)))))
+        self.analog_noise_source_x_0.set_amplitude((10**((max(self.lsb_power_db, self.usb_power_db)-self.snr_db)/20) * math.sqrt(4096/191)))
+
+    def get_usb_power_db(self):
+        return self.usb_power_db
+
+    def set_usb_power_db(self, usb_power_db):
+        self.usb_power_db = usb_power_db
+        self.analog_noise_source_x_0.set_amplitude((10**((max(self.lsb_power_db, self.usb_power_db)-self.snr_db)/20) * math.sqrt(4096/191)))
+        self.blocks_multiply_const_vxx_2.set_k([10**(self.lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024 + [10**(self.usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024)
 
     def get_samp_rate(self):
         return self.samp_rate
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.analog_noise_source_x_0.set_amplitude((10**((self.sideband_power_db-self.snr_db)/20) * math.sqrt(self.samp_rate / (382 * (1488375/4096)))))
         self.blocks_head_0.set_length((self.samp_rate * 2 * self.seconds))
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 110000, 20000, window.WIN_HAMMING, 6.76))
 
@@ -200,21 +208,24 @@ def argument_parser():
         "--filename", dest="filename", type=str, default='hd_generated.cu8',
         help="Set filename [default=%(default)r]")
     parser.add_argument(
+        "--lsb-power-db", dest="lsb_power_db", type=eng_float, default=eng_notation.num_to_str(float((-13))),
+        help="Set lsb_power_db [default=%(default)r]")
+    parser.add_argument(
         "--seconds", dest="seconds", type=intx, default=60,
         help="Set seconds [default=%(default)r]")
     parser.add_argument(
-        "--sideband-power-db", dest="sideband_power_db", type=eng_float, default=eng_notation.num_to_str(float((-10))),
-        help="Set sideband_power_db [default=%(default)r]")
-    parser.add_argument(
-        "--snr-db", dest="snr_db", type=eng_float, default=eng_notation.num_to_str(float(30)),
+        "--snr-db", dest="snr_db", type=eng_float, default=eng_notation.num_to_str(float(20)),
         help="Set snr_db [default=%(default)r]")
+    parser.add_argument(
+        "--usb-power-db", dest="usb_power_db", type=eng_float, default=eng_notation.num_to_str(float((-13))),
+        help="Set usb_power_db [default=%(default)r]")
     return parser
 
 
 def main(top_block_cls=hd_tx_rtl_file, options=None):
     if options is None:
         options = argument_parser().parse_args()
-    tb = top_block_cls(filename=options.filename, seconds=options.seconds, sideband_power_db=options.sideband_power_db, snr_db=options.snr_db)
+    tb = top_block_cls(filename=options.filename, lsb_power_db=options.lsb_power_db, seconds=options.seconds, snr_db=options.snr_db, usb_power_db=options.usb_power_db)
 
     def sig_handler(sig=None, frame=None):
         tb.stop()

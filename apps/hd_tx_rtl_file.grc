@@ -62,7 +62,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    amp: 10**((sideband_power_db-snr_db)/20) * math.sqrt(samp_rate / (382 * (1488375/4096)))
+    amp: 10**((max(lsb_power_db, usb_power_db)-snr_db)/20) * math.sqrt(4096/191)
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -257,24 +257,6 @@ blocks:
     coordinate: [864, 592.0]
     rotation: 180
     state: enabled
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: 10**(sideband_power_db/20) * math.sqrt((135/128) * (1/2) * (1/382))
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [168, 592.0]
-    rotation: 180
-    state: enabled
 - name: blocks_multiply_const_vxx_1
   id: blocks_multiply_const_vxx
   parameters:
@@ -292,6 +274,25 @@ blocks:
     bus_structure: null
     coordinate: [304, 736.0]
     rotation: 0
+    state: enabled
+- name: blocks_multiply_const_vxx_2
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '[10**(lsb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024
+      + [10**(usb_power_db/20) * math.sqrt((135/128) * (1/2) * (1/191))]*1024'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '2048'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [152.0, 264]
+    rotation: 270
     state: enabled
 - name: blocks_multiply_xx_0
   id: blocks_multiply_xx
@@ -470,7 +471,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 236]
+    coordinate: [440, 8.0]
     rotation: 0
     state: enabled
 - name: low_pass_filter_0
@@ -496,6 +497,27 @@ blocks:
     bus_structure: null
     coordinate: [168, 952.0]
     rotation: 180
+    state: enabled
+- name: lsb_power_db
+  id: parameter
+  parameters:
+    alias: ''
+    comment: 'Total power in the lower
+
+      sideband relative to the
+
+      FM carrier (-23 to -13 dB)'
+    hide: none
+    label: ''
+    short_id: ''
+    type: eng_float
+    value: '-13'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 296.0]
+    rotation: 0
     state: enabled
 - name: nrsc5_hdc_encoder_0
   id: nrsc5_hdc_encoder
@@ -685,23 +707,6 @@ blocks:
     coordinate: [360, 8.0]
     rotation: 0
     state: enabled
-- name: sideband_power_db
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: ''
-    short_id: ''
-    type: eng_float
-    value: '-10'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [440, 8.0]
-    rotation: 0
-    state: enabled
 - name: snr_db
   id: parameter
   parameters:
@@ -711,12 +716,33 @@ blocks:
     label: ''
     short_id: ''
     type: eng_float
-    value: '30'
+    value: '20'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [576, 8.0]
+    coordinate: [8, 184.0]
+    rotation: 0
+    state: enabled
+- name: usb_power_db
+  id: parameter
+  parameters:
+    alias: ''
+    comment: 'Total power in the upper
+
+      sideband relative to the
+
+      FM carrier (-23 to -13 dB)'
+    hide: none
+    label: ''
+    short_id: ''
+    type: eng_float
+    value: '-13'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 440.0]
     rotation: 0
     state: enabled
 
@@ -732,8 +758,8 @@ connections:
 - [blocks_head_0, '0', blocks_file_sink_0, '0']
 - [blocks_interleave_0, '0', blocks_float_to_uchar_0, '0']
 - [blocks_keep_m_in_n_0, '0', blocks_multiply_xx_0, '1']
-- [blocks_multiply_const_vxx_0, '0', blocks_add_xx_0, '0']
 - [blocks_multiply_const_vxx_1, '0', blocks_complex_to_float_0, '0']
+- [blocks_multiply_const_vxx_2, '0', fft_vxx_0, '0']
 - [blocks_multiply_xx_0, '0', blocks_conjugate_cc_0, '0']
 - [blocks_repeat_0, '0', blocks_vector_to_stream_0, '0']
 - [blocks_skiphead_0, '0', blocks_head_0, '0']
@@ -745,7 +771,7 @@ connections:
 - [fft_vxx_0, '0', blocks_repeat_0, '0']
 - [low_pass_filter_0, '0', blocks_add_xx_0, '2']
 - [nrsc5_hdc_encoder_0, '0', nrsc5_l2_encoder_0, '0']
-- [nrsc5_l1_fm_encoder_mp1_0, '0', fft_vxx_0, '0']
+- [nrsc5_l1_fm_encoder_mp1_0, '0', blocks_multiply_const_vxx_2, '0']
 - [nrsc5_l1_fm_encoder_mp1_0, clock, nrsc5_psd_encoder_0, clock]
 - [nrsc5_l1_fm_encoder_mp1_0, clock, nrsc5_sis_encoder_0, clock]
 - [nrsc5_l2_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '0']
@@ -756,7 +782,7 @@ connections:
 - [nrsc5_sis_encoder_0, '0', nrsc5_l1_fm_encoder_mp1_0, '1']
 - [nrsc5_sis_encoder_0, aas, nrsc5_l2_encoder_0, aas]
 - [rational_resampler_xxx_0_0, '0', low_pass_filter_0, '0']
-- [rational_resampler_xxx_1, '0', blocks_multiply_const_vxx_0, '0']
+- [rational_resampler_xxx_1, '0', blocks_add_xx_0, '0']
 
 metadata:
   file_format: 1
