@@ -31,8 +31,13 @@ public:
      * constructor is in a private implementation
      * class. nrsc5::hdc_encoder::make is the public interface for
      * creating new instances.
+     *
+     * \param channels Number of audio channels (1 or 2)
+     * \param bitrate Bitrate in bits per second
+     * \param use_parametric_stereo Use Parametric Stereo (AOT 128) instead of Regular Stereo (AOT 127)
+     * \param tx_digital_gain TX Digital Audio Gain in dB (-8 to +6)
      */
-    static sptr make(int channels = 2, int bitrate = 64000);
+    static sptr make(int channels = 2, int bitrate = 64000, bool use_parametric_stereo = false, int tx_digital_gain = 0);
 };
 
 } // namespace nrsc5

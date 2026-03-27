@@ -2,3 +2,8 @@
 __pycache__/
 /.vscode/
 /apps/hd_generated.cu8
+CMakeLists.txt.bak*
+.claude/
+.history/
+/examples/*
+!/examples/README

@@ -4,7 +4,7 @@ category: '[NRSC-5]'
 
 templates:
   imports: import nrsc5
-  make: nrsc5.lot_encoder(${filename}, ${lot_id}, ${port})
+  make: nrsc5.lot_encoder(${filename}, ${lot_id}, ${port}, ${expiry})
 
 parameters:
 - id: filename
@@ -19,6 +19,10 @@ parameters:
   label: Port
   dtype: int
   default: '0x1001'
+- id: expiry
+  label: Expiry
+  dtype: string
+  default: '45 minutes'
 
 inputs:
 - label: file
@@ -32,5 +36,23 @@ outputs:
 - label: aas
   domain: message
   optional: false
+
+documentation: |-
+    Large Object Transfer (LOT) encoder. Transmits files as AAS PDUs.
+
+    Supported file types (auto-detected by magic bytes or extension):
+      - PNG (.png)
+      - JPEG (.jpg, .jpeg)
+      - GIF (.gif) -- both GIF87a and GIF89a
+      - Text (.txt)
+
+    For data-only channels (ports not tied to an audio subchannel's album art
+    or station logo), you must configure a matching data_channel entry in the
+    SIS & SIG encoder block with the same port and LOT ID. Without that SIG
+    advertisement the decoder will not know to reassemble the LOT object.
+
+    Expiry supports relative time strings (e.g. "45 minutes", "2 hours",
+    "1 week") or ISO 8601 datetime with timezone (e.g.
+    "2026-12-31T23:59:59+00:00").
 
 file_format: 1

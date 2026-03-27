@@ -130,6 +130,244 @@ parameters:
     options: ['False', 'True']
     option_labels: ['Off', 'On']
     hide: part
+-   id: num_data_channels
+    label: Data Channels
+    dtype: int
+    default: 0
+    options: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    hide: part
+-   id: dc0_port
+    label: Data Channel 0 Port
+    dtype: int
+    default: '0x1010'
+    hide: ${ ('part' if int(num_data_channels) >= 1 else 'all') }
+-   id: dc0_lot_id
+    label: Data Channel 0 LOT ID
+    dtype: int
+    default: 1010
+    hide: ${ ('part' if int(num_data_channels) >= 1 else 'all') }
+-   id: dc0_sdt
+    label: Data Channel 0 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 1 else 'all') }
+-   id: dc0_mime
+    label: Data Channel 0 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 1 else 'all') }
+-   id: dc0_name
+    label: Data Channel 0 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 1 else 'all') }
+-   id: dc1_port
+    label: Data Channel 1 Port
+    dtype: int
+    default: '0x1011'
+    hide: ${ ('part' if int(num_data_channels) >= 2 else 'all') }
+-   id: dc1_lot_id
+    label: Data Channel 1 LOT ID
+    dtype: int
+    default: 1011
+    hide: ${ ('part' if int(num_data_channels) >= 2 else 'all') }
+-   id: dc1_sdt
+    label: Data Channel 1 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 2 else 'all') }
+-   id: dc1_mime
+    label: Data Channel 1 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 2 else 'all') }
+-   id: dc1_name
+    label: Data Channel 1 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 2 else 'all') }
+-   id: dc2_port
+    label: Data Channel 2 Port
+    dtype: int
+    default: '0x1012'
+    hide: ${ ('part' if int(num_data_channels) >= 3 else 'all') }
+-   id: dc2_lot_id
+    label: Data Channel 2 LOT ID
+    dtype: int
+    default: 1012
+    hide: ${ ('part' if int(num_data_channels) >= 3 else 'all') }
+-   id: dc2_sdt
+    label: Data Channel 2 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 3 else 'all') }
+-   id: dc2_mime
+    label: Data Channel 2 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 3 else 'all') }
+-   id: dc2_name
+    label: Data Channel 2 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 3 else 'all') }
+-   id: dc3_port
+    label: Data Channel 3 Port
+    dtype: int
+    default: '0x1013'
+    hide: ${ ('part' if int(num_data_channels) >= 4 else 'all') }
+-   id: dc3_lot_id
+    label: Data Channel 3 LOT ID
+    dtype: int
+    default: 1013
+    hide: ${ ('part' if int(num_data_channels) >= 4 else 'all') }
+-   id: dc3_sdt
+    label: Data Channel 3 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 4 else 'all') }
+-   id: dc3_mime
+    label: Data Channel 3 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 4 else 'all') }
+-   id: dc3_name
+    label: Data Channel 3 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 4 else 'all') }
+-   id: dc4_port
+    label: Data Channel 4 Port
+    dtype: int
+    default: '0x1014'
+    hide: ${ ('part' if int(num_data_channels) >= 5 else 'all') }
+-   id: dc4_lot_id
+    label: Data Channel 4 LOT ID
+    dtype: int
+    default: 1014
+    hide: ${ ('part' if int(num_data_channels) >= 5 else 'all') }
+-   id: dc4_sdt
+    label: Data Channel 4 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 5 else 'all') }
+-   id: dc4_mime
+    label: Data Channel 4 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 5 else 'all') }
+-   id: dc4_name
+    label: Data Channel 4 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 5 else 'all') }
+-   id: dc5_port
+    label: Data Channel 5 Port
+    dtype: int
+    default: '0x1015'
+    hide: ${ ('part' if int(num_data_channels) >= 6 else 'all') }
+-   id: dc5_lot_id
+    label: Data Channel 5 LOT ID
+    dtype: int
+    default: 1015
+    hide: ${ ('part' if int(num_data_channels) >= 6 else 'all') }
+-   id: dc5_sdt
+    label: Data Channel 5 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 6 else 'all') }
+-   id: dc5_mime
+    label: Data Channel 5 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 6 else 'all') }
+-   id: dc5_name
+    label: Data Channel 5 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 6 else 'all') }
+-   id: dc6_port
+    label: Data Channel 6 Port
+    dtype: int
+    default: '0x1016'
+    hide: ${ ('part' if int(num_data_channels) >= 7 else 'all') }
+-   id: dc6_lot_id
+    label: Data Channel 6 LOT ID
+    dtype: int
+    default: 1016
+    hide: ${ ('part' if int(num_data_channels) >= 7 else 'all') }
+-   id: dc6_sdt
+    label: Data Channel 6 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 7 else 'all') }
+-   id: dc6_mime
+    label: Data Channel 6 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 7 else 'all') }
+-   id: dc6_name
+    label: Data Channel 6 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 7 else 'all') }
+-   id: dc7_port
+    label: Data Channel 7 Port
+    dtype: int
+    default: '0x1017'
+    hide: ${ ('part' if int(num_data_channels) >= 8 else 'all') }
+-   id: dc7_lot_id
+    label: Data Channel 7 LOT ID
+    dtype: int
+    default: 1017
+    hide: ${ ('part' if int(num_data_channels) >= 8 else 'all') }
+-   id: dc7_sdt
+    label: Data Channel 7 Service Data Type
+    dtype: enum
+    options: [nrsc5.service_data_type.NON_SPECIFIC, nrsc5.service_data_type.NEWS, nrsc5.service_data_type.SPORTS, nrsc5.service_data_type.WEATHER, nrsc5.service_data_type.EMERGENCY, nrsc5.service_data_type.TRAFFIC, nrsc5.service_data_type.IMAGE_MAPS, nrsc5.service_data_type.TEXT, nrsc5.service_data_type.ADVERTISING, nrsc5.service_data_type.FINANCIAL, nrsc5.service_data_type.STOCK_TICKER, nrsc5.service_data_type.NAVIGATION, nrsc5.service_data_type.ELECTRONIC_PROGRAM_GUIDE, nrsc5.service_data_type.AUDIO, nrsc5.service_data_type.PRIVATE_DATA_NETWORK, nrsc5.service_data_type.SERVICE_MAINTENANCE, nrsc5.service_data_type.HD_RADIO_SYSTEM_SERVICES, nrsc5.service_data_type.AUDIO_RELATED_DATA]
+    option_labels: ["Non-Specific", "News", "Sports", "Weather", "Emergency", "Traffic", "Image Maps", "Text", "Advertising", "Financial", "Stock Ticker", "Navigation", "EPG", "Audio", "Private Data", "Service Maintenance", "HD Radio System Services", "Audio Related Data"]
+    default: nrsc5.service_data_type.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 8 else 'all') }
+-   id: dc7_mime
+    label: Data Channel 7 MIME Type
+    dtype: enum
+    options: [nrsc5.mime_hash.TEXT, nrsc5.mime_hash.PNG, nrsc5.mime_hash.JPEG, nrsc5.mime_hash.GIF, nrsc5.mime_hash.PRIMARY_IMAGE, nrsc5.mime_hash.STATION_LOGO]
+    option_labels: ["Text (.txt)", "PNG Image", "JPEG Image", "GIF Image", "Primary Image", "Station Logo"]
+    default: nrsc5.mime_hash.TEXT
+    hide: ${ ('part' if int(num_data_channels) >= 8 else 'all') }
+-   id: dc7_name
+    label: Data Channel 7 Name
+    dtype: string
+    default: ""
+    hide: ${ ('part' if int(num_data_channels) >= 8 else 'all') }
 -   id: latitude
     label: Latitude
     dtype: real
@@ -152,6 +390,41 @@ parameters:
     hide: part
 -   id: fcc_facility_id
     label: FCC facility ID
+    dtype: int
+    default: 0
+    hide: part
+-   id: exciter_manufacturer_id
+    label: Exciter Manufacturer ID
+    dtype: string
+    default: CS
+    hide: part
+-   id: importer_manufacturer_id
+    label: Importer Manufacturer ID
+    dtype: string
+    default: CS
+    hide: part
+-   id: exciter_core_ver
+    label: Exciter Core Version (L1.L2.L3.L4)
+    dtype: string
+    default: "1.0.0.0"
+    hide: part
+-   id: exciter_mfr_ver
+    label: Exciter Mfr Version (L1.L2.L3.L4)
+    dtype: string
+    default: "1.0.0.0"
+    hide: part
+-   id: importer_core_ver
+    label: Importer Core Version (L1.L2.L3.L4)
+    dtype: string
+    default: "1.0.0.0"
+    hide: part
+-   id: importer_mfr_ver
+    label: Importer Mfr Version (L1.L2.L3.L4)
+    dtype: string
+    default: "1.0.0.0"
+    hide: part
+-   id: importer_config_number
+    label: Importer Configuration Number
     dtype: int
     default: 0
     hide: part
@@ -182,9 +455,57 @@ asserts:
 -   ${ -90 <= latitude <= 90 }
 -   ${ -180 <= longitude <= 180 }
 -   ${ len(country_code) == 2 }
+-   ${ len(exciter_manufacturer_id) == 2 }
+-   ${ len(importer_manufacturer_id) == 2 }
 
 templates:
     imports: import nrsc5
-    make: nrsc5.sis_encoder(mode=${mode}, short_name=${short_name}, slogan=${slogan}, message=${message}, program_names=[${program_name0}${ ', '+program_name1 if int(num_programs) >= 2 else '' }${ ', '+program_name2 if int(num_programs) >= 3 else '' }${ ', '+program_name3 if int(num_programs) >= 4 else '' }${ ', '+program_name4 if int(num_programs) >= 5 else '' }${ ', '+program_name5 if int(num_programs) >= 6 else '' }${ ', '+program_name6 if int(num_programs) >= 7 else '' }${ ', '+program_name7 if int(num_programs) >= 8 else '' }], program_types=[${program_type0}${ ', '+program_type1 if int(num_programs) >= 2 else '' }${ ', '+program_type2 if int(num_programs) >= 3 else '' }${ ', '+program_type3 if int(num_programs) >= 4 else '' }${ ', '+program_type4 if int(num_programs) >= 5 else '' }${ ', '+program_type5 if int(num_programs) >= 6 else '' }${ ', '+program_type6 if int(num_programs) >= 7 else '' }${ ', '+program_type7 if int(num_programs) >= 8 else '' }], data_types=[${'nrsc5.service_data_type.EMERGENCY, ' if emergency_alerts == 'True' else ''}], data_mime_types=[${'0x444, ' if emergency_alerts == 'True' else ''}], latitude=${latitude}, longitude=${longitude}, altitude=${altitude}, country_code=${country_code}, fcc_facility_id=${fcc_facility_id})
+    make: |
+        nrsc5.sis_encoder(
+            mode=${mode},
+            short_name=${short_name},
+            slogan=${slogan},
+            message=${message},
+            program_names=[${program_name0}${ ', '+program_name1 if int(num_programs) >= 2 else '' }${ ', '+program_name2 if int(num_programs) >= 3 else '' }${ ', '+program_name3 if int(num_programs) >= 4 else '' }${ ', '+program_name4 if int(num_programs) >= 5 else '' }${ ', '+program_name5 if int(num_programs) >= 6 else '' }${ ', '+program_name6 if int(num_programs) >= 7 else '' }${ ', '+program_name7 if int(num_programs) >= 8 else '' }],
+            program_types=[${program_type0}${ ', '+program_type1 if int(num_programs) >= 2 else '' }${ ', '+program_type2 if int(num_programs) >= 3 else '' }${ ', '+program_type3 if int(num_programs) >= 4 else '' }${ ', '+program_type4 if int(num_programs) >= 5 else '' }${ ', '+program_type5 if int(num_programs) >= 6 else '' }${ ', '+program_type6 if int(num_programs) >= 7 else '' }${ ', '+program_type7 if int(num_programs) >= 8 else '' }],
+            data_types=[${'nrsc5.service_data_type.EMERGENCY, ' if emergency_alerts == 'True' else ''}],
+            data_mime_types=[${'0x444, ' if emergency_alerts == 'True' else ''}],
+            latitude=${latitude},
+            longitude=${longitude},
+            altitude=${altitude},
+            country_code=${country_code},
+            fcc_facility_id=${fcc_facility_id},
+            data_channels=[${ 'nrsc5.data_channel_config('+dc0_port+', '+dc0_lot_id+', int('+dc0_sdt+'), int('+dc0_mime+'), '+dc0_name+'), ' if int(num_data_channels) >= 1 else '' }${ 'nrsc5.data_channel_config('+dc1_port+', '+dc1_lot_id+', int('+dc1_sdt+'), int('+dc1_mime+'), '+dc1_name+'), ' if int(num_data_channels) >= 2 else '' }${ 'nrsc5.data_channel_config('+dc2_port+', '+dc2_lot_id+', int('+dc2_sdt+'), int('+dc2_mime+'), '+dc2_name+'), ' if int(num_data_channels) >= 3 else '' }${ 'nrsc5.data_channel_config('+dc3_port+', '+dc3_lot_id+', int('+dc3_sdt+'), int('+dc3_mime+'), '+dc3_name+'), ' if int(num_data_channels) >= 4 else '' }${ 'nrsc5.data_channel_config('+dc4_port+', '+dc4_lot_id+', int('+dc4_sdt+'), int('+dc4_mime+'), '+dc4_name+'), ' if int(num_data_channels) >= 5 else '' }${ 'nrsc5.data_channel_config('+dc5_port+', '+dc5_lot_id+', int('+dc5_sdt+'), int('+dc5_mime+'), '+dc5_name+'), ' if int(num_data_channels) >= 6 else '' }${ 'nrsc5.data_channel_config('+dc6_port+', '+dc6_lot_id+', int('+dc6_sdt+'), int('+dc6_mime+'), '+dc6_name+'), ' if int(num_data_channels) >= 7 else '' }${ 'nrsc5.data_channel_config('+dc7_port+', '+dc7_lot_id+', int('+dc7_sdt+'), int('+dc7_mime+'), '+dc7_name+'), ' if int(num_data_channels) >= 8 else '' }],
+            exciter_manufacturer_id=${exciter_manufacturer_id},
+            importer_manufacturer_id=${importer_manufacturer_id},
+            exciter_core_version=[int(x) for x in ${exciter_core_ver}.split('.')],
+            exciter_mfr_version=[int(x) for x in ${exciter_mfr_ver}.split('.')],
+            importer_core_version=[int(x) for x in ${importer_core_ver}.split('.')],
+            importer_mfr_version=[int(x) for x in ${importer_mfr_ver}.split('.')],
+            importer_configuration_number=${importer_config_number})
+
+documentation: |-
+    SIS (Station Information Service) and SIG (Station Information Guide) encoder.
+
+    Data Channels: Configure data-only channels for transmitting LOT files
+    independent of audio subchannels. Each data channel is advertised in SIG
+    with its port, LOT ID, Service Data Type, and MIME Type Hash so decoders
+    can properly reassemble the LOT objects.
+
+    SIS Parameters (runtime via TCP command port):
+      set_param|<index>|<value>
+        Index 0:  Leap Second Offset (pending|current or 0xPPCC)
+        Index 1:  Leap Second ALFN LSB
+        Index 2:  Leap Second ALFN MSB
+        Index 3:  Local Time (utc_offset_minutes[|dst_sched|dst_local|dst_regional])
+        Index 4:  Exciter Manufacturer ID (2 chars)
+        Index 5:  Exciter Core Version (L1.L2.L3)
+        Index 6:  Exciter Mfr Version (L1.L2.L3)
+        Index 7:  Exciter V4+Status (core4.mfr4.core_status.mfr_status)
+        Index 8:  Importer Manufacturer ID (2 chars)
+        Index 9:  Importer Core Version (L1.L2.L3)
+        Index 10: Importer Mfr Version (L1.L2.L3)
+        Index 11: Importer V4+Status (core4.mfr4.core_status.mfr_status)
+        Index 12: Importer Configuration Number (0-65535)
 
 file_format: 1

@@ -13,6 +13,17 @@ parameters:
     label: Bitrate
     dtype: int
     default: 64000
+-   id: use_parametric_stereo
+    label: Stereo Mode
+    dtype: enum
+    default: 'False'
+    options: ['False', 'True']
+    option_labels: ['Regular Stereo (AOT 127)', 'Parametric Stereo (AOT 128)']
+    hide: ${ 'all' if channels == 1 else 'none' }
+-   id: tx_digital_gain
+    label: TX Digital Audio Gain (dB)
+    dtype: int
+    default: 0
 
 inputs:
 -   domain: stream
@@ -25,9 +36,10 @@ outputs:
 asserts:
 - ${ 1 <= channels <= 2 }
 - ${ 0 < bitrate }
+- ${ -8 <= tx_digital_gain <= 6 }
 
 templates:
     imports: import nrsc5
-    make: nrsc5.hdc_encoder(${channels}, ${bitrate})
+    make: nrsc5.hdc_encoder(${channels}, ${bitrate}, ${use_parametric_stereo}, ${tx_digital_gain})
 
 file_format: 1

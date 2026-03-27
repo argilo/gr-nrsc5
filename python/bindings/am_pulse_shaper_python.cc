@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(1)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(am_pulse_shaper.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(63976a7ef63bf73db3b965a0f491ce28)                     */
+/* BINDTOOL_HEADER_FILE_HASH(0)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>

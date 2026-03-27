@@ -13,6 +13,7 @@
 
 #include <gnuradio/attributes.h>
 #include <cstdint>
+#include <string>
 
 #ifdef gnuradio_nrsc5_EXPORTS
 #define NRSC5_API __GR_ATTR_EXPORT
@@ -34,11 +35,33 @@ enum class mime_hash : uint32_t {
     TEXT = 0xBB492AAC,
     JPEG = 0x1E653E9C,
     PNG = 0x4F328CA0,
+    GIF = 0x87A4FD95,
     TTN_TPEG_1 = 0xB39EBEB2,
     TTN_TPEG_2 = 0x4EB03469,
     TTN_TPEG_3 = 0x52103469,
     TTN_STM_TRAFFIC = 0xFF8422D7,
     TTN_STM_WEATHER = 0xEF042E96
+};
+
+/* Configuration for a data-only channel advertised via SIG/SIM.
+ * Each entry causes:
+ *   - A DATA service descriptor in the Service Information Message (SIM)
+ *   - A DATA_COMPONENT entry in the SIG with the correct port, SDT, and MIME hash
+ *   - A DATA_INFO entry so decoders can reassemble LOT objects on that port
+ *
+ * port          AAS port number the LOT encoder is transmitting on
+ * lot_id        LOT object ID used by the LOT encoder on this port
+ * sdt           Service Data Type (from service_data_type enum)
+ * mime          MIME type hash (from mime_hash enum) -- set to 0 to auto-select
+ *              from the file extension at runtime
+ * name          Service name shown in decoder (e.g., "Traffic", "Weather")
+ */
+struct data_channel_config {
+    uint16_t port;
+    uint16_t lot_id;
+    unsigned int sdt;    // service_data_type value
+    uint32_t mime;       // mime_hash value; 0 = auto
+    std::string name;
 };
 
 } /* namespace nrsc5 */

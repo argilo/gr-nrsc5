@@ -540,7 +540,7 @@ void l1_am_encoder_impl::interleaver_pids(unsigned char* in,
 
 /* 1012s.pdf table 11-1 */
 void l1_am_encoder_impl::sc_data_seq(
-    unsigned char* out, int pli, int hppi, int aabi, int rdbi, int bc, int smi)
+    unsigned char* out, int pli, int hppi, int abbi, int rdbi, int bc, int smi)
 {
     out[0] = 0; // sync
     out[1] = 1; // sync
@@ -557,7 +557,7 @@ void l1_am_encoder_impl::sc_data_seq(
 
     out[10] = 0;                           // reserved
     out[11] = hppi;                        // high power pids indicator
-    out[12] = aabi;                        // analog audio bandwidth indicator
+    out[12] = abbi;                        // analog audio bandwidth indicator
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
     out[14] = 0; // sync

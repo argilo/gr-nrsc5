@@ -33,12 +33,23 @@ public:
      * constructor is in a private implementation
      * class. nrsc5::l2_encoder::make is the public interface for
      * creating new instances.
+     *
+     * \param num_progs Number of programs
+     * \param first_prog First program number
+     * \param size PDU size in bits
+     * \param data_bytes Number of data bytes
+     * \param blend_control Blend control mode
+     * \param tx_digital_gain TX Digital Audio Gain in dB (range: -8 to +6 dB)
+     * \param debug_logs Enable debug logging for L2 Lot ID port operations
+     * \param ccc_width Configuration control channel width (1-30 bytes)
      */
     static sptr make(const int num_progs,
                      const int first_prog,
                      const int size,
                      const int data_bytes = 0,
                      const blend blend_control = blend::ENABLE,
+                     const int tx_digital_gain = 0,
+                     const bool debug_logs = false,
                      const int ccc_width = 24);
 };
 

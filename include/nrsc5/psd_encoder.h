@@ -33,8 +33,13 @@ public:
      * creating new instances.
      */
     static sptr make(const int prog_num,
-                     const std::string& title,
-                     const std::string& artist,
+                     const std::string& title = "",
+                     const std::string& artist = "",
+                     const std::string& album = "",
+                     const std::string& genre = "",
+                     const std::string& comment_language = "",
+                     const std::string& comment_short_desc = "",
+                     const std::string& comment_text = "",
                      const int bytes_per_frame = 0);
 };
 

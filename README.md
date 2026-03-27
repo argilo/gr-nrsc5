@@ -30,16 +30,44 @@ This block encodes audio into High-Definition Coding (HDC) frames. The input sam
 
 ### PSD encoder
 
-This block encodes Program Service Data PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing.
+This block encodes Program Service Data PDUs, as described in https://www.nrscstandards.org/standards-and-guidelines/documents/standards/nrsc-5-d/reference-docs/1028s.pdf. PSD conveys information (e.g. track title & artist) about the audio that is currently playing. The encoder supports all ID3 frames defined in NRSC-5 Table 5-1.
 
 To control latency, connect the "clock" output of the Layer 1 encoder to the "clock" input of the PSD encoder, and set "Bytes/frame limit" to 128 (if the L2 frame size is 24000 or larger) or 64 (if the L2 frame size is smaller than 24000).
 
-To dynamically update title, artist, and XHDR data, connect a Socket PDU (TCP Server) block to the "set_meta" input, and send any of the following commands via TCP, followed by a carriage return:
+To dynamically update metadata, connect a Socket PDU (TCP Server) block to the "set_meta" input, and send any of the following commands via TCP, followed by a carriage return:
 
-* `titleExample Title` — set title to `Example Title`
-* `artistExample Artist` — set artist to `Example Artist`
+**Basic Metadata (PSD Types 1-4):**
+* `titleExample Title` — set title to `Example Title` (TIT2)
+* `artistExample Artist` — set artist to `Example Artist` (TPE1)
+* `albumExample Album` — set album to `Example Album` (TALB)
+* `genreRock` — set genre to `Rock` (TCON)
+
+**Comment (PSD Type 5 - COMM):**
+* `commentRecorded live at Madison Square Garden` — set comment text
+* `comment_shortInfo` — set comment short description
+* `comment_languageeng` — set comment language (3-byte ISO 639-2 code, default: eng)
+
+**Commercial Frame (PSD Type 6 - COMR):**
+* `commercial_price$9.99` — set price string
+* `commercial_valid20261231` — set expiration date (YYYYMMDD format)
+* `commercial_urlhttps://example.com/buy` — set contact URL for purchase
+* `commercial_received0` — set received-as byte (how merchandise is received)
+* `commercial_sellerExample Store` — set seller name
+* `commercial_descBuy now and save 20%!` — set advertisement description
+
+**Reference Identifier (PSD Type 7 - UFID):**
+* `ufid_ownerhttp://musicbrainz.org` — set owner identifier URL
+* `ufid_idabc123def456` — set unique identifier (up to 64 bytes)
+
+**Album Art (XHDR):**
 * `lot1337` — display album art contained in LOT file 1337
 * `lot-1` — display station logo
+
+**Notes:**
+* All metadata fields are optional except Title and Artist (per NRSC-5 requirements)
+* Maximum PSD message size is 1,018 bytes (excluding 6-byte overhead)
+* Title, Artist, Album, and Genre frames should be limited to less than 128 characters
+* Binary pictures are not supported in PSD; use LOT protocol for album art transmission
 
 ### SIS & SIG encoder
 
@@ -89,23 +117,57 @@ The "clock" output of the Layer 1 encoder must be connected to the "clock" input
 
 This block sends files to the receiver (for instance, containing album art or a station logo) by encoding them as Advanced Application Services (AAS) PDUs, according to the Large Object Transfer (LOT) protocol. The "aas" output must be connected to the Layer 2 encoder's "aas" input, and the "ready" output of the Layer 2 encoder must be connected to the "ready" input of the LOT encoder to tell it when it should produce output.
 
+#### File Expiry
+
+Files transmitted via LOT include an expiry date/time. The expiry can be set in the GRC block's "Expiry" parameter (default: "45 minutes") or specified per-file via TCP commands. The expiry parameter supports two formats:
+
+**Relative Time Format** (recommended):
+* `15 milliseconds`, `15ms`, `15mil`
+* `120 seconds`, `120s`, `120sec`
+* `15 minutes`, `15m`, `15min`
+* `2 hours`, `2h`, `2hr`
+* `7 days`, `7d`
+* `2 weeks`, `2w`, `2wk`
+* `6 months`, `6mn`, `6month`
+* `1 year`, `1y`, `1yr`
+
+**ISO 8601 / TZ Format:**
+* `2026-12-31T23:59:59+00:00` (with timezone offset)
+* `2026-12-31T23:59:59Z` (UTC with 'Z' suffix)
+* `2026-12-31 23:59:59+00:00` (space separator also supported)
+
+#### TCP Commands
+
 To allow new files to be sent at runtime, connect a Socket PDU (TCP Server) block to the "file" input. To read a new file from disk, send the following command, followed by a carriage return:
 
 ```
-file|<lot_id>|<filename>
+file|<lot_id>|<filename>|<expiry>
+```
+
+Example:
+```
+file|1337|album_art.png|15 minutes
 ```
 
 To stream in a file over the network connection, send the following command, followed by a carriage return:
 
 ```
-streamfile|<lot_id>|<size>|<filename>
+streamfile|<lot_id>|<size>|<filename>|<expiry>
+```
+
+Example:
+```
+streamfile|1337|4096|album_art.png|2 hours
 ```
 
 Then send the file itself over the same network connection.
 
 The `apps/send_album_art.py` script demonstrates how to stream an album art file and request for it to be displayed by the receiver.
 
-Note: Station logo and album art files must use PNG or JPEG format, and be 200x200 pixels in size.
+**Notes:**
+* The expiry parameter is optional in TCP commands; if omitted, the default expiry from the GRC block is used
+* Station logo and album art files must use PNG or JPEG format, and be 200x200 pixels in size
+* Expiry dates are encoded in the LOT header and transmitted to the receiver
 
 ### Layer 2 encoder
 

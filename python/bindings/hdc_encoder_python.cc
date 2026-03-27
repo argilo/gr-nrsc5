@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(hdc_encoder.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(189e984318a00d48a752b2e0010ef257)                     */
+/* BINDTOOL_HEADER_FILE_HASH(0)                                                    */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -39,6 +39,8 @@ void bind_hdc_encoder(py::module& m)
         .def(py::init(&hdc_encoder::make),
            py::arg("channels") = 2,
            py::arg("bitrate") = 64000,
+           py::arg("use_parametric_stereo") = false,
+           py::arg("tx_digital_gain") = 0,
            D(hdc_encoder,make)
         )
 

@@ -15,16 +15,16 @@
 namespace gr {
 namespace nrsc5 {
 
-hdc_encoder::sptr hdc_encoder::make(int channels, int bitrate)
+hdc_encoder::sptr hdc_encoder::make(int channels, int bitrate, bool use_parametric_stereo, int tx_digital_gain)
 {
-    return gnuradio::get_initial_sptr(new hdc_encoder_impl(channels, bitrate));
+    return gnuradio::get_initial_sptr(new hdc_encoder_impl(channels, bitrate, use_parametric_stereo, tx_digital_gain));
 }
 
 
 /*
  * The private constructor
  */
-hdc_encoder_impl::hdc_encoder_impl(int channels, int bitrate)
+hdc_encoder_impl::hdc_encoder_impl(int channels, int bitrate, bool use_parametric_stereo, int tx_digital_gain)
     : gr::block("hdc_encoder",
                 gr::io_signature::make(1, 2, sizeof(float)),
                 gr::io_signature::make(1, 1, sizeof(unsigned char)))
@@ -33,10 +33,36 @@ hdc_encoder_impl::hdc_encoder_impl(int channels, int bitrate)
     bytes_per_frame = bitrate * SAMPLES_PER_FRAME / HDC_SAMPLE_RATE / 8;
     set_relative_rate((double)bytes_per_frame / SAMPLES_PER_FRAME);
 
+    // Validate and clamp TX Digital Audio Gain to valid range (-8 to +6 dB)
+    if (tx_digital_gain < -8) {
+        this->tx_digital_gain = -8;
+        fprintf(stderr, "Warning: TX Digital Audio Gain clamped to minimum -8 dB\n");
+    } else if (tx_digital_gain > 6) {
+        this->tx_digital_gain = 6;
+        fprintf(stderr, "Warning: TX Digital Audio Gain clamped to maximum +6 dB\n");
+    } else {
+        this->tx_digital_gain = tx_digital_gain;
+    }
+
+    // Convert dB to linear multiplier: multiplier = 10^(dB/20)
+    gain_multiplier = pow(10.0, this->tx_digital_gain / 20.0);
+
     int vbr = 0;
     int afterburner = 1;
     CHANNEL_MODE mode;
     AACENC_InfoStruct info = { 0 };
+
+    // Determine AOT based on parametric stereo setting
+    // AOT 127 = HE-AAC v1 (Regular Stereo)
+    // AOT 128 = HE-AAC v2 with Parametric Stereo (PS)
+    int aot = use_parametric_stereo ? 128 : 127;
+
+    // Note: Parametric Stereo (AOT 128) is only applicable for stereo
+    if (use_parametric_stereo && channels != 2) {
+        fprintf(stderr, "Warning: Parametric Stereo requires 2 channels, using Regular Stereo (AOT 127) instead\n");
+        aot = 127;
+    }
+
     switch (channels) {
     case 1:
         mode = MODE_1;
@@ -50,7 +76,7 @@ hdc_encoder_impl::hdc_encoder_impl(int channels, int bitrate)
     if (aacEncOpen(&handle, 0, channels) != AACENC_OK) {
         throw std::runtime_error("hdc_encoder: Unable to open decoder");
     }
-    if (aacEncoder_SetParam(handle, AACENC_AOT, AOT_HDC) != AACENC_OK) {
+    if (aacEncoder_SetParam(handle, AACENC_AOT, aot) != AACENC_OK) {
         throw std::runtime_error("hdc_encoder: Unable to set the AOT");
     }
     if (aacEncoder_SetParam(handle, AACENC_SAMPLERATE, HDC_SAMPLE_RATE) != AACENC_OK) {
@@ -164,7 +190,12 @@ int hdc_encoder_impl::general_work(int noutput_items,
         int convert_off = 0;
         for (int i = 0; i < frame_length; i++) {
             for (int channel = 0; channel < channels; channel++) {
-                convert_buf[convert_off++] = (short)(in[channel][in_off] * 32768);
+                // Apply TX Digital Audio Gain
+                double sample = in[channel][in_off] * gain_multiplier;
+                // Clamp to prevent overflow
+                if (sample > 1.0) sample = 1.0;
+                if (sample < -1.0) sample = -1.0;
+                convert_buf[convert_off++] = (short)(sample * 32768);
             }
             in_off++;
         }

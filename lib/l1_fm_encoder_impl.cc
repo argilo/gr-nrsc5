@@ -15,7 +15,7 @@
 namespace gr {
 namespace nrsc5 {
 
-std::vector<int> get_in_sizeofs_fm(const int psm, const int ssm)
+std::vector<int> get_in_sizeofs(const int psm, const int ssm)
 {
     std::vector<int> in_sizeofs;
 
@@ -67,7 +67,7 @@ l1_fm_encoder::sptr l1_fm_encoder::make(const int psm, const int ssm)
  */
 l1_fm_encoder_impl::l1_fm_encoder_impl(const int psm, const int ssm)
     : gr::block("l1_fm_encoder",
-                gr::io_signature::makev(2, 9, get_in_sizeofs_fm(psm, ssm)),
+                gr::io_signature::makev(2, 9, get_in_sizeofs(psm, ssm)),
                 gr::io_signature::make(1, 1, sizeof(gr_complex) * FM_FFT_SIZE))
 {
     set_output_multiple(FM_SYMBOLS_PER_FRAME);
@@ -336,6 +336,11 @@ int l1_fm_encoder_impl::general_work(int noutput_items,
                     px2_matrix + (symbol * 8 * 36), out + out_off, px2_channels, 8);
             }
 
+            // Explicitly suppress DC bin (bin 0) to eliminate carrier spike
+            // Also suppress Nyquist bin (1024) for proper conjugate symmetry
+            out[out_off + 0] = gr_complex(0, 0);
+            out[out_off + 1024] = gr_complex(0, 0);
+
             out_off += FM_FFT_SIZE;
         }
         message_port_pub(pmt::intern("clock"), pmt::from_long(1));
@@ -550,7 +555,7 @@ void l1_fm_encoder_impl::primary_sc_data_seq(
 
     out[10] = (scid & 0x2) >> 1;
     out[11] = (scid & 0x1);
-    out[12] = 0;                           // ASM1
+    out[12] = 0; // ASM1
     out[13] = out[10] ^ out[11] ^ out[12]; // parity
 
     out[14] = 0; // sync

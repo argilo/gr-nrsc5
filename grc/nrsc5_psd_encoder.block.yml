@@ -12,11 +12,31 @@ parameters:
 -   id: title
     label: Title
     dtype: string
-    default: Title
+    default: ''
 -   id: artist
     label: Artist
     dtype: string
-    default: Artist
+    default: ''
+-   id: album
+    label: Album
+    dtype: string
+    default: ''
+-   id: genre
+    label: Genre
+    dtype: string
+    default: ''
+-   id: comment_language
+    label: Comment Language
+    dtype: string
+    default: 'eng'
+-   id: comment_short_desc
+    label: Comment Short Description
+    dtype: string
+    default: ''
+-   id: comment_text
+    label: Comment Text
+    dtype: string
+    default: ''
 -   id: bytes_per_frame
     label: Bytes/frame limit
     dtype: int
@@ -39,9 +59,14 @@ asserts:
 
 templates:
     imports: import nrsc5
-    make: nrsc5.psd_encoder(${prog_num}, ${title}, ${artist}, ${bytes_per_frame})
+    make: nrsc5.psd_encoder(${prog_num}, ${title}, ${artist}, ${album}, ${genre}, ${comment_language}, ${comment_short_desc}, ${comment_text}, ${bytes_per_frame})
 
 documentation: |-
-    Accepts messages starting with 'title', 'artist', or 'lot' to set the respective fields.
+    Accepts messages starting with the following to set the respective fields:
+    - Basic metadata: 'title', 'artist', 'album', 'genre'
+    - Comment: 'comment' (text), 'comment_short' (short description), 'comment_language' (ISO 639-2 code)
+    - Commercial: 'commercial_price', 'commercial_valid', 'commercial_url', 'commercial_received', 'commercial_seller', 'commercial_desc'
+    - Reference ID: 'ufid_owner', 'ufid_id'
+    - Album art: 'lot'
 
 file_format: 1

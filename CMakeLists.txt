@@ -158,15 +158,16 @@ else()
     include (ExternalProject)
 
     set (FDK_AAC_PREFIX "${CMAKE_BINARY_DIR}/fdk-aac-prefix")
+
     ExternalProject_Add (
         fdk_aac_external
-        GIT_REPOSITORY "https://github.com/argilo/fdk-aac.git"
-        GIT_TAG 3b63dab59416a629f3de82463eb3875319a086d5
+        GIT_REPOSITORY "https://github.com/secludedhusky/fdk-aac.git"
+        GIT_TAG edits-parametric
         PREFIX ${FDK_AAC_PREFIX}
 
         BINARY_DIR ${FDK_AAC_PREFIX}/src/fdk_aac_external
         UPDATE_COMMAND ""
-        CONFIGURE_COMMAND ./autogen.sh && ./configure --prefix=${FDK_AAC_PREFIX} --disable-shared --enable-static CXXFLAGS=-fPIC
+        CONFIGURE_COMMAND chmod +x autogen.sh && ./autogen.sh && ./configure --prefix=${FDK_AAC_PREFIX} --disable-shared --enable-static CXXFLAGS=-fPIC
         BUILD_COMMAND make
     )
 

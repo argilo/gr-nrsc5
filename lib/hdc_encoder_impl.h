@@ -32,9 +32,11 @@ private:
     unsigned char* outbuf;
     int outbuf_off;
     int outbuf_len;
+    int tx_digital_gain;
+    double gain_multiplier;
 
 public:
-    hdc_encoder_impl(int channels, int bitrate);
+    hdc_encoder_impl(int channels, int bitrate, bool use_parametric_stereo, int tx_digital_gain);
     ~hdc_encoder_impl();
 
     // Where all the action really happens

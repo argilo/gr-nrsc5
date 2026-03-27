@@ -36,6 +36,14 @@ parameters:
     option_labels: ["Disable", "Select", "Enable"]
     default: nrsc5.blend.ENABLE
     hide: ${ ('none' if num_progs > 0 and first_prog == 0 else 'all') }
+-   id: tx_digital_gain
+    label: TX Digital Audio Gain (dB)
+    dtype: int
+    default: 0
+-   id: debug_logs
+    label: Debug Logs
+    dtype: bool
+    default: 'False'
 
 inputs:
 -   label: hdc
@@ -67,9 +75,10 @@ asserts:
 - ${ 0 <= first_prog <= 7 }
 - ${ 0 <= num_progs <= 8 - first_prog }
 - ${ data_bytes <= (size - 22) // 8 - 1 - ccc_width }
+- ${ -8 <= tx_digital_gain <= 6 }
 
 templates:
     imports: import nrsc5
-    make: nrsc5.l2_encoder(${num_progs}, ${first_prog}, ${size}, ${data_bytes}, ${blend_control}, ccc_width=${ccc_width})
+    make: nrsc5.l2_encoder(${num_progs}, ${first_prog}, ${size}, ${data_bytes}, ${blend_control}, ${tx_digital_gain}, ${debug_logs}, ccc_width=${ccc_width})
 
 file_format: 1

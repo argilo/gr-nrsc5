@@ -27,10 +27,12 @@ l2_encoder::sptr l2_encoder::make(const int num_progs,
                                   const int size,
                                   const int data_bytes,
                                   const blend blend_control,
+                                  const int tx_digital_gain,
+                                  const bool debug_logs,
                                   const int ccc_width)
 {
     return gnuradio::get_initial_sptr(
-        new l2_encoder_impl(num_progs, first_prog, size, data_bytes, blend_control, ccc_width));
+        new l2_encoder_impl(num_progs, first_prog, size, data_bytes, blend_control, tx_digital_gain, debug_logs, ccc_width));
 }
 
 
@@ -42,6 +44,8 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
                                  const int size,
                                  const int data_bytes,
                                  const blend blend_control,
+                                 const int tx_digital_gain,
+                                 const bool debug_logs,
                                  const int ccc_width)
     : gr::block("l2_encoder",
                 gr::io_signature::make(0, 16, sizeof(unsigned char)),
@@ -59,6 +63,18 @@ l2_encoder_impl::l2_encoder_impl(const int num_progs,
     this->size = size;
     this->data_bytes = data_bytes;
     this->blend_control = blend_control;
+    this->debug_logs = debug_logs;
+
+    // Validate and clamp TX Digital Audio Gain to valid range (-8 to +6 dB)
+    if (tx_digital_gain < -8) {
+        this->tx_digital_gain = -8;
+        fprintf(stderr, "Warning: TX Digital Audio Gain clamped to minimum -8 dB\n");
+    } else if (tx_digital_gain > 6) {
+        this->tx_digital_gain = 6;
+        fprintf(stderr, "Warning: TX Digital Audio Gain clamped to maximum +6 dB\n");
+    } else {
+        this->tx_digital_gain = tx_digital_gain;
+    }
     payload_bytes = (size - 22) / 8;
     out_buf = (unsigned char*)malloc(payload_bytes);
     rs_enc = init_rs_char(8, 0x11d, 1, 1, 8);
@@ -149,6 +165,7 @@ int l2_encoder_impl::general_work(int noutput_items,
         for (int p = 0; p < num_progs; p++) {
             int program_number = first_prog + p;
             int bytes_left = (out_buf + payload_bytes - total_data_width) - out_program;
+            int bytes_left_at_start = bytes_left;  // Save for error reporting
             int nop = 0;
             int off = hdc_off[p];
             int audio_length = 0;
@@ -196,7 +213,7 @@ int l2_encoder_impl::general_work(int noutput_items,
                                /*stream_id*/ 0,
                                pdu_seq_no,
                                program_number == 0 ? static_cast<int>(blend_control) : 0,
-                               /*digital_gain_or_per_stream_delay*/ 0,
+                               /*digital_gain_or_per_stream_delay*/ tx_gain_db_to_value(tx_digital_gain),
                                /*common_delay*/ program_number == 0 ? 24 : 0,
                                /*latency*/ 4,
                                partial_bytes[p] ? 1 : 0,
@@ -254,7 +271,119 @@ int l2_encoder_impl::general_work(int noutput_items,
             out_program += (end + 1);
 
             if (target_seq_no - start_seq_no[p] > 8) {
-                fprintf(stderr, "Audio bitrate it too high\n");
+                // Calculate approximate bitrate based on ADTS frame sizes
+                int frames_behind = target_seq_no - start_seq_no[p];
+
+                // Use the space that was available at the START of processing this program
+                int bytes_available_for_program = bytes_left_at_start;
+
+                // Determine service mode based on size parameter
+                const char* service_mode;
+                int max_bitrate_kbps;
+                switch (size) {
+                    case 146176:
+                        service_mode = "MP1 (Primary)";
+                        max_bitrate_kbps = 96;
+                        break;
+                    case 109312:
+                        service_mode = "MP5 (Hybrid)";
+                        max_bitrate_kbps = 72;
+                        break;
+                    case 72448:
+                        service_mode = "MP6 (Hybrid)";
+                        max_bitrate_kbps = 48;
+                        break;
+                    case 30000:
+                    case 24000:
+                        service_mode = "MP1 (Low bitrate)";
+                        max_bitrate_kbps = 32;
+                        break;
+                    case 9216:
+                        service_mode = "MP6 (Data)";
+                        max_bitrate_kbps = 24;
+                        break;
+                    case 4608:
+                        service_mode = "MP3 (Data)";
+                        max_bitrate_kbps = 12;
+                        break;
+                    case 3750:
+                        service_mode = "MP5 (Data)";
+                        max_bitrate_kbps = 10;
+                        break;
+                    case 2304:
+                        service_mode = "MP2 (Data)";
+                        max_bitrate_kbps = 6;
+                        break;
+                    default:
+                        service_mode = "Unknown";
+                        max_bitrate_kbps = 0;
+                }
+
+                fprintf(stderr,
+                    "\n"
+                    "================================================================================\n"
+                    "ERROR: Audio bitrate is too high\n"
+                    "================================================================================\n"
+                    "Location:     l2_encoder_impl.cc:general_work() - Program %d (index %d/%d)\n"
+                    "Service Mode: %s (PDU size: %d bits)\n"
+                    "Problem:      Encoder is %d frames behind (threshold: 8)\n"
+                    "              The audio encoder is producing more data than the HD Radio\n"
+                    "              channel can transmit.\n"
+                    "\n"
+                    "PDU Space Analysis:\n"
+                    "  Total payload:           %d bytes\n"
+                    "  Data subchannel:         %d bytes (fixed data + config control)\n"
+                    "  PSD bytes per program:   %d bytes\n"
+                    "  Space for all programs:  %d bytes\n"
+                    "  Available for Program %d: %d bytes (before processing)\n"
+                    "  Programs in this PDU:    %d (numbered %d-%d)\n"
+                    "\n"
+                    "Maximum recommended audio bitrate: %d kbps\n"
+                    "\n"
+                    "How to fix in GRC file:\n"
+                    "  OPTION 1 - Reduce Audio Bitrate:\n"
+                    "    1. Locate the 'HDC Encoder' block for Program %d\n"
+                    "    2. Reduce the 'Bitrate' parameter to %d kbps or lower\n"
+                    "    3. Common safe values: 32, 48, 64, or 96 kbps (depending on mode)\n"
+                    "\n",
+                    program_number, p + 1, num_progs, service_mode, size, frames_behind,
+                    payload_bytes, total_data_width, psd_bytes,
+                    payload_bytes - total_data_width, program_number,
+                    bytes_available_for_program, num_progs, first_prog,
+                    first_prog + num_progs - 1, max_bitrate_kbps,
+                    program_number, max_bitrate_kbps);
+
+                if (data_bytes > 0) {
+                    fprintf(stderr,
+                        "  OPTION 2 - Reduce Fixed Data Bandwidth:\n"
+                        "    1. Locate the 'L2 Encoder' block\n"
+                        "    2. Current 'Data Bytes' parameter: %d bytes/frame\n"
+                        "    3. Reduce 'Data Bytes' to free up space for audio\n"
+                        "    4. Each byte freed = ~%d bps more audio capacity\n"
+                        "\n",
+                        data_bytes, (int)(data_bytes * 8.0 * 1000 / (size / 8.0)));
+                }
+
+                if (psd_bytes > 8) {
+                    fprintf(stderr,
+                        "  OPTION 3 - Reduce PSD Size (if excessive):\n"
+                        "    1. Current PSD: %d bytes/frame per program\n"
+                        "    2. Check if you're sending excessive metadata\n"
+                        "    3. Standard PSD for data modes: 8 bytes is typical\n"
+                        "\n",
+                        psd_bytes);
+                }
+
+                fprintf(stderr,
+                    "  OPTION 4 - Use Fewer Programs:\n"
+                    "    Current: %d program(s) sharing %d bytes\n"
+                    "    Reducing program count increases space per program\n"
+                    "\n"
+                    "Note: Lower bitrates may reduce audio quality but are necessary for\n"
+                    "      reliable transmission. Balance audio quality, data services, and\n"
+                    "      number of programs based on your service mode's capacity.\n"
+                    "================================================================================\n",
+                    num_progs, payload_bytes - total_data_width);
             }
         }
 
@@ -297,6 +426,7 @@ int l2_encoder_impl::general_work(int noutput_items,
                 }
             }
 
+            int data_bytes_this_frame = 0;
             for (int i = payload_bytes - 1 - ccc_width - data_bytes;
                  i < payload_bytes - 1 - ccc_width;
                  i++) {
@@ -306,6 +436,7 @@ int l2_encoder_impl::general_work(int noutput_items,
                     if (aas_queue_bytes == 0) { // all queues are empty
                         out_buf[i] = 0x7e;
                     } else { // at least one queue still has data
+                        data_bytes_this_frame++;
                         // advance to the next non-empty queue if necessary
                         while (aas_queues[aas_current_port].empty()) {
                             aas_current_port_index =
@@ -322,17 +453,36 @@ int l2_encoder_impl::general_work(int noutput_items,
                         if (out_buf[i] == 0x7e) {
                             // if we emptied the queue, ask for more
                             if (aas_queues[aas_current_port].empty()) {
+                                if (debug_logs) {
+                                    fprintf(stderr, "L2: Port %d queue empty, sending ready signal and switching ports\n", aas_current_port);
+                                }
                                 message_port_pub(pmt::intern("ready"),
                                                  pmt::from_long(aas_current_port));
-                            }
 
-                            aas_current_port_index =
-                                (aas_current_port_index + 1) % aas_ports.size();
-                            aas_current_port = aas_ports[aas_current_port_index];
+                                // Switch to next port immediately if queue is empty
+                                aas_current_port_index =
+                                    (aas_current_port_index + 1) % aas_ports.size();
+                                aas_current_port = aas_ports[aas_current_port_index];
+                            } else {
+                                // Keep sending from the same port if queue still has data
+                                // This allows bursts of multiple PDUs from same port for faster transmission
+                                if (debug_logs) {
+                                    fprintf(stderr, "L2: Port %d still has data (%zu bytes), continuing burst\n",
+                                            aas_current_port, aas_queues[aas_current_port].size());
+                                }
+                            }
                         }
                     }
                 }
                 aas_block_offset = (aas_block_offset + 1) % (255 + 4);
+            }
+
+            if (debug_logs) {
+                static int frame_counter = 0;
+                if (++frame_counter % 100 == 0) {
+                    fprintf(stderr, "L2: Transmitted %d data bytes this frame (data_bytes param=%d, overhead=%d)\n",
+                            data_bytes_this_frame, data_bytes, data_bytes - data_bytes_this_frame);
+                }
             }
         }
 
@@ -475,6 +625,27 @@ int l2_encoder_impl::adts_length(const unsigned char* header)
 }
 
 int l2_encoder_impl::len_locators(int nop) { return ((lc_bits * nop) + 4) / 8; }
+
+/* Convert TX Digital Audio Gain from dB to 5-bit value per NRSC-5 spec Table 5-5 */
+int l2_encoder_impl::tx_gain_db_to_value(int gain_db)
+{
+    // Table 5-5: TX Digital Audio Gain Control
+    // Value range: 0b11000 (-8 dB) to 0b00110 (+6 dB)
+    // 0b00000 = 0 dB (center value)
+    // Negative gains: 0b11000 to 0b11111 (-8 to -1 dB)
+    // Positive gains: 0b00001 to 0b00110 (+1 to +6 dB)
+
+    if (gain_db >= -8 && gain_db < 0) {
+        // Negative gain: map -8..-1 dB to 0b11000..0b11111 (24..31)
+        return 24 + (gain_db + 8);
+    } else if (gain_db >= 0 && gain_db <= 6) {
+        // Zero or positive gain: map 0..+6 dB to 0b00000..0b00110 (0..6)
+        return gain_db;
+    } else {
+        // Invalid value (should not happen due to validation in constructor)
+        return 0; // Default to 0 dB
+    }
+}
 
 void l2_encoder_impl::handle_aas_pdu(pmt::pmt_t msg)
 {

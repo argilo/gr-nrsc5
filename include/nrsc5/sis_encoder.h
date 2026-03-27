@@ -103,7 +103,15 @@ public:
          const float longitude = -74.0445,
          const float altitude = 93.0,
          const std::string& country_code = "US",
-         const unsigned int fcc_facility_id = 0);
+         const unsigned int fcc_facility_id = 0,
+         const std::vector<data_channel_config> data_channels = {},
+         const std::string& exciter_manufacturer_id = "CS",
+         const std::string& importer_manufacturer_id = "CS",
+         const std::vector<unsigned int> exciter_core_version = { 1, 0, 0, 0 },
+         const std::vector<unsigned int> exciter_mfr_version = { 1, 0, 0, 0 },
+         const std::vector<unsigned int> importer_core_version = { 1, 0, 0, 0 },
+         const std::vector<unsigned int> importer_mfr_version = { 1, 0, 0, 0 },
+         const unsigned int importer_configuration_number = 0);
 };
 
 } // namespace nrsc5

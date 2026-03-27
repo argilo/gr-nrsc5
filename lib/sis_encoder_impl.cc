@@ -32,7 +32,15 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                     float longitude,
                                     float altitude,
                                     const std::string& country_code,
-                                    const unsigned int fcc_facility_id)
+                                    const unsigned int fcc_facility_id,
+                                    const std::vector<data_channel_config> data_channels,
+                                    const std::string& exciter_manufacturer_id,
+                                    const std::string& importer_manufacturer_id,
+                                    const std::vector<unsigned int> exciter_core_version,
+                                    const std::vector<unsigned int> exciter_mfr_version,
+                                    const std::vector<unsigned int> importer_core_version,
+                                    const std::vector<unsigned int> importer_mfr_version,
+                                    const unsigned int importer_configuration_number)
 {
     return gnuradio::get_initial_sptr(new sis_encoder_impl(mode,
                                                            short_name,
@@ -46,7 +54,15 @@ sis_encoder::sptr sis_encoder::make(const pids_mode mode,
                                                            longitude,
                                                            altitude,
                                                            country_code,
-                                                           fcc_facility_id));
+                                                           fcc_facility_id,
+                                                           data_channels,
+                                                           exciter_manufacturer_id,
+                                                           importer_manufacturer_id,
+                                                           exciter_core_version,
+                                                           exciter_mfr_version,
+                                                           importer_core_version,
+                                                           importer_mfr_version,
+                                                           importer_configuration_number));
 }
 
 
@@ -65,7 +81,15 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
                                    const float longitude,
                                    const float altitude,
                                    const std::string& country_code,
-                                   const unsigned int fcc_facility_id)
+                                   const unsigned int fcc_facility_id,
+                                   const std::vector<data_channel_config> data_channels,
+                                   const std::string& exciter_manufacturer_id,
+                                   const std::string& importer_manufacturer_id,
+                                   const std::vector<unsigned int> exciter_core_version,
+                                   const std::vector<unsigned int> exciter_mfr_version,
+                                   const std::vector<unsigned int> importer_core_version,
+                                   const std::vector<unsigned int> importer_mfr_version,
+                                   const unsigned int importer_configuration_number)
     : gr::sync_block("sis_encoder",
                      gr::io_signature::make(0, 0, 0),
                      gr::io_signature::make(1, 1, sizeof(unsigned char) * SIS_BITS))
@@ -116,6 +140,7 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     this->program_types = program_types;
     this->data_types = data_types;
     this->data_mime_types = data_mime_types;
+    this->data_channels = data_channels;
     this->slogan = slogan;
     this->message = message;
     this->emergency_alert = "";
@@ -130,17 +155,21 @@ sis_encoder_impl::sis_encoder_impl(const pids_mode mode,
     dst_sched = dst_schedule::US_CANADA;
     dst_local = true;
     dst_regional = true;
-    exciter_manufacturer_id = "CS";
-    exciter_core_version = { 1, 0, 0, 0 };
+    this->exciter_manufacturer_id = exciter_manufacturer_id;
+    this->exciter_core_version = exciter_core_version;
+    while (this->exciter_core_version.size() < 4) this->exciter_core_version.push_back(0);
     exciter_core_status = 0;
-    exciter_manufacturer_version = { 1, 0, 0, 0 };
+    this->exciter_manufacturer_version = exciter_mfr_version;
+    while (this->exciter_manufacturer_version.size() < 4) this->exciter_manufacturer_version.push_back(0);
     exciter_manufacturer_status = 0;
-    importer_manufacturer_id = "CS";
-    importer_core_version = { 1, 0, 0, 0 };
+    this->importer_manufacturer_id = importer_manufacturer_id;
+    this->importer_core_version = importer_core_version;
+    while (this->importer_core_version.size() < 4) this->importer_core_version.push_back(0);
     importer_core_status = 0;
-    importer_manufacturer_version = { 1, 0, 0, 0 };
+    this->importer_manufacturer_version = importer_mfr_version;
+    while (this->importer_manufacturer_version.size() < 4) this->importer_manufacturer_version.push_back(0);
     importer_manufacturer_status = 0;
-    importer_configuration_number = 0;
+    this->importer_configuration_number = importer_configuration_number;
 
     long_name_current_frame = 0;
     long_name_seq = 0;
@@ -482,10 +511,13 @@ void sis_encoder_impl::write_station_location()
     write_int(static_cast<int>(msg_id::STATION_LOCATION), 4);
     write_bit(location_high);
     if (location_high) {
-        write_int(std::round(latitude * 8192), 22);
-        write_int(altitude_int >> 4, 4);
+        write_int(static_cast<int>(std::round(latitude * 8192)), 22);
+        // Decoder expects bits to reconstruct altitude << 4
+        // High message gets upper 4 bits of the 8-bit value (bits 7-4)
+        write_int((altitude_int >> 4) & 0xf, 4);
     } else {
-        write_int(std::round(longitude * 8192), 22);
+        write_int(static_cast<int>(std::round(longitude * 8192)), 22);
+        // Low message gets lower 4 bits of the 8-bit value (bits 3-0)
         write_int(altitude_int & 0xf, 4);
     }
 
@@ -538,14 +570,18 @@ void sis_encoder_impl::write_service_information_message()
 {
     write_int(static_cast<int>(msg_id::SERVICE_INFORMATION_MESSAGE), 4);
 
+    unsigned int total_services = program_types.size() + data_types.size() + data_channels.size();
+
     if (current_service < program_types.size()) {
+        // Audio service descriptor
         write_int(static_cast<int>(service_category::AUDIO), 2);
         write_bit(static_cast<int>(access::PUBLIC));
         write_int(current_service, 6);
         write_int(static_cast<int>(program_types[current_service]), 8);
         write_int(0, 5); // reserved
         write_int(static_cast<int>(sound_experience::NONE), 5);
-    } else {
+    } else if (current_service < program_types.size() + data_types.size()) {
+        // Legacy data service descriptor (e.g. emergency alerts)
         unsigned int data_index = current_service - program_types.size();
 
         write_int(static_cast<int>(service_category::DATA), 2);
@@ -553,9 +589,19 @@ void sis_encoder_impl::write_service_information_message()
         write_int(static_cast<int>(data_types[data_index]), 9);
         write_int(0, 3); // reserved
         write_int(data_mime_types[data_index], 12);
+    } else {
+        // Data-only channel service descriptor (from data_channels config)
+        unsigned int dc_index = current_service - program_types.size() - data_types.size();
+        const auto& dc = data_channels[dc_index];
+
+        write_int(static_cast<int>(service_category::DATA), 2);
+        write_bit(static_cast<int>(access::PUBLIC));
+        write_int(dc.sdt, 9);
+        write_int(0, 3); // reserved
+        write_int(dc.mime & 0xFFF, 12); // 12 LSBs of MIME hash
     }
 
-    current_service = (current_service + 1) % (program_types.size() + data_types.size());
+    current_service = (current_service + 1) % total_services;
 }
 
 void sis_encoder_impl::write_sis_parameter_message()
@@ -735,9 +781,9 @@ void sis_encoder_impl::write_emergency_alert()
 std::string sis_encoder_impl::generate_sig()
 {
     std::stringstream out;
-    unsigned int program_id = 0;
     unsigned int port = 0x1000;
 
+    // Emit AUDIO services for each program (album art + station logo per program)
     for (unsigned int program_id = 0; program_id < program_names.size(); program_id++) {
         unsigned int component_id = 0;
 
@@ -760,6 +806,33 @@ std::string sis_encoder_impl::generate_sig()
                                            data_type::LOT,
                                            mime_hash::STATION_LOGO,
                                            0x32 + program_id);
+    }
+
+    // Emit DATA services for each configured data-only channel.
+    // Each data channel gets its own DATA service with one LOT data component.
+    // This is the critical piece that tells the decoder to reassemble LOT
+    // objects arriving on these ports.
+    unsigned int data_service_number = program_names.size() + 1;
+    for (unsigned int i = 0; i < data_channels.size(); i++) {
+        const auto& dc = data_channels[i];
+        unsigned int component_id = 0;
+
+        // Use the custom name if provided, otherwise generate a default name
+        std::string svc_name = dc.name.empty() ? ("Data" + std::to_string(i + 1)) : dc.name;
+
+        out << generate_sig_service(
+            sig_service_type::DATA, data_service_number++, svc_name);
+
+        // Determine the MIME hash to use in the SIG component.
+        // If mime is 0, default to TEXT; otherwise use what was configured.
+        mime_hash mh = static_cast<mime_hash>(dc.mime ? dc.mime : static_cast<uint32_t>(mime_hash::TEXT));
+
+        out << generate_sig_data_component(component_id++,
+                                           dc.port,
+                                           static_cast<service_data_type>(dc.sdt),
+                                           data_type::LOT,
+                                           mh,
+                                           dc.lot_id);
     }
 
     return out.str();
@@ -886,7 +959,217 @@ void sis_encoder_impl::handle_command(pmt::pmt_t msg)
 
             auto command = command_line.substr(0, command_line.find('|'));
 
-            if (command == "clear_alert") {
+            if (command == "set_param") {
+                // set_param|<index>|<value>
+                // Sets SIS Parameter Message index directly.
+                // Index 0-12 per Table 4-14 of SY_IDD_1020s.
+                // Value is interpreted per index:
+                //   0: Leap Second Offset -- value = pending<<8|current (hex or dec)
+                //   1: Leap Second ALFN LSB -- value = 16-bit LSB
+                //   2: Leap Second ALFN MSB -- value = 16-bit MSB
+                //   3: Local Time Data -- value = utc_offset (signed minutes from UTC)
+                //   4: Exciter Manufacturer ID -- value = two ISO 8859-1 chars (e.g. "CS")
+                //   5: Exciter Core Version 1.2.3 -- value = "L1.L2.L3"
+                //   6: Exciter Mfr Version 1.2.3 -- value = "L1.L2.L3"
+                //   7: Exciter Version 4 & Status -- value = "core4.mfr4.core_status.mfr_status"
+                //   8: Importer Manufacturer ID -- value = two ISO 8859-1 chars
+                //   9: Importer Core Version 1.2.3 -- value = "L1.L2.L3"
+                //  10: Importer Mfr Version 1.2.3 -- value = "L1.L2.L3"
+                //  11: Importer Version 4 & Status -- value = "core4.mfr4.core_status.mfr_status"
+                //  12: Importer Configuration Number -- value = 0-65535
+                auto rest = command_line.substr(10); // after "set_param|"
+                auto sep1 = rest.find('|');
+                if (sep1 != std::string::npos) {
+                    int idx = std::stoi(rest.substr(0, sep1));
+                    std::string val = rest.substr(sep1 + 1);
+                    // Remove trailing newline if present
+                    if (!val.empty() && val.back() == '\n') val.pop_back();
+
+                    switch (idx) {
+                    case 0: {
+                        // Leap Second Offset: pending|current or single hex value
+                        auto pipe = val.find('|');
+                        if (pipe != std::string::npos) {
+                            pending_leap_second_offset = std::stoi(val.substr(0, pipe));
+                            current_leap_second_offset = std::stoi(val.substr(pipe + 1));
+                        } else {
+                            unsigned int v = std::stoul(val, nullptr, 0);
+                            pending_leap_second_offset = (v >> 8) & 0xFF;
+                            current_leap_second_offset = v & 0xFF;
+                        }
+                        d_logger->info("set leap second offset: pending=" +
+                                      std::to_string(pending_leap_second_offset) +
+                                      " current=" + std::to_string(current_leap_second_offset));
+                        break;
+                    }
+                    case 1: {
+                        // Leap Second ALFN LSB
+                        unsigned int lsb = std::stoul(val, nullptr, 0);
+                        leap_second_alfn = (leap_second_alfn & 0xFFFF0000) | (lsb & 0xFFFF);
+                        d_logger->info("set leap second ALFN LSB: " + std::to_string(lsb));
+                        break;
+                    }
+                    case 2: {
+                        // Leap Second ALFN MSB
+                        unsigned int msb = std::stoul(val, nullptr, 0);
+                        leap_second_alfn = (leap_second_alfn & 0x0000FFFF) | ((msb & 0xFFFF) << 16);
+                        d_logger->info("set leap second ALFN MSB: " + std::to_string(msb));
+                        break;
+                    }
+                    case 3: {
+                        // Local Time Data: utc_offset in minutes (signed)
+                        // Optionally: utc_offset|dst_sched|dst_local|dst_regional
+                        auto parts_str = val;
+                        std::vector<std::string> parts_vec;
+                        size_t pos2 = 0;
+                        while ((pos2 = parts_str.find('|')) != std::string::npos) {
+                            parts_vec.push_back(parts_str.substr(0, pos2));
+                            parts_str.erase(0, pos2 + 1);
+                        }
+                        parts_vec.push_back(parts_str);
+
+                        utc_offset = std::stoi(parts_vec[0]);
+                        if (parts_vec.size() > 1) {
+                            int ds = std::stoi(parts_vec[1]);
+                            dst_sched = static_cast<dst_schedule>(ds);
+                        }
+                        if (parts_vec.size() > 2) dst_local = (parts_vec[2] == "1");
+                        if (parts_vec.size() > 3) dst_regional = (parts_vec[3] == "1");
+                        d_logger->info("set local time: utc_offset=" + std::to_string(utc_offset));
+                        break;
+                    }
+                    case 4: {
+                        // Exciter Manufacturer ID (2 chars)
+                        if (val.length() >= 2) {
+                            exciter_manufacturer_id = val.substr(0, 2);
+                            d_logger->info("set exciter manufacturer ID: " + exciter_manufacturer_id);
+                        } else {
+                            d_logger->error("exciter manufacturer ID must be 2 characters");
+                        }
+                        break;
+                    }
+                    case 5: {
+                        // Exciter Core Version L1.L2.L3
+                        std::vector<std::string> levels;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            levels.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        levels.push_back(tmp);
+                        for (int lv = 0; lv < 3 && lv < (int)levels.size(); lv++) {
+                            exciter_core_version[lv] = std::stoi(levels[lv]);
+                        }
+                        d_logger->info("set exciter core version");
+                        break;
+                    }
+                    case 6: {
+                        // Exciter Mfr Version L1.L2.L3
+                        std::vector<std::string> levels;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            levels.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        levels.push_back(tmp);
+                        for (int lv = 0; lv < 3 && lv < (int)levels.size(); lv++) {
+                            exciter_manufacturer_version[lv] = std::stoi(levels[lv]);
+                        }
+                        d_logger->info("set exciter manufacturer version");
+                        break;
+                    }
+                    case 7: {
+                        // Exciter Version 4 & Status: core4.mfr4.core_status.mfr_status
+                        std::vector<std::string> parts_v;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            parts_v.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        parts_v.push_back(tmp);
+                        if (parts_v.size() > 0) exciter_core_version[3] = std::stoi(parts_v[0]);
+                        if (parts_v.size() > 1) exciter_manufacturer_version[3] = std::stoi(parts_v[1]);
+                        if (parts_v.size() > 2) exciter_core_status = std::stoi(parts_v[2]);
+                        if (parts_v.size() > 3) exciter_manufacturer_status = std::stoi(parts_v[3]);
+                        d_logger->info("set exciter version 4 and status");
+                        break;
+                    }
+                    case 8: {
+                        // Importer Manufacturer ID (2 chars)
+                        if (val.length() >= 2) {
+                            importer_manufacturer_id = val.substr(0, 2);
+                            d_logger->info("set importer manufacturer ID: " + importer_manufacturer_id);
+                        } else {
+                            d_logger->error("importer manufacturer ID must be 2 characters");
+                        }
+                        break;
+                    }
+                    case 9: {
+                        // Importer Core Version L1.L2.L3
+                        std::vector<std::string> levels;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            levels.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        levels.push_back(tmp);
+                        for (int lv = 0; lv < 3 && lv < (int)levels.size(); lv++) {
+                            importer_core_version[lv] = std::stoi(levels[lv]);
+                        }
+                        d_logger->info("set importer core version");
+                        break;
+                    }
+                    case 10: {
+                        // Importer Mfr Version L1.L2.L3
+                        std::vector<std::string> levels;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            levels.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        levels.push_back(tmp);
+                        for (int lv = 0; lv < 3 && lv < (int)levels.size(); lv++) {
+                            importer_manufacturer_version[lv] = std::stoi(levels[lv]);
+                        }
+                        d_logger->info("set importer manufacturer version");
+                        break;
+                    }
+                    case 11: {
+                        // Importer Version 4 & Status: core4.mfr4.core_status.mfr_status
+                        std::vector<std::string> parts_v;
+                        size_t pos2 = 0;
+                        std::string tmp = val;
+                        while ((pos2 = tmp.find('.')) != std::string::npos) {
+                            parts_v.push_back(tmp.substr(0, pos2));
+                            tmp.erase(0, pos2 + 1);
+                        }
+                        parts_v.push_back(tmp);
+                        if (parts_v.size() > 0) importer_core_version[3] = std::stoi(parts_v[0]);
+                        if (parts_v.size() > 1) importer_manufacturer_version[3] = std::stoi(parts_v[1]);
+                        if (parts_v.size() > 2) importer_core_status = std::stoi(parts_v[2]);
+                        if (parts_v.size() > 3) importer_manufacturer_status = std::stoi(parts_v[3]);
+                        d_logger->info("set importer version 4 and status");
+                        break;
+                    }
+                    case 12: {
+                        // Importer Configuration Number
+                        importer_configuration_number = std::stoul(val, nullptr, 0);
+                        d_logger->info("set importer config number: " + std::to_string(importer_configuration_number));
+                        break;
+                    }
+                    default:
+                        d_logger->error("set_param: invalid index " + std::to_string(idx) + " (valid: 0-12)");
+                        break;
+                    }
+                } else {
+                    d_logger->error("set_param: missing index or value");
+                }
+            } else if (command == "clear_alert") {
                 this->emergency_alert = "";
                 this->emergency_alert_cnt_len = 0;
                 d_logger->info("clearing emergency alert");

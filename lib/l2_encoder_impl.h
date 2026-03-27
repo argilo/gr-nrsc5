@@ -67,6 +67,8 @@ private:
     int size;
     int data_bytes;
     blend blend_control;
+    int tx_digital_gain;
+    bool debug_logs;
     int payload_bytes;
     unsigned char rs_buf[255];
     void* rs_enc;
@@ -111,6 +113,7 @@ private:
     header_spread(const unsigned char* in, unsigned char* out, const unsigned char* pci);
     int adts_length(const unsigned char* header);
     int len_locators(int nop);
+    int tx_gain_db_to_value(int gain_db);
     void handle_aas_pdu(pmt::pmt_t msg);
     void decode_sig(std::vector<unsigned char>& pdu_bytes);
     void handle_clock(pmt::pmt_t msg);
@@ -121,6 +124,8 @@ public:
                     const int size,
                     const int data_bytes = 0,
                     const blend blend_control = blend::ENABLE,
+                    const int tx_digital_gain = 0,
+                    const bool debug_logs = false,
                     const int ccc_width = 24);
     ~l2_encoder_impl();
 
